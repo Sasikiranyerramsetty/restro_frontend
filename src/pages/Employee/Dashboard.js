@@ -26,7 +26,7 @@ const EmployeeDashboard = () => {
   useEffect(() => {
     // Mock data for employee dashboard
     const mockStats = {
-      assignedOrders: 8,
+      assignedOrders: 6,
       completedTasks: 12,
       todayShifts: 1,
       pendingTasks: 3
@@ -37,19 +37,110 @@ const EmployeeDashboard = () => {
         id: 1,
         orderNumber: 'ORD-001',
         customer: 'John Doe',
+        customerPhone: '9876543210',
         status: 'preparing',
-        total: 450,
-        items: ['Chicken Biryani', 'Mutton Curry'],
-        assignedAt: new Date().toISOString()
+        total: 850,
+        items: [
+          { name: 'Chicken Biryani', quantity: 2, price: 280 },
+          { name: 'Mutton Curry', quantity: 1, price: 320 },
+          { name: 'Garlic Naan', quantity: 2, price: 100 }
+        ],
+        tableNumber: 'T5',
+        orderType: 'dine-in',
+        assignedAt: new Date().toISOString(),
+        estimatedTime: '25 mins',
+        specialNotes: 'Extra spicy for biryani'
       },
       {
         id: 2,
         orderNumber: 'ORD-002',
         customer: 'Jane Smith',
+        customerPhone: '9876543211',
         status: 'ready',
-        total: 320,
-        items: ['Mutton Curry'],
-        assignedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString()
+        total: 650,
+        items: [
+          { name: 'RESTRO Special Thali', quantity: 1, price: 350 },
+          { name: 'Paneer Tikka', quantity: 1, price: 220 },
+          { name: 'Fresh Lime Soda', quantity: 2, price: 90 }
+        ],
+        tableNumber: 'T3',
+        orderType: 'dine-in',
+        assignedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+        estimatedTime: 'Ready',
+        specialNotes: 'Birthday celebration'
+      },
+      {
+        id: 3,
+        orderNumber: 'ORD-003',
+        customer: 'Mike Wilson',
+        customerPhone: '9876543212',
+        status: 'pending',
+        total: 420,
+        items: [
+          { name: 'Chicken Biryani', quantity: 1, price: 280 },
+          { name: 'Butter Chicken', quantity: 1, price: 290 }
+        ],
+        tableNumber: null,
+        orderType: 'takeaway',
+        assignedAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+        estimatedTime: '20 mins',
+        specialNotes: 'Pickup at 8:30 PM'
+      },
+      {
+        id: 4,
+        orderNumber: 'ORD-004',
+        customer: 'Emily Davis',
+        customerPhone: '9876543213',
+        status: 'preparing',
+        total: 720,
+        items: [
+          { name: 'Mutton Curry', quantity: 1, price: 320 },
+          { name: 'Dal Makhani', quantity: 1, price: 180 },
+          { name: 'Butter Naan', quantity: 3, price: 90 },
+          { name: 'Coca-Cola', quantity: 2, price: 45 }
+        ],
+        tableNumber: 'T7',
+        orderType: 'dine-in',
+        assignedAt: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+        estimatedTime: '15 mins',
+        specialNotes: 'Anniversary dinner'
+      },
+      {
+        id: 5,
+        orderNumber: 'ORD-005',
+        customer: 'Alice Wonderland',
+        customerPhone: '9876543214',
+        status: 'ready',
+        total: 580,
+        items: [
+          { name: 'Paneer Tikka', quantity: 2, price: 220 },
+          { name: 'Veg Spring Rolls', quantity: 1, price: 220 },
+          { name: 'Mango Lassi', quantity: 2, price: 70 }
+        ],
+        tableNumber: 'T2',
+        orderType: 'dine-in',
+        assignedAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+        estimatedTime: 'Ready',
+        specialNotes: 'Vegetarian options preferred'
+      },
+      {
+        id: 6,
+        orderNumber: 'ORD-006',
+        customer: 'Bob The Builder',
+        customerPhone: '9876543215',
+        status: 'preparing',
+        total: 1200,
+        items: [
+          { name: 'Chicken Biryani', quantity: 2, price: 280 },
+          { name: 'Dal Makhani', quantity: 1, price: 180 },
+          { name: 'RESTRO Special Thali', quantity: 1, price: 350 },
+          { name: 'Garlic Naan', quantity: 4, price: 100 }
+        ],
+        tableNumber: null,
+        orderType: 'delivery',
+        assignedAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
+        estimatedTime: '30 mins',
+        specialNotes: 'Deliver to apartment 4B, ring doorbell twice'
       }
     ];
 
@@ -174,22 +265,84 @@ const EmployeeDashboard = () => {
             
             <div className="space-y-4">
               {recentOrders.map((order) => (
-                <div key={order.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-gray-900">#{order.orderNumber}</span>
-                    <span className={`status-badge ${getStatusColor(order.status)}`}>
-                      {order.status}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-1">Customer: {order.customer}</p>
-                  <p className="text-sm text-gray-600 mb-2">Items: {order.items.join(', ')}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-900">
-                      {formatCurrency(order.total)}
-                    </span>
+                <div key={order.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium text-gray-900">#{order.orderNumber}</span>
+                      <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
+                        {order.status}
+                      </span>
+                    </div>
                     <span className="text-xs text-gray-500">
                       {formatDate(order.assignedAt, 'HH:mm')}
                     </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{order.customer}</p>
+                      <p className="text-xs text-gray-500">{order.customerPhone}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-gray-900">
+                        {order.tableNumber ? `Table ${order.tableNumber}` : order.orderType}
+                      </p>
+                      <p className="text-xs text-gray-500 capitalize">{order.orderType}</p>
+                    </div>
+                  </div>
+
+                  <div className="mb-3">
+                    <p className="text-xs font-medium text-gray-700 mb-1">Order Items:</p>
+                    <div className="space-y-1">
+                      {order.items.map((item, index) => (
+                        <div key={index} className="flex justify-between text-xs text-gray-600">
+                          <span>{item.quantity}x {item.name}</span>
+                          <span>₹{item.price * item.quantity}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-900">
+                      Total: {formatCurrency(order.total)}
+                    </span>
+                    <span className={`text-xs px-2 py-1 rounded-full ${
+                      order.estimatedTime === 'Ready' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {order.estimatedTime}
+                    </span>
+                  </div>
+
+                  {order.specialNotes && (
+                    <div className="mt-2 p-2 bg-yellow-50 rounded border-l-4 border-yellow-400">
+                      <p className="text-xs text-yellow-800">
+                        <span className="font-medium">Notes:</span> {order.specialNotes}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="mt-3 flex space-x-2">
+                    {order.status === 'pending' && (
+                      <button className="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded hover:bg-blue-200 transition-colors">
+                        Start Preparing
+                      </button>
+                    )}
+                    {order.status === 'preparing' && (
+                      <button className="text-xs bg-green-100 text-green-600 px-3 py-1 rounded hover:bg-green-200 transition-colors">
+                        Mark Ready
+                      </button>
+                    )}
+                    {order.status === 'ready' && (
+                      <button className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded hover:bg-gray-200 transition-colors">
+                        Complete Order
+                      </button>
+                    )}
+                    <button className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded hover:bg-gray-200 transition-colors">
+                      View Details
+                    </button>
                   </div>
                 </div>
               ))}
