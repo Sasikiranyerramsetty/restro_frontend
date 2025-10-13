@@ -66,6 +66,7 @@ const Navbar = () => {
       case USER_ROLES.CUSTOMER:
         return [
           { name: 'Home', path: ROUTES.CUSTOMER_HOME, icon: <Home className="h-4 w-4" /> },
+          { name: 'Dashboard', path: ROUTES.CUSTOMER_DASHBOARD, icon: <BarChart3 className="h-4 w-4" /> },
           { name: 'Menu', path: ROUTES.CUSTOMER_MENU, icon: <ChefHat className="h-4 w-4" /> },
           { name: 'Orders', path: ROUTES.CUSTOMER_ORDERS, icon: <ShoppingBag className="h-4 w-4" /> },
           { name: 'Reservations', path: ROUTES.CUSTOMER_RESERVATIONS, icon: <Calendar className="h-4 w-4" /> },

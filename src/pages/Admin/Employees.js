@@ -15,7 +15,10 @@ import {
   X,
   Save,
   DollarSign,
-  MapPin
+  MapPin,
+  Eye,
+  EyeOff,
+  Lock
 } from 'lucide-react';
 import AdminLayout from '../../components/Admin/AdminLayout';
 import { formatDate } from '../../utils';
@@ -29,17 +32,17 @@ const AdminEmployees = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    role: '',
+    password: '',
     status: 'active',
     shift: '',
     salary: '',
-    department: '',
     address: ''
   });
 
@@ -129,7 +132,7 @@ const AdminEmployees = () => {
   const filteredEmployees = employees.filter(employee =>
     employee.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     employee.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    employee.role.toLowerCase().includes(searchQuery.toLowerCase())
+    employee.phone.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Form handling functions
@@ -138,14 +141,14 @@ const AdminEmployees = () => {
       name: '',
       email: '',
       phone: '',
-      role: '',
+      password: '',
       status: 'active',
       shift: '',
       salary: '',
-      department: '',
       address: ''
     });
     setEditingEmployee(null);
+    setShowPassword(false);
   };
 
   const handleInputChange = (e) => {
@@ -166,11 +169,10 @@ const AdminEmployees = () => {
       name: employee.name,
       email: employee.email,
       phone: employee.phone,
-      role: employee.role,
+      password: '', // Don't populate password for security
       status: employee.status,
       shift: employee.shift,
       salary: employee.salary.toString(),
-      department: employee.department || '',
       address: employee.address || ''
     });
     setEditingEmployee(employee);
@@ -186,6 +188,11 @@ const AdminEmployees = () => {
         ...formData,
         salary: parseInt(formData.salary)
       };
+
+      // For editing, only include password if it's provided
+      if (editingEmployee && !formData.password) {
+        delete employeeData.password;
+      }
 
       let result;
       if (editingEmployee) {
@@ -231,15 +238,6 @@ const AdminEmployees = () => {
     }
   };
 
-  const getRoleColor = (role) => {
-    const colors = {
-      manager: 'bg-purple-100 text-purple-800',
-      chef: 'bg-red-100 text-red-800',
-      waiter: 'bg-blue-100 text-blue-800',
-      cashier: 'bg-green-100 text-green-800'
-    };
-    return colors[role] || 'bg-gray-100 text-gray-800';
-  };
 
   const getStatusColor = (status) => {
     return status === 'active' 
@@ -371,7 +369,6 @@ const AdminEmployees = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="table-header">Employee</th>
-                  <th className="table-header">Role</th>
                   <th className="table-header">Status</th>
                   <th className="table-header">Shift</th>
                   <th className="table-header">Hire Date</th>
@@ -401,11 +398,6 @@ const AdminEmployees = () => {
                           </div>
                         </div>
                       </div>
-                    </td>
-                    <td className="table-cell">
-                      <span className={`status-badge ${getRoleColor(employee.role)}`}>
-                        {employee.role.charAt(0).toUpperCase() + employee.role.slice(1)}
-                      </span>
                     </td>
                     <td className="table-cell">
                       <span className={`status-badge ${getStatusColor(employee.status)}`}>
@@ -540,47 +532,43 @@ const AdminEmployees = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Department *
+                        Password {!editingEmployee ? '*' : ''}
                       </label>
-                      <select
-                        name="department"
-                        value={formData.department}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      >
-                        <option value="">Select Department</option>
-                        <option value="Operations">Operations</option>
-                        <option value="Kitchen">Kitchen</option>
-                        <option value="Service">Service</option>
-                        <option value="Front Office">Front Office</option>
-                        <option value="Management">Management</option>
-                      </select>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          name="password"
+                          value={formData.password}
+                          onChange={handleInputChange}
+                          required={!editingEmployee}
+                          minLength="6"
+                          className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          placeholder={editingEmployee ? "Leave blank to keep current password" : "Enter password"}
+                        />
+                        <button
+                          type="button"
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4 text-gray-400" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-gray-400" />
+                          )}
+                        </button>
+                      </div>
+                      {editingEmployee && (
+                        <p className="mt-1 text-sm text-gray-500">
+                          Leave blank to keep the current password
+                        </p>
+                      )}
                     </div>
+
                   </div>
 
                   {/* Job Information */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Role *
-                      </label>
-                      <select
-                        name="role"
-                        value={formData.role}
-                        onChange={handleInputChange}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      >
-                        <option value="">Select Role</option>
-                        <option value="manager">Manager</option>
-                        <option value="chef">Chef</option>
-                        <option value="waiter">Waiter</option>
-                        <option value="cashier">Cashier</option>
-                        <option value="host">Host</option>
-                        <option value="cleaner">Cleaner</option>
-                      </select>
-                    </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">

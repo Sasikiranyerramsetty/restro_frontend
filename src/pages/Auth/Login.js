@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Eye, EyeOff, Mail, Lock, ChefHat } from 'lucide-react';
+import { Eye, EyeOff, Phone, Lock, ChefHat } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ROUTES } from '../../constants';
 import toast from 'react-hot-toast';
@@ -36,10 +36,10 @@ const Login = () => {
             navigate(ROUTES.EMPLOYEE_DASHBOARD, { replace: true });
             break;
           case 'customer':
-            navigate(ROUTES.CUSTOMER_HOME, { replace: true });
+            navigate(ROUTES.CUSTOMER_DASHBOARD, { replace: true });
             break;
           default:
-            navigate(ROUTES.CUSTOMER_HOME, { replace: true });
+            navigate(ROUTES.CUSTOMER_DASHBOARD, { replace: true });
         }
       }
     }
@@ -69,10 +69,10 @@ const Login = () => {
             navigate(ROUTES.EMPLOYEE_DASHBOARD);
             break;
           case 'customer':
-            navigate(ROUTES.CUSTOMER_HOME);
+            navigate(ROUTES.CUSTOMER_DASHBOARD);
             break;
           default:
-            navigate(ROUTES.CUSTOMER_HOME);
+            navigate(ROUTES.CUSTOMER_DASHBOARD);
         }
       } else {
         toast.error(result.error || 'Login failed');
@@ -85,66 +85,55 @@ const Login = () => {
   };
 
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative"
-      style={{
-        backgroundImage: `url('https://images.jdmagicbox.com/v2/comp/hyderabad/k2/040pxx40.xx40.220501203243.n6k2/catalogue/meghduth-biryanis-kondapur-hyderabad-south-indian-delivery-restaurants-36sm7lky2g.jpg')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      }}
-    >
-      {/* Dark overlay for better text readability */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-      
-      <div className="max-w-md w-full space-y-8 relative z-10">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
           <div className="mx-auto h-16 w-16 bg-primary-500 rounded-full flex items-center justify-center">
             <ChefHat className="h-8 w-8 text-white" />
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-white">
+          <h2 className="mt-6 text-3xl font-bold text-gray-900 restro-brand">
             Welcome Back
           </h2>
-          <p className="mt-2 text-sm text-gray-300">
+          <p className="mt-2 text-sm text-gray-600">
             Sign in to your restaurant account
           </p>
         </div>
 
         {/* Login Form */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl border border-white/20 p-8">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-4">
-            {/* Email Field */}
+            {/* Phone Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-white">
-                Email Address
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                Phone Number
               </label>
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
+                  <Phone className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  {...register('email', {
-                    required: 'Email is required',
+                  {...register('phone', {
+                    required: 'Phone number is required',
                     pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: 'Invalid email address'
+                      value: /^[\+]?[1-9][\d]{0,15}$/,
+                      message: 'Invalid phone number format'
                     }
                   })}
-                  type="email"
-                  className="w-full px-3 py-2 pl-10 bg-white/20 border border-white/30 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors duration-200"
-                  placeholder="Enter your email"
+                  type="tel"
+                  className="input-field pl-10"
+                  placeholder="Enter your phone number"
                 />
               </div>
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-300">{errors.email.message}</p>
+              {errors.phone && (
+                <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
               )}
             </div>
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-white">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
               <div className="mt-1 relative">
@@ -160,7 +149,7 @@ const Login = () => {
                     }
                   })}
                   type={showPassword ? 'text' : 'password'}
-                  className="w-full px-3 py-2 pl-10 pr-10 bg-white/20 border border-white/30 rounded-lg text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors duration-200"
+                  className="input-field pl-10 pr-10"
                   placeholder="Enter your password"
                 />
                 <button
@@ -176,7 +165,7 @@ const Login = () => {
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1 text-sm text-red-300">{errors.password.message}</p>
+                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
               )}
             </div>
           </div>
@@ -190,7 +179,7 @@ const Login = () => {
                 type="checkbox"
                 className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
               />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-white">
+              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
                 Remember me
               </label>
             </div>
@@ -198,7 +187,7 @@ const Login = () => {
             <div className="text-sm">
               <Link
                 to={ROUTES.FORGOT_PASSWORD}
-                className="font-medium text-primary-300 hover:text-primary-200"
+                className="font-medium text-primary-600 hover:text-primary-700"
               >
                 Forgot your password?
               </Link>
@@ -207,8 +196,8 @@ const Login = () => {
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-500/20 border border-red-400/30 rounded-md p-4">
-              <p className="text-sm text-red-200">{error}</p>
+            <div className="bg-red-50 border border-red-200 rounded-md p-4">
+              <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
 
@@ -217,11 +206,11 @@ const Login = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-gray-900 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 shadow-lg"
+              className="btn-primary w-full"
             >
               {isLoading ? (
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900 mr-2"></div>
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                   Signing in...
                 </div>
               ) : (
@@ -232,11 +221,11 @@ const Login = () => {
 
           {/* Register Link */}
           <div className="text-center">
-            <p className="text-sm text-gray-300">
+            <p className="text-sm text-gray-600">
               Don't have an account?{' '}
               <Link
                 to={ROUTES.REGISTER}
-                className="font-medium text-primary-300 hover:text-primary-200"
+                className="font-medium text-primary-600 hover:text-primary-700"
               >
                 Sign up here
               </Link>
@@ -246,32 +235,41 @@ const Login = () => {
         </div>
 
         {/* Demo Accounts */}
-        <div className="mt-8 p-6 bg-white/10 backdrop-blur-lg rounded-xl shadow-xl border border-white/20">
-          <h3 className="text-lg font-semibold text-white mb-4 text-center">Demo Accounts</h3>
+        <div className="mt-8 p-6 bg-white rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">Demo Accounts</h3>
           <div className="space-y-3">
-            <div className="bg-white/10 rounded-lg p-3 border border-white/20">
-              <div className="text-sm text-white">
-                <span className="font-semibold text-primary-300">Admin:</span>
-                <div className="mt-1 text-gray-300">
-                  <div>Email: admin@restaurant.com</div>
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <div className="text-sm text-gray-700">
+                <span className="font-semibold text-primary-600">Admin:</span>
+                <div className="mt-1 text-gray-600">
+                  <div>Phone: 1234567890</div>
                   <div>Password: admin123</div>
                 </div>
               </div>
             </div>
-            <div className="bg-white/10 rounded-lg p-3 border border-white/20">
-              <div className="text-sm text-white">
-                <span className="font-semibold text-primary-300">Employee:</span>
-                <div className="mt-1 text-gray-300">
-                  <div>Email: employee@restaurant.com</div>
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <div className="text-sm text-gray-700">
+                <span className="font-semibold text-primary-600">Employee:</span>
+                <div className="mt-1 text-gray-600">
+                  <div>Phone: 1234567891</div>
                   <div>Password: employee123</div>
                 </div>
               </div>
             </div>
-            <div className="bg-white/10 rounded-lg p-3 border border-white/20">
-              <div className="text-sm text-white">
-                <span className="font-semibold text-primary-300">Customer:</span>
-                <div className="mt-1 text-gray-300">
-                  <div>Email: customer@restaurant.com</div>
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <div className="text-sm text-gray-700">
+                <span className="font-semibold text-primary-600">Customer:</span>
+                <div className="mt-1 text-gray-600">
+                  <div>Phone: 1234567892</div>
+                  <div>Password: customer123</div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+              <div className="text-sm text-gray-700">
+                <span className="font-semibold text-primary-600">Alternative:</span>
+                <div className="mt-1 text-gray-600">
+                  <div>Phone: 5551234567</div>
                   <div>Password: customer123</div>
                 </div>
               </div>

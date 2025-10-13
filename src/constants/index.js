@@ -75,6 +75,7 @@ export const ROUTES = {
   
   // Customer Routes
   CUSTOMER_HOME: '/',
+  CUSTOMER_DASHBOARD: '/dashboard',
   CUSTOMER_MENU: '/menu',
   CUSTOMER_CART: '/cart',
   CUSTOMER_CHECKOUT: '/checkout',

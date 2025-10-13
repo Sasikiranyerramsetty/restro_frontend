@@ -22,6 +22,7 @@ import AdminEvents from './pages/Admin/Events';
 
 // Customer pages
 import CustomerHome from './pages/Customer/Home';
+import CustomerDashboard from './pages/Customer/Dashboard';
 import CustomerMenu from './pages/Customer/Menu';
 import CustomerCart from './pages/Customer/Cart';
 import CustomerCheckout from './pages/Customer/Checkout';
@@ -40,6 +41,8 @@ import EmployeeShifts from './pages/Employee/Shifts';
 // Common components
 import LoadingSpinner from './components/Common/LoadingSpinner';
 import ProtectedRoute from './components/Common/ProtectedRoute';
+import PublicRoute from './components/Common/PublicRoute';
+import HybridRoute from './components/Common/HybridRoute';
 
 // Main App component
 function AppContent() {
@@ -101,10 +104,27 @@ function AppContent() {
           {/* Customer routes */}
           <Route path="/*" element={
             <Routes>
-              <Route path="" element={<CustomerHome />} />
+              <Route path="" element={
+                <HybridRoute redirectHomepageOnly={true}>
+                  <CustomerHome />
+                </HybridRoute>
+              } />
+              <Route path="dashboard" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.CUSTOMER]}>
+                  <CustomerDashboard />
+                </ProtectedRoute>
+              } />
               <Route path="menu" element={<CustomerMenu />} />
-              <Route path="cart" element={<CustomerCart />} />
-              <Route path="checkout" element={<CustomerCheckout />} />
+              <Route path="cart" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.CUSTOMER]}>
+                  <CustomerCart />
+                </ProtectedRoute>
+              } />
+              <Route path="checkout" element={
+                <ProtectedRoute allowedRoles={[USER_ROLES.CUSTOMER]}>
+                  <CustomerCheckout />
+                </ProtectedRoute>
+              } />
               <Route path="orders" element={
                 <ProtectedRoute allowedRoles={[USER_ROLES.CUSTOMER]}>
                   <CustomerOrders />

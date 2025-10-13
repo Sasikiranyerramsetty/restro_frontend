@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Mail, ArrowLeft, ChefHat } from 'lucide-react';
+import { Phone, ArrowLeft, ChefHat } from 'lucide-react';
 import { ROUTES } from '../../constants';
 import toast from 'react-hot-toast';
 
 const ForgotPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [isEmailSent, setIsEmailSent] = useState(false);
+  const [isSmsSent, setIsSmsSent] = useState(false);
 
   const {
     register,
@@ -22,37 +22,37 @@ const ForgotPassword = () => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      toast.success('Password reset email sent! Check your inbox.');
-      setIsEmailSent(true);
+      toast.success('Password reset SMS sent! Check your phone.');
+      setIsSmsSent(true);
     } catch (error) {
-      toast.error('Failed to send reset email. Please try again.');
+      toast.error('Failed to send reset SMS. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (isEmailSent) {
+  if (isSmsSent) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           <div className="text-center">
             <div className="mx-auto h-16 w-16 bg-green-500 rounded-full flex items-center justify-center">
-              <Mail className="h-8 w-8 text-white" />
+              <Phone className="h-8 w-8 text-white" />
             </div>
             <h2 className="mt-6 text-3xl font-bold text-gray-900">
-              Check Your Email
+              Check Your Phone
             </h2>
             <p className="mt-2 text-sm text-gray-600">
-              We've sent a password reset link to your email address.
+              We've sent a password reset SMS to your phone number.
             </p>
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <div className="text-center space-y-4">
               <p className="text-sm text-gray-600">
-                Didn't receive the email? Check your spam folder or{' '}
+                Didn't receive the SMS? Check your messages or{' '}
                 <button
-                  onClick={() => setIsEmailSent(false)}
+                  onClick={() => setIsSmsSent(false)}
                   className="text-primary-600 hover:text-primary-500 font-medium"
                 >
                   try again
@@ -85,35 +85,35 @@ const ForgotPassword = () => {
             Forgot Password?
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            No worries! Enter your email and we'll send you a reset link.
+            No worries! Enter your phone number and we'll send you a reset SMS.
           </p>
         </div>
 
         {/* Reset Form */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email Address
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+              Phone Number
             </label>
             <div className="mt-1 relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-gray-400" />
+                <Phone className="h-5 w-5 text-gray-400" />
               </div>
               <input
-                {...register('email', {
-                  required: 'Email is required',
+                {...register('phone', {
+                  required: 'Phone number is required',
                   pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Invalid email address'
+                    value: /^[\+]?[1-9][\d]{0,15}$/,
+                    message: 'Invalid phone number format'
                   }
                 })}
-                type="email"
+                type="tel"
                 className="input-field pl-10"
-                placeholder="Enter your email address"
+                placeholder="Enter your phone number"
               />
             </div>
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+            {errors.phone && (
+              <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
             )}
           </div>
 
@@ -130,7 +130,7 @@ const ForgotPassword = () => {
                   Sending...
                 </div>
               ) : (
-                'Send Reset Link'
+                'Send Reset SMS'
               )}
             </button>
           </div>
