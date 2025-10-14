@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Calendar, Plus, Search, Users, DollarSign, Clock, 
   CheckCircle, X, AlertCircle, Edit, Trash2, Eye, 
-  User, Phone, Mail, MapPin, Package, Star
+  User, Phone, Mail, MapPin, Star
 } from 'lucide-react';
 import AdminLayout from '../../components/Admin/AdminLayout';
 import eventService from '../../services/eventService';
@@ -25,8 +25,6 @@ const AdminEvents = () => {
     guests: '',
     customer: '',
     contact: '',
-    package: '',
-    cost: '',
     specialRequests: ''
   });
 
@@ -183,20 +181,12 @@ const AdminEvents = () => {
       Corporate: 'bg-blue-100 text-blue-800',
       Anniversary: 'bg-purple-100 text-purple-800',
       Wedding: 'bg-rose-100 text-rose-800',
-      Conference: 'bg-gray-100 text-gray-800'
+      Conference: 'bg-gray-100 text-gray-800',
+      Catering: 'bg-orange-100 text-orange-800'
     };
     return typeConfig[type] || 'bg-gray-100 text-gray-800';
   };
 
-  const getPackageBadge = (packageType) => {
-    const packageConfig = {
-      Standard: 'bg-gray-100 text-gray-800',
-      Premium: 'bg-yellow-100 text-yellow-800',
-      Romantic: 'bg-pink-100 text-pink-800',
-      Corporate: 'bg-blue-100 text-blue-800'
-    };
-    return packageConfig[packageType] || 'bg-gray-100 text-gray-800';
-  };
 
   const getStats = () => {
     const total = events.length;
@@ -226,8 +216,7 @@ const AdminEvents = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Event Management</h1>
-            <p className="text-gray-600 mt-1">Manage catering events and bookings</p>
+            <h1 className="text-4xl font-bold gradient-text restro-brand">Event Management</h1>
           </div>
           <button 
             onClick={handleAddEvent}
@@ -338,13 +327,7 @@ const AdminEvents = () => {
                     Guests
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Package
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Cost
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
@@ -385,18 +368,10 @@ const AdminEvents = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPackageBadge(event.package)}`}>
-                          {event.package}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${statusConfig.color}`}>
                           {statusConfig.icon}
                           <span className="ml-1 capitalize">{event.status}</span>
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ₹{event.cost.toLocaleString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center space-x-2">
@@ -482,6 +457,7 @@ const AdminEvents = () => {
                       <option value="Anniversary">Anniversary</option>
                       <option value="Wedding">Wedding</option>
                       <option value="Conference">Conference</option>
+                      <option value="Catering">Catering</option>
                     </select>
                   </div>
 
@@ -528,24 +504,6 @@ const AdminEvents = () => {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Package *
-                    </label>
-                    <select
-                      name="package"
-                      value={formData.package}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    >
-                      <option value="">Select Package</option>
-                      <option value="Standard">Standard</option>
-                      <option value="Premium">Premium</option>
-                      <option value="Romantic">Romantic</option>
-                      <option value="Corporate">Corporate</option>
-                    </select>
-                  </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -575,21 +533,6 @@ const AdminEvents = () => {
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Cost (₹) *
-                    </label>
-                    <input
-                      type="number"
-                      name="cost"
-                      value={formData.cost}
-                      onChange={handleInputChange}
-                      required
-                      min="0"
-                      step="0.01"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    />
-                  </div>
                 </div>
 
                 <div>

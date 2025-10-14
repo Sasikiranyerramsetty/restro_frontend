@@ -102,10 +102,10 @@ const ForgotPassword = () => {
               <input
                 {...register('phone', {
                   required: 'Phone number is required',
-                  pattern: {
-                    value: /^[\+]?[1-9][\d]{0,15}$/,
-                    message: 'Invalid phone number format'
-                  }
+                    pattern: {
+                      value: /^[+]?[1-9][\d]{0,15}$/,
+                      message: 'Invalid phone number format'
+                    }
                 })}
                 type="tel"
                 className="input-field pl-10"

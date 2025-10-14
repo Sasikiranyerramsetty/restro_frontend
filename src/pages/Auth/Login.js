@@ -85,23 +85,23 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 animate-fade-in">
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
-        <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-primary-500 rounded-full flex items-center justify-center">
+        <div className="text-center animate-slide-up">
+          <div className="mx-auto h-16 w-16 bg-primary-500 rounded-full flex items-center justify-center animate-bounce-in animate-float">
             <ChefHat className="h-8 w-8 text-white" />
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900 restro-brand">
-            Welcome Back
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
+            <h2 className="mt-6 text-4xl font-bold gradient-text restro-brand animate-slide-up animate-delay-200">
+              Welcome Back
+            </h2>
+          <p className="mt-2 text-sm text-gray-600 animate-slide-up animate-delay-300">
             Sign in to your restaurant account
           </p>
         </div>
 
         {/* Login Form */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+        <div className="modal-content rounded-2xl p-8 animate-slide-up animate-delay-400 hover:shadow-2xl transition-all duration-500">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div className="space-y-4">
             {/* Phone Field */}
@@ -117,7 +117,7 @@ const Login = () => {
                   {...register('phone', {
                     required: 'Phone number is required',
                     pattern: {
-                      value: /^[\+]?[1-9][\d]{0,15}$/,
+                      value: /^[+]?[1-9][\d]{0,15}$/,
                       message: 'Invalid phone number format'
                     }
                   })}

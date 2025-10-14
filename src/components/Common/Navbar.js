@@ -50,7 +50,6 @@ const Navbar = () => {
           { name: 'Orders', path: ROUTES.ADMIN_ORDERS, icon: <ShoppingBag className="h-4 w-4" /> },
           { name: 'Employees', path: ROUTES.ADMIN_EMPLOYEES, icon: <Users className="h-4 w-4" /> },
           { name: 'Customers', path: ROUTES.ADMIN_CUSTOMERS, icon: <UserCheck className="h-4 w-4" /> },
-          { name: 'Inventory', path: ROUTES.ADMIN_INVENTORY, icon: <Package className="h-4 w-4" /> },
           { name: 'Reports', path: ROUTES.ADMIN_REPORTS, icon: <FileText className="h-4 w-4" /> },
           { name: 'Tables', path: ROUTES.ADMIN_TABLES, icon: <MapPin className="h-4 w-4" /> },
           { name: 'Events', path: ROUTES.ADMIN_EVENTS, icon: <Calendar className="h-4 w-4" /> }
@@ -81,7 +80,7 @@ const Navbar = () => {
   const navigationItems = getNavigationItems();
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200">
+    <nav className="bg-gradient-to-r from-blue-600 via-blue-800 to-gray-900 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center h-20">
           {/* Logo */}
@@ -90,20 +89,20 @@ const Navbar = () => {
               getUserRole() === USER_ROLES.EMPLOYEE ? ROUTES.EMPLOYEE_DASHBOARD : ROUTES.CUSTOMER_HOME) : ROUTES.CUSTOMER_HOME} 
               className="flex items-center space-x-2"
             >
-              <div className="h-10 w-10 bg-primary-500 rounded-lg flex items-center justify-center">
-                <ChefHat className="h-6 w-6 text-white" />
+              <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center">
+                <ChefHat className="h-6 w-6 text-blue-600" />
               </div>
-              <span className="text-2xl font-bold text-gray-900 restro-brand">RESTRO</span>
+              <span className="text-2xl font-bold text-white restro-brand">RESTRO</span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8 flex-1">
+          <div className="hidden md:flex items-center space-x-1 flex-1">
             {navigationItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.path}
-                className="flex items-center space-x-2 text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+                className="flex items-center space-x-2 text-white hover:bg-white/10 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 hover:shadow-lg backdrop-blur-sm"
               >
                 {item.icon}
                 <span>{item.name}</span>
@@ -116,26 +115,26 @@ const Navbar = () => {
             <div className="relative">
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex items-center space-x-2 text-gray-700 hover:text-primary-600 transition-colors duration-200"
+                className="flex items-center space-x-2 text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300"
               >
-                <div className="h-9 w-9 bg-primary-100 rounded-full flex items-center justify-center">
-                  <User className="h-5 w-5 text-primary-600" />
+                <div className="h-9 w-9 bg-white rounded-full flex items-center justify-center">
+                  <User className="h-5 w-5 text-blue-600" />
                 </div>
-                <span className="text-base font-medium">{user?.name}</span>
+                <span className="text-sm font-semibold">{user?.name}</span>
               </button>
 
               {/* Profile Dropdown */}
               {isProfileOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
                   <div className="py-1">
-                    <div className="px-4 py-2 text-base text-gray-700 border-b border-gray-200">
-                      <p className="font-medium">{user?.name}</p>
-                      <p className="text-gray-500">{user?.email}</p>
-                      <p className="text-sm text-primary-600 capitalize">{user?.role}</p>
+                    <div className="px-4 py-3 text-sm text-gray-700 border-b border-gray-200">
+                      <p className="font-semibold text-gray-900">{user?.name}</p>
+                      <p className="text-gray-500 text-xs mt-1">{user?.email}</p>
+                      <p className="text-xs text-blue-600 capitalize mt-1 font-medium">{user?.role}</p>
                     </div>
                     <button
                       onClick={handleLogout}
-                      className="flex items-center w-full px-4 py-2 text-base text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
                     >
                       <LogOut className="h-4 w-4 mr-2" />
                       Logout
@@ -150,7 +149,7 @@ const Navbar = () => {
           <div className="md:hidden ml-auto">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-700 hover:text-primary-600 transition-colors duration-200"
+              className="text-white hover:bg-white/10 p-2 rounded-lg transition-all duration-300"
             >
               {isMenuOpen ? (
                 <X className="h-7 w-7" />
@@ -164,12 +163,12 @@ const Navbar = () => {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 border-t border-gray-200">
+            <div className="px-2 pt-2 pb-3 space-y-1 border-t border-white/10">
               {navigationItems.map((item) => (
                 <Link
                   key={item.name}
                   to={item.path}
-                  className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md text-base font-medium transition-colors duration-200"
+                  className="flex items-center space-x-3 px-3 py-2 text-white hover:bg-white/10 rounded-lg text-sm font-semibold transition-all duration-300"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.icon}
@@ -178,19 +177,19 @@ const Navbar = () => {
               ))}
               
               {/* Mobile User Info */}
-              <div className="px-3 py-2 border-t border-gray-200">
+              <div className="px-3 py-2 border-t border-white/10 mt-2">
                 <div className="flex items-center space-x-3">
-                  <div className="h-9 w-9 bg-primary-100 rounded-full flex items-center justify-center">
-                    <User className="h-5 w-5 text-primary-600" />
+                  <div className="h-9 w-9 bg-white rounded-full flex items-center justify-center">
+                    <User className="h-5 w-5 text-blue-600" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-base font-medium text-gray-900">{user?.name}</p>
-                    <p className="text-sm text-gray-500">{user?.email}</p>
+                    <p className="text-sm font-semibold text-white">{user?.name}</p>
+                    <p className="text-xs text-white/70">{user?.email}</p>
                   </div>
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center w-full mt-3 px-3 py-2 text-base text-gray-700 hover:bg-gray-100 rounded-md transition-colors duration-200"
+                  className="flex items-center w-full mt-3 px-3 py-2 text-sm text-white hover:bg-white/10 rounded-lg transition-all duration-300"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout

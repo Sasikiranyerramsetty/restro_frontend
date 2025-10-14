@@ -94,11 +94,10 @@ const AdminCustomers = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 animate-fade-in">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Customer Management</h1>
-          <p className="text-gray-600 mt-1">Manage your restaurant's customer base</p>
+        <div className="animate-slide-up">
+          <h1 className="text-4xl font-bold gradient-text restro-brand">Customer Management</h1>
         </div>
 
         {/* Stats Cards */}

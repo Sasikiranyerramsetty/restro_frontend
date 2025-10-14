@@ -267,16 +267,15 @@ const AdminEmployees = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 animate-fade-in">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between animate-slide-up">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Employee Management</h1>
-            <p className="text-gray-600 mt-1">Manage your restaurant staff</p>
+            <h1 className="text-4xl font-bold gradient-text restro-brand">Employee Management</h1>
           </div>
           <button 
             onClick={handleAddEmployee}
-            className="btn-primary flex items-center mt-4 sm:mt-0"
+            className="btn-primary flex items-center mt-4 sm:mt-0 hover:scale-105 transition-transform duration-300"
           >
             <Plus className="h-5 w-5 mr-2" />
             Add Employee
@@ -284,7 +283,7 @@ const AdminEmployees = () => {
         </div>
 
         {/* Search and Filter */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="card animate-slide-up animate-delay-200">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">

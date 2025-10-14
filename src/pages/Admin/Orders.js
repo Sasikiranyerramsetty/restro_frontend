@@ -107,36 +107,35 @@ const AdminOrders = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 animate-fade-in">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between animate-slide-up">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Order Management</h1>
-            <p className="text-gray-600 mt-1">Manage and track all restaurant orders</p>
+            <h1 className="text-4xl font-bold gradient-text restro-brand">Order Management</h1>
           </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="card animate-slide-up hover:scale-105 transition-transform duration-300" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <ShoppingBag className="h-6 w-6 text-blue-600" />
+              <div className="p-3 bg-blue-100 rounded-xl animate-float">
+                <ShoppingBag className="h-7 w-7 text-blue-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Orders</p>
+                <p className="text-sm font-semibold text-gray-600">Total Orders</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.totalOrders}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card animate-slide-up hover:scale-105 transition-transform duration-300" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <Clock className="h-6 w-6 text-orange-600" />
+              <div className="p-3 bg-orange-100 rounded-xl animate-float" style={{ animationDelay: '0.7s' }}>
+                <Clock className="h-7 w-7 text-orange-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Active Orders</p>
+                <p className="text-sm font-semibold text-gray-600">Active Orders</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {stats.pendingOrders + stats.preparingOrders + stats.readyOrders}
                 </p>
@@ -144,49 +143,37 @@ const AdminOrders = () => {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card animate-slide-up hover:scale-105 transition-transform duration-300" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <DollarSign className="h-6 w-6 text-green-600" />
+              <div className="p-3 bg-green-100 rounded-xl animate-float" style={{ animationDelay: '0.8s' }}>
+                <DollarSign className="h-7 w-7 text-green-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Today's Revenue</p>
+                <p className="text-sm font-semibold text-gray-600">Today's Revenue</p>
                 <p className="text-2xl font-bold text-gray-900">₹{stats.todayRevenue?.toLocaleString()}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card animate-slide-up hover:scale-105 transition-transform duration-300" style={{ animationDelay: '0.4s' }}>
             <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Package className="h-6 w-6 text-purple-600" />
+              <div className="p-3 bg-cyan-100 rounded-xl animate-float" style={{ animationDelay: '0.9s' }}>
+                <Monitor className="h-7 w-7 text-cyan-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Avg Order Value</p>
-                <p className="text-2xl font-bold text-gray-900">₹{stats.averageOrderValue?.toFixed(0)}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-cyan-100 rounded-lg">
-                <Monitor className="h-6 w-6 text-cyan-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Online Orders</p>
+                <p className="text-sm font-semibold text-gray-600">Online Orders</p>
                 <p className="text-2xl font-bold text-gray-900">{onlineOrders.length}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card animate-slide-up hover:scale-105 transition-transform duration-300" style={{ animationDelay: '0.5s' }}>
             <div className="flex items-center">
-              <div className="p-2 bg-amber-100 rounded-lg">
-                <Utensils className="h-6 w-6 text-amber-600" />
+              <div className="p-3 bg-amber-100 rounded-xl animate-float" style={{ animationDelay: '1.0s' }}>
+                <Utensils className="h-7 w-7 text-amber-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Table Orders</p>
+                <p className="text-sm font-semibold text-gray-600">Table Orders</p>
                 <p className="text-2xl font-bold text-gray-900">{tableOrders.length}</p>
               </div>
             </div>
@@ -194,7 +181,7 @@ const AdminOrders = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="card animate-slide-up animate-delay-200">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -274,30 +261,30 @@ const AdminOrders = () => {
         </div>
 
         {/* Orders Table */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="card overflow-hidden animate-slide-up animate-delay-300">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+              <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="table-header">
                     Order Details
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="table-header">
                     Customer
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="table-header">
                     {activeTab === 'table' ? 'Table' : activeTab === 'online' ? 'Order Type' : 'Table/Type'}
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="table-header">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="table-header">
                     Payment
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="table-header">
                     Total
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="table-header">
                     Actions
                   </th>
                 </tr>
@@ -306,21 +293,21 @@ const AdminOrders = () => {
                 {filteredOrders.map((order) => {
                   const statusConfig = getStatusBadge(order.status);
                   return (
-                    <tr key={order.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                    <tr key={order.id} className="hover:bg-gray-50 transition-colors duration-200">
+                      <td className="table-cell">
                         <div>
                           <div className="text-sm font-medium text-gray-900">{order.orderNumber}</div>
                           <div className="text-sm text-gray-500">{order.orderDate} at {order.orderTime}</div>
                           <div className="text-xs text-gray-400">{order.items.length} items</div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="table-cell">
                         <div>
                           <div className="text-sm font-medium text-gray-900">{order.customerName}</div>
                           <div className="text-sm text-gray-500">{order.customerPhone}</div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="table-cell">
                         <div>
                           {activeTab === 'table' ? (
                             <>
@@ -355,7 +342,7 @@ const AdminOrders = () => {
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="table-cell">
                         <div className="flex items-center space-x-2">
                           <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${statusConfig.color}`}>
                             {statusConfig.icon}
@@ -363,7 +350,7 @@ const AdminOrders = () => {
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="table-cell">
                         <div>
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPaymentStatusBadge(order.paymentStatus)}`}>
                             {order.paymentStatus}

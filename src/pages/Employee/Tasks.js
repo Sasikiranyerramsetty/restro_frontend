@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  CheckSquare, Plus, Search, Filter, Clock, AlertCircle, 
+  CheckSquare, Plus, Search, Clock, AlertCircle, 
   CheckCircle, X, User, Calendar, MapPin, Package, 
   Utensils, Trash2, Edit, Eye
 } from 'lucide-react';
 import EmployeeLayout from '../../components/Employee/EmployeeLayout';
+import AddTaskModal from '../../components/Employee/AddTaskModal';
+import taskService from '../../services/taskService';
 import { formatDate } from '../../utils';
+import toast from 'react-hot-toast';
 
 const EmployeeTasks = () => {
   const [tasks, setTasks] = useState([]);
@@ -13,169 +16,74 @@ const EmployeeTasks = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Mock data for employee tasks
-    const mockTasks = [
-      {
-        id: 1,
-        title: 'Clean Table 5',
-        description: 'Clean and set up table 5 for next customers. Ensure all cutlery and napkins are properly arranged.',
-        priority: 'high',
-        status: 'pending',
-        category: 'cleaning',
-        assignedBy: 'Manager John',
-        assignedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        dueTime: '14:30',
-        estimatedDuration: '15 mins',
-        location: 'Main Dining Area',
-        tableNumber: 'T5',
-        notes: 'Customer complained about cleanliness'
-      },
-      {
-        id: 2,
-        title: 'Check Inventory - Popular Items',
-        description: 'Check stock levels for popular items: Chicken Biryani, Mutton Curry, Paneer Tikka, and Dal Makhani.',
-        priority: 'medium',
-        status: 'completed',
-        category: 'inventory',
-        assignedBy: 'Chef Sarah',
-        assignedAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-        dueTime: '12:00',
-        estimatedDuration: '20 mins',
-        location: 'Kitchen',
-        completedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-        notes: 'All items well stocked'
-      },
-      {
-        id: 3,
-        title: 'Prepare Order ORD-003',
-        description: 'Prepare takeaway order for customer Mike Wilson. Items: Chicken Biryani (1), Butter Chicken (1).',
-        priority: 'high',
-        status: 'in_progress',
-        category: 'order_preparation',
-        assignedBy: 'Kitchen Manager',
-        assignedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-        dueTime: '15:00',
-        estimatedDuration: '25 mins',
-        location: 'Kitchen',
-        orderNumber: 'ORD-003',
-        notes: 'Customer pickup at 8:30 PM'
-      },
-      {
-        id: 4,
-        title: 'Restock Napkins - Section A',
-        description: 'Restock napkins in Section A (Tables 1-8). Check all tables and ensure adequate supply.',
-        priority: 'low',
-        status: 'pending',
-        category: 'restocking',
-        assignedBy: 'Supervisor Mike',
-        assignedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-        dueTime: '16:00',
-        estimatedDuration: '10 mins',
-        location: 'Section A',
-        notes: 'Low stock reported'
-      },
-      {
-        id: 5,
-        title: 'Customer Service - Table 7',
-        description: 'Check on customers at Table 7. They seem to be waiting for their order for a while.',
-        priority: 'high',
-        status: 'completed',
-        category: 'customer_service',
-        assignedBy: 'Manager John',
-        assignedAt: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-        dueTime: '13:45',
-        estimatedDuration: '5 mins',
-        location: 'Table 7',
-        completedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-        notes: 'Order was delayed, offered complimentary dessert'
-      },
-      {
-        id: 6,
-        title: 'Clean Kitchen Equipment',
-        description: 'Clean and sanitize all kitchen equipment. Focus on grills and fryers.',
-        priority: 'medium',
-        status: 'pending',
-        category: 'cleaning',
-        assignedBy: 'Chef Sarah',
-        assignedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-        dueTime: '17:00',
-        estimatedDuration: '30 mins',
-        location: 'Kitchen',
-        notes: 'End of shift cleaning'
-      },
-      {
-        id: 7,
-        title: 'Update Menu Board',
-        description: 'Update the daily specials on the menu board. Today\'s special: RESTRO Special Thali.',
-        priority: 'low',
-        status: 'in_progress',
-        category: 'maintenance',
-        assignedBy: 'Manager John',
-        assignedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-        dueTime: '14:00',
-        estimatedDuration: '10 mins',
-        location: 'Entrance',
-        notes: 'Include price and description'
-      },
-      {
-        id: 8,
-        title: 'Check Payment Terminal',
-        description: 'Test all payment terminals to ensure they are working properly. Check card and UPI payments.',
-        priority: 'medium',
-        status: 'pending',
-        category: 'maintenance',
-        assignedBy: 'IT Support',
-        assignedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        dueTime: '15:30',
-        estimatedDuration: '15 mins',
-        location: 'Cash Counter',
-        notes: 'Customer reported payment issue'
-      },
-      {
-        id: 9,
-        title: 'Prepare Birthday Setup - Table 3',
-        description: 'Set up birthday celebration for customer at Table 3. Decorate table and prepare cake.',
-        priority: 'high',
-        status: 'completed',
-        category: 'special_events',
-        assignedBy: 'Manager John',
-        assignedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        dueTime: '13:00',
-        estimatedDuration: '20 mins',
-        location: 'Table 3',
-        completedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-        notes: 'Customer very happy with setup'
-      },
-      {
-        id: 10,
-        title: 'Inventory Count - Beverages',
-        description: 'Count all beverage items including soft drinks, juices, and water bottles.',
-        priority: 'low',
-        status: 'pending',
-        category: 'inventory',
-        assignedBy: 'Supervisor Mike',
-        assignedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-        dueTime: '18:00',
-        estimatedDuration: '25 mins',
-        location: 'Storage Room',
-        notes: 'Weekly inventory check'
-      }
-    ];
-
-    const mockStats = {
-      totalTasks: 10,
-      pendingTasks: 5,
-      inProgressTasks: 2,
-      completedTasks: 3,
-      highPriorityTasks: 4,
-      overdueTasks: 1
-    };
-
-    setTasks(mockTasks);
-    setStats(mockStats);
+    loadTasks();
   }, []);
+
+  const loadTasks = async () => {
+    setIsLoading(true);
+    try {
+      const [tasksResult, statsResult] = await Promise.all([
+        taskService.getTasks(),
+        taskService.getTaskStats()
+      ]);
+
+      if (tasksResult.success) {
+        setTasks(tasksResult.data);
+      }
+      if (statsResult.success) {
+        setStats(statsResult.data);
+      }
+    } catch (error) {
+      toast.error('Failed to load tasks');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleTaskAdded = (newTask) => {
+    setTasks(prev => [newTask, ...prev]);
+    // Update stats
+    setStats(prev => ({
+      ...prev,
+      totalTasks: prev.totalTasks + 1,
+      pendingTasks: prev.pendingTasks + 1
+    }));
+  };
+
+  const handleTaskStatusUpdate = async (taskId, newStatus) => {
+    try {
+      const result = await taskService.updateTaskStatus(taskId, newStatus);
+      if (result.success) {
+        setTasks(prev => prev.map(task => 
+          task.id === taskId ? { ...task, status: newStatus, completedAt: newStatus === 'completed' ? new Date().toISOString() : task.completedAt } : task
+        ));
+        
+        // Update stats
+        setStats(prev => {
+          const newStats = { ...prev };
+          if (newStatus === 'completed') {
+            newStats.completedTasks += 1;
+            if (prev.pendingTasks > 0) newStats.pendingTasks -= 1;
+            if (prev.inProgressTasks > 0) newStats.inProgressTasks -= 1;
+          } else if (newStatus === 'in_progress') {
+            newStats.inProgressTasks += 1;
+            if (prev.pendingTasks > 0) newStats.pendingTasks -= 1;
+          }
+          return newStats;
+        });
+        
+        toast.success(`Task marked as ${newStatus.replace('_', ' ')}`);
+      } else {
+        toast.error(result.error || 'Failed to update task status');
+      }
+    } catch (error) {
+      toast.error('Failed to update task status');
+    }
+  };
 
   const filteredTasks = tasks.filter(task => {
     const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -218,16 +126,29 @@ const EmployeeTasks = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <EmployeeLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+        </div>
+      </EmployeeLayout>
+    );
+  }
+
   return (
     <EmployeeLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 animate-fade-in">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">My Tasks</h1>
             <p className="text-gray-600 mt-1">View and manage your assigned tasks</p>
           </div>
-          <button className="btn-primary flex items-center">
+          <button 
+            onClick={() => setIsAddModalOpen(true)}
+            className="btn-primary flex items-center hover:scale-105 transition-transform duration-300"
+          >
             <Plus className="h-5 w-5 mr-2" />
             Add Task
           </button>
@@ -412,12 +333,18 @@ const EmployeeTasks = () => {
                   </span>
                   <div className="flex space-x-2">
                     {task.status === 'pending' && (
-                      <button className="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded hover:bg-blue-200 transition-colors">
+                      <button 
+                        onClick={() => handleTaskStatusUpdate(task.id, 'in_progress')}
+                        className="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded hover:bg-blue-200 transition-colors"
+                      >
                         Start Task
                       </button>
                     )}
                     {task.status === 'in_progress' && (
-                      <button className="text-xs bg-green-100 text-green-600 px-3 py-1 rounded hover:bg-green-200 transition-colors">
+                      <button 
+                        onClick={() => handleTaskStatusUpdate(task.id, 'completed')}
+                        className="text-xs bg-green-100 text-green-600 px-3 py-1 rounded hover:bg-green-200 transition-colors"
+                      >
                         Complete Task
                       </button>
                     )}
@@ -431,6 +358,13 @@ const EmployeeTasks = () => {
             );
           })}
         </div>
+
+        {/* Add Task Modal */}
+        <AddTaskModal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          onTaskAdded={handleTaskAdded}
+        />
       </div>
     </EmployeeLayout>
   );

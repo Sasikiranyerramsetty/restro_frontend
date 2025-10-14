@@ -6,7 +6,6 @@ import {
   Clock, 
   MapPin, 
   Phone, 
-  Mail, 
   ArrowRight,
   Users,
   Calendar,
@@ -71,30 +70,31 @@ const CustomerHome = () => {
   return (
     <CustomerLayout>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-primary-600 to-primary-700 text-white">
+      <section className="relative bg-gradient-to-r from-primary-600 to-primary-700 text-white overflow-hidden">
         <div className="absolute inset-0 bg-black opacity-20"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-primary-600/50 to-primary-700/50 animate-pulse-slow"></div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 restro-brand">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 restro-brand animate-fade-in animate-float">
               Welcome to RESTRO
             </h1>
-            <p className="text-xl md:text-2xl mb-8 text-primary-100">
+            <p className="text-xl md:text-2xl mb-8 text-primary-100 animate-slide-up animate-delay-200">
               Experience authentic flavors and warm hospitality in the heart of the city
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up animate-delay-400">
               <Link
                 to={ROUTES.CUSTOMER_MENU}
-                className="btn-primary bg-white text-primary-600 hover:bg-gray-100 inline-flex items-center justify-center"
+                className="btn-primary bg-white text-primary-600 hover:bg-gray-100 inline-flex items-center justify-center hover:scale-105 transition-transform duration-300"
               >
                 View Menu
-                <ArrowRight className="ml-2 h-5 w-5" />
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
               </Link>
               <Link
                 to={ROUTES.CUSTOMER_RESERVATIONS}
-                className="btn-outline border-white text-white hover:bg-white hover:text-primary-600 inline-flex items-center justify-center"
+                className="btn-outline border-white text-white hover:bg-white hover:text-primary-600 inline-flex items-center justify-center hover:scale-105 transition-transform duration-300"
               >
                 Make Reservation
-                <Calendar className="ml-2 h-5 w-5" />
+                <Calendar className="ml-2 h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
               </Link>
             </div>
           </div>

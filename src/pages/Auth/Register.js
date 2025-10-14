@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Eye, EyeOff, Mail, Lock, User, Phone, ChefHat } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { ROUTES, USER_ROLES } from '../../constants';
+import { ROUTES } from '../../constants';
 import toast from 'react-hot-toast';
 
 const Register = () => {
@@ -100,7 +100,7 @@ const Register = () => {
                   {...register('phone', {
                     required: 'Phone number is required',
                     pattern: {
-                      value: /^[\+]?[1-9][\d]{0,15}$/,
+                      value: /^[+]?[1-9][\d]{0,15}$/,
                       message: 'Invalid phone number format'
                     }
                   })}
@@ -226,13 +226,13 @@ const Register = () => {
             />
             <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
               I agree to the{' '}
-              <a href="#" className="text-primary-600 hover:text-primary-500">
+              <button type="button" className="text-primary-600 hover:text-primary-500 underline">
                 Terms and Conditions
-              </a>{' '}
+              </button>{' '}
               and{' '}
-              <a href="#" className="text-primary-600 hover:text-primary-500">
+              <button type="button" className="text-primary-600 hover:text-primary-500 underline">
                 Privacy Policy
-              </a>
+              </button>
             </label>
           </div>
 

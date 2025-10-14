@@ -10,13 +10,13 @@ import {
   UserPlus
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { ROUTES, USER_ROLES } from '../../constants';
+import { ROUTES } from '../../constants';
 import toast from 'react-hot-toast';
 
 const CustomerNavbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const { user, logout, getUserRole } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {

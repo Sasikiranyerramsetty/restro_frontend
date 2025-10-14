@@ -165,14 +165,32 @@ const AdminMenu = () => {
 
   const getCategoryBadge = (category) => {
     const colors = {
-      biryanis: 'bg-blue-100 text-blue-800',
+      starters: 'bg-orange-100 text-orange-800',
+      rotis: 'bg-amber-100 text-amber-800',
       curries: 'bg-green-100 text-green-800',
-      restro_specials: 'bg-purple-100 text-purple-800',
-      appetizers: 'bg-yellow-100 text-yellow-800',
+      biryanis: 'bg-blue-100 text-blue-800',
+      'restro-specials': 'bg-purple-100 text-purple-800',
+      meals: 'bg-indigo-100 text-indigo-800',
       beverages: 'bg-cyan-100 text-cyan-800',
-      desserts: 'bg-pink-100 text-pink-800'
+      icecreams: 'bg-pink-100 text-pink-800',
+      'family-pack-biryanis': 'bg-red-100 text-red-800'
     };
     return colors[category] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getCategoryDisplayName = (category) => {
+    const displayNames = {
+      starters: 'Starters',
+      rotis: 'Rotis',
+      curries: 'Curries',
+      biryanis: 'Biryanis',
+      'restro-specials': 'Restro Specials',
+      meals: 'Meals',
+      beverages: 'Beverages',
+      icecreams: 'Ice Creams',
+      'family-pack-biryanis': 'Family Pack Biryanis'
+    };
+    return displayNames[category] || category;
   };
 
   if (loading) {
@@ -187,16 +205,15 @@ const AdminMenu = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 animate-fade-in">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between animate-slide-up">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Menu Management</h1>
-            <p className="text-gray-600 mt-1">Manage your restaurant menu items and categories</p>
+            <h1 className="text-4xl font-bold gradient-text restro-brand">Menu Management</h1>
           </div>
           <button 
             onClick={handleAddItem}
-            className="btn-primary flex items-center"
+            className="btn-primary flex items-center hover:scale-105 transition-transform duration-300"
           >
             <Plus className="h-5 w-5 mr-2" />
             Add Menu Item
@@ -205,49 +222,49 @@ const AdminMenu = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card animate-slide-up hover:scale-105 transition-transform duration-300" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Package className="h-6 w-6 text-blue-600" />
+              <div className="p-3 bg-blue-100 rounded-xl animate-float">
+                <Package className="h-7 w-7 text-blue-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Items</p>
+                <p className="text-sm font-semibold text-gray-600">Total Items</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.totalItems}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card animate-slide-up hover:scale-105 transition-transform duration-300" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-green-600" />
+              <div className="p-3 bg-green-100 rounded-xl animate-float" style={{ animationDelay: '0.7s' }}>
+                <CheckCircle className="h-7 w-7 text-green-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Available</p>
+                <p className="text-sm font-semibold text-gray-600">Available</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.availableItems}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card animate-slide-up hover:scale-105 transition-transform duration-300" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <DollarSign className="h-6 w-6 text-yellow-600" />
+              <div className="p-3 bg-yellow-100 rounded-xl animate-float" style={{ animationDelay: '0.8s' }}>
+                <DollarSign className="h-7 w-7 text-yellow-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Revenue</p>
+                <p className="text-sm font-semibold text-gray-600">Total Revenue</p>
                 <p className="text-2xl font-bold text-gray-900">₹{stats.totalRevenue?.toLocaleString()}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card animate-slide-up hover:scale-105 transition-transform duration-300" style={{ animationDelay: '0.4s' }}>
             <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Star className="h-6 w-6 text-purple-600" />
+              <div className="p-3 bg-purple-100 rounded-xl animate-float" style={{ animationDelay: '0.9s' }}>
+                <Star className="h-7 w-7 text-purple-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Avg Rating</p>
+                <p className="text-sm font-semibold text-gray-600">Avg Rating</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.averageRating}</p>
               </div>
             </div>
@@ -255,7 +272,7 @@ const AdminMenu = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="card animate-slide-up animate-delay-200">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -276,11 +293,15 @@ const AdminMenu = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               >
                 <option value="all">All Categories</option>
-                {categories.map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
+                <option value="starters">Starters</option>
+                <option value="rotis">Rotis</option>
+                <option value="curries">Curries</option>
+                <option value="biryanis">Biryanis</option>
+                <option value="restro-specials">Restro Specials</option>
+                <option value="meals">Meals</option>
+                <option value="beverages">Beverages</option>
+                <option value="icecreams">Ice Creams</option>
+                <option value="family-pack-biryanis">Family Pack Biryanis</option>
               </select>
             </div>
           </div>
@@ -328,7 +349,7 @@ const AdminMenu = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getCategoryBadge(item.category)}`}>
-                        {categories.find(cat => cat.id === item.category)?.name || item.category}
+                        {getCategoryDisplayName(item.category)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -432,11 +453,15 @@ const AdminMenu = () => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     >
                       <option value="">Select Category</option>
-                      {categories.map(category => (
-                        <option key={category.id} value={category.id}>
-                          {category.name}
-                        </option>
-                      ))}
+                      <option value="starters">Starters</option>
+                      <option value="rotis">Rotis</option>
+                      <option value="curries">Curries</option>
+                      <option value="biryanis">Biryanis</option>
+                      <option value="restro-specials">Restro Specials</option>
+                      <option value="meals">Meals</option>
+                      <option value="beverages">Beverages</option>
+                      <option value="icecreams">Ice Creams</option>
+                      <option value="family-pack-biryanis">Family Pack Biryanis</option>
                     </select>
                   </div>
 
@@ -451,8 +476,14 @@ const AdminMenu = () => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     >
                       <option value="">Select Subcategory</option>
-                      <option value="Vegetarian">Vegetarian</option>
-                      <option value="Non-Vegetarian">Non-Vegetarian</option>
+                      {formData.category === 'rotis' || formData.category === 'beverages' || formData.category === 'icecreams' ? (
+                        <option value="veg">Veg</option>
+                      ) : (
+                        <>
+                          <option value="vegetarian">Vegetarian</option>
+                          <option value="non-vegetarian">Non-Vegetarian</option>
+                        </>
+                      )}
                     </select>
                   </div>
 

@@ -195,8 +195,7 @@ const AdminTables = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Table Management</h1>
-            <p className="text-gray-600 mt-1">Manage restaurant tables and reservations</p>
+            <h1 className="text-4xl font-bold gradient-text restro-brand">Table Management</h1>
           </div>
           <button 
             onClick={handleAddTable}

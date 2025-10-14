@@ -96,8 +96,7 @@ const AdminReports = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Reports & Analytics</h1>
-            <p className="text-gray-600 mt-1">Comprehensive business insights and performance metrics</p>
+            <h1 className="text-4xl font-bold gradient-text restro-brand">Reports & Analytics</h1>
           </div>
           <div className="flex items-center space-x-3">
             <button

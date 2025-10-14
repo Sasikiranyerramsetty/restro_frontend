@@ -68,7 +68,6 @@ export const ROUTES = {
   ADMIN_ORDERS: '/admin/orders',
   ADMIN_EMPLOYEES: '/admin/employees',
   ADMIN_CUSTOMERS: '/admin/customers',
-  ADMIN_INVENTORY: '/admin/inventory',
   ADMIN_REPORTS: '/admin/reports',
   ADMIN_TABLES: '/admin/tables',
   ADMIN_EVENTS: '/admin/events',
@@ -87,6 +86,7 @@ export const ROUTES = {
   // Employee Routes
   EMPLOYEE_DASHBOARD: '/employee/dashboard',
   EMPLOYEE_ORDERS: '/employee/orders',
+  EMPLOYEE_ORDER_TAKING: '/employee/order-taking',
   EMPLOYEE_TABLES: '/employee/tables',
   EMPLOYEE_TASKS: '/employee/tasks',
   EMPLOYEE_SHIFTS: '/employee/shifts'

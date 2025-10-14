@@ -15,7 +15,6 @@ import AdminMenu from './pages/Admin/Menu';
 import AdminOrders from './pages/Admin/Orders';
 import AdminEmployees from './pages/Admin/Employees';
 import AdminCustomers from './pages/Admin/Customers';
-import AdminInventory from './pages/Admin/Inventory';
 import AdminReports from './pages/Admin/Reports';
 import AdminTables from './pages/Admin/Tables';
 import AdminEvents from './pages/Admin/Events';
@@ -34,6 +33,7 @@ import CustomerProfile from './pages/Customer/Profile';
 // Employee pages
 import EmployeeDashboard from './pages/Employee/Dashboard';
 import EmployeeOrders from './pages/Employee/Orders';
+import EmployeeOrderTaking from './pages/Employee/OrderTaking';
 import EmployeeTables from './pages/Employee/Tables';
 import EmployeeTasks from './pages/Employee/Tasks';
 import EmployeeShifts from './pages/Employee/Shifts';
@@ -41,7 +41,6 @@ import EmployeeShifts from './pages/Employee/Shifts';
 // Common components
 import LoadingSpinner from './components/Common/LoadingSpinner';
 import ProtectedRoute from './components/Common/ProtectedRoute';
-import PublicRoute from './components/Common/PublicRoute';
 import HybridRoute from './components/Common/HybridRoute';
 
 // Main App component
@@ -78,7 +77,6 @@ function AppContent() {
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="employees" element={<AdminEmployees />} />
                 <Route path="customers" element={<AdminCustomers />} />
-                <Route path="inventory" element={<AdminInventory />} />
                 <Route path="reports" element={<AdminReports />} />
                 <Route path="tables" element={<AdminTables />} />
                 <Route path="events" element={<AdminEvents />} />
@@ -92,6 +90,7 @@ function AppContent() {
             <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYEE]}>
               <Routes>
                 <Route path="dashboard" element={<EmployeeDashboard />} />
+                <Route path="order-taking" element={<EmployeeOrderTaking />} />
                 <Route path="orders" element={<EmployeeOrders />} />
                 <Route path="tables" element={<EmployeeTables />} />
                 <Route path="tasks" element={<EmployeeTasks />} />

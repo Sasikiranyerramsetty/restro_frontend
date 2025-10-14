@@ -9,7 +9,6 @@ import {
   Save, 
   X,
   Star,
-  Clock,
   ShoppingBag,
   Heart,
   Bell,
@@ -137,16 +136,16 @@ const CustomerProfile = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 animate-fade-in">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between animate-slide-up">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 restro-brand">My Profile</h1>
             <p className="text-gray-600 mt-1">Manage your account settings and preferences</p>
           </div>
           <button
             onClick={() => setIsEditing(!isEditing)}
-            className="btn-outline flex items-center"
+            className="btn-outline flex items-center hover:scale-105 transition-transform duration-300"
           >
             {isEditing ? (
               <>
@@ -163,9 +162,9 @@ const CustomerProfile = () => {
         </div>
 
         {/* Profile Overview Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-slide-up animate-delay-200 hover:shadow-lg transition-shadow duration-300">
           <div className="flex items-center space-x-6">
-            <div className="h-20 w-20 bg-primary-100 rounded-full flex items-center justify-center">
+            <div className="h-20 w-20 bg-primary-100 rounded-full flex items-center justify-center animate-float">
               <User className="h-10 w-10 text-primary-600" />
             </div>
             <div className="flex-1">

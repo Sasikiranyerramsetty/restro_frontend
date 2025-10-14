@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { USER_ROLES, ROUTES } from '../constants';
 import authService from '../services/authService';
-import { getFromStorage, setToStorage, removeFromStorage } from '../utils';
+import { getFromStorage } from '../utils';
 
 // Initial state
 const initialState = {

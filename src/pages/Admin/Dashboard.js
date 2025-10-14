@@ -5,51 +5,30 @@ import {
   DollarSign, 
   TrendingUp,
   Clock,
-  ChefHat,
   Calendar,
   AlertTriangle,
   UserCheck,
   MapPin
 } from 'lucide-react';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  LineChart,
-  Line
-} from 'recharts';
 import { formatCurrency, formatDate } from '../../utils';
 import orderService from '../../services/orderService';
-import menuService from '../../services/menuService';
 import employeeService from '../../services/employeeService';
 import customerService from '../../services/customerService';
-import inventoryService from '../../services/inventoryService';
 import tableService from '../../services/tableService';
 import eventService from '../../services/eventService';
 import AdminLayout from '../../components/Admin/AdminLayout';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
-    totalRevenue: 0,
+    todaysRevenue: 0,
     totalOrders: 0,
     totalCustomers: 0,
     activeOrders: 0,
     totalEmployees: 0,
-    totalTables: 0,
+    availableTables: 0,
     totalEvents: 0,
-    inventoryItems: 0,
-    lowStockItems: 0
   });
   const [recentOrders, setRecentOrders] = useState([]);
-  const [popularItems, setPopularItems] = useState([]);
-  const [salesData, setSalesData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -57,20 +36,16 @@ const AdminDashboard = () => {
       try {
         const [
           ordersResult, 
-          menuResult, 
           statisticsResult,
           employeeStats,
           customerStats,
-          inventoryStats,
           tableStats,
           eventStats
         ] = await Promise.all([
           orderService.getTodaysOrders(),
-          menuService.getPopularItems(5),
           orderService.getOrderStatistics(),
           employeeService.getEmployeeStats(),
           customerService.getCustomerStats(),
-          inventoryService.getInventoryStats(),
           tableService.getTableStats(),
           eventService.getEventStats()
         ]);
@@ -86,22 +61,15 @@ const AdminDashboard = () => {
           }));
         }
 
-        if (menuResult.success) {
-          setPopularItems(menuResult.data);
-        }
-
         if (statisticsResult.success) {
           setStats(prev => ({
             ...prev,
-            totalRevenue: statisticsResult.data.totalRevenue || 0,
+            todaysRevenue: statisticsResult.data.todaysRevenue || 0,
             totalCustomers: customerStats.total || 0,
             totalEmployees: employeeStats.total || 0,
-            totalTables: tableStats.total || 0,
-            totalEvents: eventStats.total || 0,
-            inventoryItems: inventoryStats.totalItems || 0,
-            lowStockItems: inventoryStats.lowStock || 0
+            availableTables: tableStats.available || 0,
+            totalEvents: eventStats.total || 0
           }));
-          setSalesData(statisticsResult.data.salesData || []);
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -115,8 +83,8 @@ const AdminDashboard = () => {
 
   const statCards = [
     {
-      title: 'Total Revenue',
-      value: formatCurrency(stats.totalRevenue),
+      title: "Today's Revenue",
+      value: formatCurrency(stats.todaysRevenue),
       icon: <DollarSign className="h-8 w-8" />,
       color: 'text-green-600',
       bgColor: 'bg-green-100'
@@ -150,8 +118,8 @@ const AdminDashboard = () => {
       bgColor: 'bg-indigo-100'
     },
     {
-      title: 'Total Tables',
-      value: stats.totalTables,
+      title: 'Tables Available',
+      value: stats.availableTables || 0,
       icon: <MapPin className="h-8 w-8" />,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100'
@@ -162,17 +130,9 @@ const AdminDashboard = () => {
       icon: <Calendar className="h-8 w-8" />,
       color: 'text-pink-600',
       bgColor: 'bg-pink-100'
-    },
-    {
-      title: 'Low Stock Items',
-      value: stats.lowStockItems,
-      icon: <AlertTriangle className="h-8 w-8" />,
-      color: 'text-red-600',
-      bgColor: 'bg-red-100'
     }
   ];
 
-  const COLORS = ['#19183B', '#708993', '#A1C2BD', '#E7F2EF'];
 
   const getStatusColor = (status) => {
     const colors = {
@@ -200,22 +160,21 @@ const AdminDashboard = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 animate-fade-in">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Welcome back! Here's what's happening today.</p>
+        <div className="animate-slide-up">
+          <h1 className="text-4xl font-bold gradient-text restro-brand">Dashboard</h1>
         </div>
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6 mb-8">
           {statCards.map((stat, index) => (
-            <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div key={index} className="card animate-slide-up hover:scale-105 transition-transform duration-300" style={{ animationDelay: `${index * 0.1}s` }}>
               <div className="flex items-center">
-                <div className={`p-3 rounded-lg ${stat.bgColor} ${stat.color}`}>
+                <div className={`p-3 rounded-xl ${stat.bgColor} ${stat.color} animate-float`} style={{ animationDelay: `${index * 0.1 + 0.5}s` }}>
                   {stat.icon}
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                  <p className="text-sm font-semibold text-gray-600">{stat.title}</p>
                   <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
                 </div>
               </div>
@@ -223,58 +182,13 @@ const AdminDashboard = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* Sales Chart */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Sales Overview</h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={salesData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
-                  <Line 
-                    type="monotone" 
-                    dataKey="sales" 
-                    stroke="#19183B" 
-                    strokeWidth={2}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
 
-          {/* Popular Items */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Popular Items</h3>
-            <div className="space-y-4">
-              {popularItems.map((item, index) => (
-                <div key={item.id} className="flex items-center space-x-4">
-                  <div className="h-12 w-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                    <ChefHat className="h-6 w-6 text-gray-400" />
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900">{item.name}</h4>
-                    <p className="text-sm text-gray-600">{item.orders} orders</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-primary-600">
-                      {formatCurrency(item.revenue)}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 gap-8">
           {/* Recent Orders */}
-          <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className="card animate-slide-up animate-delay-300">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Recent Orders</h3>
-              <button className="text-primary-600 hover:text-primary-700 font-medium">
+              <h3 className="text-xl font-semibold text-gray-900">Recent Orders</h3>
+              <button className="text-primary-600 hover:text-primary-700 font-semibold hover:scale-105 transition-transform duration-300">
                 View All
               </button>
             </div>
@@ -317,28 +231,6 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-            <div className="space-y-3">
-              <button className="w-full btn-primary flex items-center justify-center">
-                <ChefHat className="h-5 w-5 mr-2" />
-                Add Menu Item
-              </button>
-              <button className="w-full btn-outline flex items-center justify-center">
-                <Calendar className="h-5 w-5 mr-2" />
-                Generate Report
-              </button>
-              <button className="w-full btn-outline flex items-center justify-center">
-                <Users className="h-5 w-5 mr-2" />
-                Manage Employees
-              </button>
-              <button className="w-full btn-outline flex items-center justify-center">
-                <AlertTriangle className="h-5 w-5 mr-2" />
-                View Alerts
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </AdminLayout>
