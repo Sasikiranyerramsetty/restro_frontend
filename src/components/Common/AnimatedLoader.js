@@ -32,3 +32,4 @@ const AnimatedLoader = ({ size = 'medium', text = 'Loading...' }) => {
 };
 
 export default AnimatedLoader;
+

@@ -321,3 +321,4 @@ const AddTaskModal = ({ isOpen, onClose, onTaskAdded }) => {
 };
 
 export default AddTaskModal;
+
