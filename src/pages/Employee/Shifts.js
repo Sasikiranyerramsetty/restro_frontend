@@ -310,11 +310,11 @@ const EmployeeShifts = () => {
 
         {/* Current Shift Card */}
         {currentShift && currentShift.status === 'active' && (
-          <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-6">
+          <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Clock className="h-6 w-6 text-green-600" />
+                <div className="p-2 bg-orange-100 rounded-lg">
+                  <Clock className="h-6 w-6 text-orange-600" />
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900">Current Shift</h3>

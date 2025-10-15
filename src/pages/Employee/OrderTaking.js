@@ -1,49 +1,70 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ShoppingBag, Plus, Minus, Search, Filter, Clock, 
-  User, Phone, MapPin, Utensils, Truck, CreditCard,
+  MapPin, Utensils, Truck, CreditCard,
   Save, X, CheckCircle, AlertCircle, Trash2
 } from 'lucide-react';
 import EmployeeLayout from '../../components/Employee/EmployeeLayout';
 import menuService from '../../services/menuService';
 import orderService from '../../services/orderService';
+import tableService from '../../services/tableService';
 import { formatCurrency } from '../../utils';
 import toast from 'react-hot-toast';
 
 const OrderTaking = () => {
   const [menuItems, setMenuItems] = useState([]);
+  const [availableTables, setAvailableTables] = useState([
+    { id: 'T1', tableNumber: 'T1', status: 'available', capacity: 4 },
+    { id: 'T2', tableNumber: 'T2', status: 'available', capacity: 2 },
+    { id: 'T3', tableNumber: 'T3', status: 'occupied', capacity: 6 },
+    { id: 'T4', tableNumber: 'T4', status: 'available', capacity: 4 },
+    { id: 'T5', tableNumber: 'T5', status: 'available', capacity: 8 },
+    { id: 'T6', tableNumber: 'T6', status: 'occupied', capacity: 2 },
+    { id: 'T7', tableNumber: 'T7', status: 'available', capacity: 4 },
+    { id: 'T8', tableNumber: 'T8', status: 'available', capacity: 6 },
+    { id: 'T9', tableNumber: 'T9', status: 'available', capacity: 2 },
+    { id: 'T10', tableNumber: 'T10', status: 'occupied', capacity: 4 }
+  ]);
   const [cart, setCart] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Customer details
-  const [customerDetails, setCustomerDetails] = useState({
-    name: '',
-    phone: '',
-    email: '',
+  // Order details
+  const [orderDetails, setOrderDetails] = useState({
     tableNumber: '',
     orderType: 'dine-in',
     specialNotes: '',
     paymentMethod: 'cash'
   });
 
+
   useEffect(() => {
-    loadMenuItems();
+    loadData();
   }, []);
 
-  const loadMenuItems = async () => {
+  const loadData = async () => {
     setIsLoading(true);
     try {
-      const result = await menuService.getMenuItems();
-      if (result.success) {
-        setMenuItems(result.data);
+      const [menuResult, tablesResult] = await Promise.all([
+        menuService.getMenuItems(),
+        tableService.getAvailableTables()
+      ]);
+      
+      if (menuResult.success) {
+        setMenuItems(menuResult.data);
       } else {
         toast.error('Failed to load menu items');
       }
+
+      if (tablesResult.success) {
+        setAvailableTables(tablesResult.data);
+      } else {
+        toast.error('Failed to load available tables');
+      }
     } catch (error) {
-      toast.error('Failed to load menu items');
+      toast.error('Failed to load data');
     } finally {
       setIsLoading(false);
     }
@@ -101,35 +122,42 @@ const OrderTaking = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setCustomerDetails(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setOrderDetails(prev => {
+      const newDetails = {
+        ...prev,
+        [name]: value
+      };
+      
+      // Clear table number if order type changes away from dine-in
+      if (name === 'orderType' && value !== 'dine-in') {
+        newDetails.tableNumber = '';
+      }
+      
+      return newDetails;
+    });
   };
 
-  const handleSubmitOrder = async (e) => {
-    e.preventDefault();
-    
+  const handleSubmitOrder = async () => {
     if (cart.length === 0) {
       toast.error('Please add items to cart before placing order');
       return;
     }
 
-    if (!customerDetails.name || !customerDetails.phone) {
-      toast.error('Please fill in customer name and phone number');
+    if (orderDetails.orderType === 'dine-in' && !orderDetails.tableNumber) {
+      toast.error('Please select a table for dine-in orders');
       return;
     }
 
     setIsSubmitting(true);
     try {
       const orderData = {
-        customerName: customerDetails.name,
-        customerPhone: customerDetails.phone,
-        customerEmail: customerDetails.email || '',
-        tableNumber: customerDetails.tableNumber || null,
-        orderType: customerDetails.orderType,
-        specialNotes: customerDetails.specialNotes || '',
-        paymentMethod: customerDetails.paymentMethod,
+        customerName: 'Walk-in Customer',
+        customerPhone: 'N/A',
+        customerEmail: '',
+        tableNumber: orderDetails.orderType === 'dine-in' ? orderDetails.tableNumber : null,
+        orderType: orderDetails.orderType,
+        specialNotes: orderDetails.specialNotes || '',
+        paymentMethod: orderDetails.paymentMethod,
         items: cart.map(item => ({
           menuItemId: item.id,
           name: item.name,
@@ -146,15 +174,17 @@ const OrderTaking = () => {
         toast.success('Order placed successfully!');
         // Reset form
         setCart([]);
-        setCustomerDetails({
-          name: '',
-          phone: '',
-          email: '',
+        setOrderDetails({
           tableNumber: '',
           orderType: 'dine-in',
           specialNotes: '',
           paymentMethod: 'cash'
         });
+        // Refresh available tables
+        const tablesResult = await tableService.getAvailableTables();
+        if (tablesResult.success) {
+          setAvailableTables(tablesResult.data);
+        }
       } else {
         toast.error(result.error || 'Failed to place order');
       }
@@ -261,94 +291,54 @@ const OrderTaking = () => {
 
           {/* Order Summary */}
           <div className="space-y-6">
-            {/* Customer Details Form */}
+            {/* Order Details */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Customer Details</h3>
-              <form onSubmit={handleSubmitOrder} className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Details</h3>
+              <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Customer Name *
+                    Order Type
                   </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
-                      type="text"
-                      name="name"
-                      value={customerDetails.name}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      placeholder="Enter customer name"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone Number *
-                  </label>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={customerDetails.phone}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      placeholder="Enter phone number"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email (Optional)
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={customerDetails.email}
+                  <select
+                    name="orderType"
+                    value={orderDetails.orderType}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="Enter email address"
-                  />
+                  >
+                    <option value="dine-in">Dine-in</option>
+                    <option value="takeaway">Takeaway</option>
+                    <option value="delivery">Delivery</option>
+                  </select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                {orderDetails.orderType === 'dine-in' && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Table Number
+                      Select Table *
                     </label>
                     <div className="relative">
                       <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <input
-                        type="text"
+                      <select
                         name="tableNumber"
-                        value={customerDetails.tableNumber}
+                        value={orderDetails.tableNumber}
                         onChange={handleInputChange}
-                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                        placeholder="e.g., T5"
-                      />
+                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none"
+                      >
+                        <option value="">Select Table</option>
+                        {availableTables
+                          .filter(table => table.status === 'available')
+                          .map((table) => (
+                            <option key={table.id} value={table.tableNumber}>
+                              {table.tableNumber} (Capacity: {table.capacity})
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                    <div className="mt-2 text-xs text-gray-500">
+                      Available tables: {availableTables.filter(table => table.status === 'available').length} of {availableTables.length}
                     </div>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Order Type
-                    </label>
-                    <select
-                      name="orderType"
-                      value={customerDetails.orderType}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    >
-                      <option value="dine-in">Dine-in</option>
-                      <option value="takeaway">Takeaway</option>
-                      <option value="delivery">Delivery</option>
-                    </select>
-                  </div>
-                </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -356,7 +346,7 @@ const OrderTaking = () => {
                   </label>
                   <select
                     name="paymentMethod"
-                    value={customerDetails.paymentMethod}
+                    value={orderDetails.paymentMethod}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   >
@@ -372,14 +362,14 @@ const OrderTaking = () => {
                   </label>
                   <textarea
                     name="specialNotes"
-                    value={customerDetails.specialNotes}
+                    value={orderDetails.specialNotes}
                     onChange={handleInputChange}
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     placeholder="Any special instructions or notes..."
                   />
                 </div>
-              </form>
+              </div>
             </div>
 
             {/* Cart Summary */}

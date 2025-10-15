@@ -42,17 +42,23 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        {/* Header */}
-        <div className="text-center">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
+      {/* Subtle overlay pattern */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary-900/10 via-transparent to-primary-800/5"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,107,53,0.1),transparent_50%)]"></div>
+      
+      <div className="max-w-md w-full space-y-8 relative z-10">
+        {/* Form Container */}
+        <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-gray-700/50">
+          {/* Header */}
+          <div className="text-center">
           <div className="mx-auto h-16 w-16 bg-primary-500 rounded-full flex items-center justify-center">
             <ChefHat className="h-8 w-8 text-white" />
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
+          <h2 className="mt-6 text-3xl font-bold text-white">
             Create Account
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-gray-300">
             Join our restaurant community
           </p>
         </div>
@@ -62,7 +68,7 @@ const Register = () => {
           <div className="space-y-4">
             {/* Name Field */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-300">
                 Full Name
               </label>
               <div className="mt-1 relative">
@@ -89,7 +95,7 @@ const Register = () => {
 
             {/* Phone Field */}
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-300">
                 Phone Number
               </label>
               <div className="mt-1 relative">
@@ -116,7 +122,7 @@ const Register = () => {
 
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300">
                 Email Address (Optional)
               </label>
               <div className="mt-1 relative">
@@ -143,7 +149,7 @@ const Register = () => {
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300">
                 Password
               </label>
               <div className="mt-1 relative">
@@ -181,7 +187,7 @@ const Register = () => {
 
             {/* Confirm Password Field */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300">
                 Confirm Password
               </label>
               <div className="mt-1 relative">
@@ -224,13 +230,13 @@ const Register = () => {
               required
               className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
             />
-            <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
+            <label htmlFor="terms" className="ml-2 block text-sm text-gray-300">
               I agree to the{' '}
-              <button type="button" className="text-primary-600 hover:text-primary-500 underline">
+              <button type="button" className="text-primary-400 hover:text-primary-300 underline">
                 Terms and Conditions
               </button>{' '}
               and{' '}
-              <button type="button" className="text-primary-600 hover:text-primary-500 underline">
+              <button type="button" className="text-primary-400 hover:text-primary-300 underline">
                 Privacy Policy
               </button>
             </label>
@@ -256,17 +262,18 @@ const Register = () => {
 
           {/* Login Link */}
           <div className="text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-300">
               Already have an account?{' '}
               <Link
                 to={ROUTES.LOGIN}
-                className="font-medium text-primary-600 hover:text-primary-500"
+                className="font-medium text-primary-400 hover:text-primary-300"
               >
                 Sign in here
               </Link>
             </p>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );

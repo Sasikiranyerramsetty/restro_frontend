@@ -1,10 +1,12 @@
 // Mock data for event management
+const today = new Date().toISOString().split('T')[0]; // Get today's date
+
 const mockEvents = [
   {
     id: 1,
     title: 'Birthday Party - John Doe',
     type: 'Birthday',
-    date: '2024-08-10',
+    date: today, // Today's event
     time: '19:00',
     guests: 10,
     status: 'confirmed',
@@ -41,6 +43,34 @@ const mockEvents = [
     package: 'Romantic',
     cost: 3000,
     specialRequests: 'Window seat'
+  },
+  {
+    id: 4,
+    title: 'Team Lunch - Marketing Department',
+    type: 'Corporate',
+    date: today, // Today's event
+    time: '12:30',
+    guests: 8,
+    status: 'confirmed',
+    customer: 'Sarah Wilson',
+    contact: 'sarah.wilson@example.com',
+    package: 'Standard',
+    cost: 2500,
+    specialRequests: 'Quiet area preferred'
+  },
+  {
+    id: 5,
+    title: 'Family Dinner - Johnson Family',
+    type: 'Family',
+    date: today, // Today's event
+    time: '18:00',
+    guests: 6,
+    status: 'pending',
+    customer: 'Mike Johnson',
+    contact: 'mike.johnson@example.com',
+    package: 'Family',
+    cost: 1800,
+    specialRequests: 'High chair needed'
   }
 ];
 
@@ -78,6 +108,13 @@ class EventService {
   async getEventStats() {
     await new Promise(resolve => setTimeout(resolve, 500));
     return { success: true, total: currentEvents.length };
+  }
+
+  async getTodaysEvents() {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+    const todaysEvents = currentEvents.filter(event => event.date === today);
+    return { success: true, data: todaysEvents };
   }
 
   async addEvent(eventData) {

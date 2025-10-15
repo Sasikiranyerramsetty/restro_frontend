@@ -61,6 +61,12 @@
     @apply bg-gray-800 !important;
   }
 
+  /* Exception for buttons that need to stay white */
+  .bg-white.text-primary-600 {
+    background-color: white !important;
+    color: #FF6B35 !important;
+  }
+
   /* Keep badge backgrounds visible */
   .bg-green-100 {
     @apply bg-green-900/30 !important;
@@ -779,6 +785,29 @@
     }
   }
 
+  @keyframes zoomOut {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+  }
+
+  @keyframes bounceZoom {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
   /* Additional utility classes - DISABLED FOR PERFORMANCE */
   .animate-slide-in-left {
     opacity: 1;
@@ -796,6 +825,16 @@
   }
 
   .animate-zoom-in {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .animate-zoom-out {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .animate-bounce-zoom {
     opacity: 1;
     transform: scale(1);
   }

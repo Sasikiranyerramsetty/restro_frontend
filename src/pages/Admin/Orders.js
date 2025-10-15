@@ -116,7 +116,7 @@ const AdminOrders = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="card animate-slide-up hover:scale-105 transition-transform duration-300" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center">
               <div className="p-3 bg-blue-100 rounded-xl animate-float">
@@ -145,19 +145,7 @@ const AdminOrders = () => {
 
           <div className="card animate-slide-up hover:scale-105 transition-transform duration-300" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center">
-              <div className="p-3 bg-green-100 rounded-xl animate-float" style={{ animationDelay: '0.8s' }}>
-                <DollarSign className="h-7 w-7 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-semibold text-gray-600">Today's Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">₹{stats.todayRevenue?.toLocaleString()}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="card animate-slide-up hover:scale-105 transition-transform duration-300" style={{ animationDelay: '0.4s' }}>
-            <div className="flex items-center">
-              <div className="p-3 bg-cyan-100 rounded-xl animate-float" style={{ animationDelay: '0.9s' }}>
+              <div className="p-3 bg-cyan-100 rounded-xl animate-float" style={{ animationDelay: '0.8s' }}>
                 <Monitor className="h-7 w-7 text-cyan-600" />
               </div>
               <div className="ml-4">
@@ -167,9 +155,9 @@ const AdminOrders = () => {
             </div>
           </div>
 
-          <div className="card animate-slide-up hover:scale-105 transition-transform duration-300" style={{ animationDelay: '0.5s' }}>
+          <div className="card animate-slide-up hover:scale-105 transition-transform duration-300" style={{ animationDelay: '0.4s' }}>
             <div className="flex items-center">
-              <div className="p-3 bg-amber-100 rounded-xl animate-float" style={{ animationDelay: '1.0s' }}>
+              <div className="p-3 bg-amber-100 rounded-xl animate-float" style={{ animationDelay: '0.9s' }}>
                 <Utensils className="h-7 w-7 text-amber-600" />
               </div>
               <div className="ml-4">
@@ -284,9 +272,11 @@ const AdminOrders = () => {
                   <th className="table-header">
                     Total
                   </th>
-                  <th className="table-header">
-                    Actions
-                  </th>
+                  {activeTab !== 'table' && (
+                    <th className="table-header">
+                      Actions
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -361,31 +351,33 @@ const AdminOrders = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         ₹{order.total}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center space-x-2">
-                          <button
-                            onClick={() => handleViewOrder(order)}
-                            className="text-primary-600 hover:text-primary-900 transition-colors duration-200"
-                            title="View Details"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </button>
-                          {order.status !== 'completed' && order.status !== 'cancelled' && (
-                            <select
-                              value={order.status}
-                              onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
-                              className="text-xs border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-primary-500"
+                      {activeTab !== 'table' && (
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => handleViewOrder(order)}
+                              className="text-primary-600 hover:text-primary-900 transition-colors duration-200"
+                              title="View Details"
                             >
-                              <option value="pending">Pending</option>
-                              <option value="confirmed">Confirmed</option>
-                              <option value="preparing">Preparing</option>
-                              <option value="ready">Ready</option>
-                              <option value="completed">Completed</option>
-                              <option value="cancelled">Cancelled</option>
-                            </select>
-                          )}
-                        </div>
-                      </td>
+                              <Eye className="h-4 w-4" />
+                            </button>
+                            {order.status !== 'completed' && order.status !== 'cancelled' && (
+                              <select
+                                value={order.status}
+                                onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
+                                className="text-xs border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-primary-500"
+                              >
+                                <option value="pending">Pending</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="preparing">Preparing</option>
+                                <option value="ready">Ready</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                              </select>
+                            )}
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   );
                 })}

@@ -43,7 +43,8 @@ const AdminEmployees = () => {
     status: 'active',
     shift: '',
     salary: '',
-    address: ''
+    address: '',
+    tag: ''
   });
 
   // Mock employee data
@@ -54,6 +55,7 @@ const AdminEmployees = () => {
       email: 'john.smith@restaurant.com',
       phone: '1234567890',
       role: 'waiter',
+      tag: 'waiter',
       status: 'active',
       hireDate: '2023-01-15',
       shift: 'morning',
@@ -66,6 +68,7 @@ const AdminEmployees = () => {
       email: 'sarah.johnson@restaurant.com',
       phone: '1234567891',
       role: 'chef',
+      tag: 'chef',
       status: 'active',
       hireDate: '2022-08-20',
       shift: 'evening',
@@ -77,7 +80,8 @@ const AdminEmployees = () => {
       name: 'Mike Wilson',
       email: 'mike.wilson@restaurant.com',
       phone: '1234567892',
-      role: 'cashier',
+      role: 'delivery',
+      tag: 'delivery',
       status: 'active',
       hireDate: '2023-03-10',
       shift: 'afternoon',
@@ -90,6 +94,7 @@ const AdminEmployees = () => {
       email: 'emily.davis@restaurant.com',
       phone: '1234567893',
       role: 'manager',
+      tag: 'chef',
       status: 'active',
       hireDate: '2021-11-05',
       shift: 'morning',
@@ -102,6 +107,7 @@ const AdminEmployees = () => {
       email: 'david.brown@restaurant.com',
       phone: '1234567894',
       role: 'waiter',
+      tag: 'waiter',
       status: 'inactive',
       hireDate: '2023-06-15',
       shift: 'evening',
@@ -117,7 +123,7 @@ const AdminEmployees = () => {
         const result = await employeeService.getEmployees();
         setEmployees(result);
       } catch (error) {
-        console.error('Error fetching employees:', error);
+        // Error fetching employees
         toast.error('Failed to fetch employees');
         // Fallback to mock data
         setEmployees(mockEmployees);
@@ -127,7 +133,7 @@ const AdminEmployees = () => {
     };
 
     fetchEmployees();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filteredEmployees = employees.filter(employee =>
     employee.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -145,7 +151,8 @@ const AdminEmployees = () => {
       status: 'active',
       shift: '',
       salary: '',
-      address: ''
+      address: '',
+      tag: ''
     });
     setEditingEmployee(null);
     setShowPassword(false);
@@ -173,7 +180,8 @@ const AdminEmployees = () => {
       status: employee.status,
       shift: employee.shift,
       salary: employee.salary.toString(),
-      address: employee.address || ''
+      address: employee.address || '',
+      tag: employee.tag || ''
     });
     setEditingEmployee(employee);
     setShowAddModal(true);
@@ -213,7 +221,7 @@ const AdminEmployees = () => {
         toast.error(result.error || 'Failed to save employee');
       }
     } catch (error) {
-      console.error('Error saving employee:', error);
+      // Error saving employee
       toast.error('Failed to save employee');
     } finally {
       setIsSubmitting(false);
@@ -232,7 +240,7 @@ const AdminEmployees = () => {
           toast.error(result.error || 'Failed to delete employee');
         }
       } catch (error) {
-        console.error('Error deleting employee:', error);
+        // Error deleting employee
         toast.error('Failed to delete employee');
       }
     }
@@ -368,6 +376,7 @@ const AdminEmployees = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="table-header">Employee</th>
+                  <th className="table-header">Tag</th>
                   <th className="table-header">Status</th>
                   <th className="table-header">Shift</th>
                   <th className="table-header">Hire Date</th>
@@ -397,6 +406,11 @@ const AdminEmployees = () => {
                           </div>
                         </div>
                       </div>
+                    </td>
+                    <td className="table-cell">
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 capitalize">
+                        {employee.tag || 'N/A'}
+                      </span>
                     </td>
                     <td className="table-cell">
                       <span className={`status-badge ${getStatusColor(employee.status)}`}>
@@ -568,6 +582,24 @@ const AdminEmployees = () => {
 
                   {/* Job Information */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tag *
+                      </label>
+                      <select
+                        name="tag"
+                        value={formData.tag}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      >
+                        <option value="">Select Tag</option>
+                        <option value="delivery">Delivery</option>
+                        <option value="chef">Chef</option>
+                        <option value="waiter">Waiter</option>
+                      </select>
+                    </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">

@@ -3,10 +3,8 @@ import {
   Users, 
   ShoppingBag, 
   DollarSign, 
-  TrendingUp,
   Clock,
   Calendar,
-  AlertTriangle,
   UserCheck,
   MapPin
 } from 'lucide-react';
@@ -21,10 +19,10 @@ import AdminLayout from '../../components/Admin/AdminLayout';
 const AdminDashboard = () => {
   const [stats, setStats] = useState({
     todaysRevenue: 0,
-    totalOrders: 0,
-    totalCustomers: 0,
+    todaysOrders: 0,
+    todaysEvents: 0,
     activeOrders: 0,
-    totalEmployees: 0,
+    activeEmployees: 0,
     availableTables: 0,
     totalEvents: 0,
   });
@@ -38,23 +36,25 @@ const AdminDashboard = () => {
           ordersResult, 
           statisticsResult,
           employeeStats,
-          customerStats,
+          activeEmployeesResult,
           tableStats,
-          eventStats
+          eventStats,
+          todaysEventsResult
         ] = await Promise.all([
           orderService.getTodaysOrders(),
           orderService.getOrderStatistics(),
           employeeService.getEmployeeStats(),
-          customerService.getCustomerStats(),
+          employeeService.getActiveEmployees(),
           tableService.getTableStats(),
-          eventService.getEventStats()
+          eventService.getEventStats(),
+          eventService.getTodaysEvents()
         ]);
 
         if (ordersResult.success) {
           setRecentOrders(ordersResult.data.slice(0, 5));
           setStats(prev => ({
             ...prev,
-            totalOrders: ordersResult.data.length,
+            todaysOrders: ordersResult.data.length,
             activeOrders: ordersResult.data.filter(order => 
               ['pending', 'preparing'].includes(order.status)
             ).length
@@ -65,10 +65,22 @@ const AdminDashboard = () => {
           setStats(prev => ({
             ...prev,
             todaysRevenue: statisticsResult.data.todaysRevenue || 0,
-            totalCustomers: customerStats.total || 0,
-            totalEmployees: employeeStats.total || 0,
             availableTables: tableStats.available || 0,
             totalEvents: eventStats.total || 0
+          }));
+        }
+
+        if (activeEmployeesResult.success) {
+          setStats(prev => ({
+            ...prev,
+            activeEmployees: activeEmployeesResult.data.length || 0
+          }));
+        }
+
+        if (todaysEventsResult.success) {
+          setStats(prev => ({
+            ...prev,
+            todaysEvents: todaysEventsResult.data.length || 0
           }));
         }
       } catch (error) {
@@ -79,7 +91,7 @@ const AdminDashboard = () => {
     };
 
     fetchDashboardData();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const statCards = [
     {
@@ -90,8 +102,8 @@ const AdminDashboard = () => {
       bgColor: 'bg-green-100'
     },
     {
-      title: 'Total Orders',
-      value: stats.totalOrders,
+      title: "Today's Orders",
+      value: stats.todaysOrders,
       icon: <ShoppingBag className="h-8 w-8" />,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100'
@@ -104,15 +116,15 @@ const AdminDashboard = () => {
       bgColor: 'bg-yellow-100'
     },
     {
-      title: 'Total Customers',
-      value: stats.totalCustomers,
-      icon: <Users className="h-8 w-8" />,
+      title: "Today's Events",
+      value: stats.todaysEvents,
+      icon: <Calendar className="h-8 w-8" />,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100'
     },
     {
-      title: 'Total Employees',
-      value: stats.totalEmployees,
+      title: 'Active Employees',
+      value: stats.activeEmployees,
       icon: <UserCheck className="h-8 w-8" />,
       color: 'text-indigo-600',
       bgColor: 'bg-indigo-100'

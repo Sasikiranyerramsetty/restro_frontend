@@ -102,7 +102,7 @@ export const AuthProvider = ({ children }) => {
           dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
         }
       } catch (error) {
-        console.error('Auth initialization error:', error);
+        // Silently handle auth initialization error
         dispatch({ type: AUTH_ACTIONS.SET_LOADING, payload: false });
       }
     };
@@ -145,7 +145,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await authService.logout();
     } catch (error) {
-      console.error('Logout error:', error);
+      // Silently handle logout error
     } finally {
       dispatch({ type: AUTH_ACTIONS.LOGOUT });
     }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ChefHat, Plus, Search, Filter, Edit, Trash2, Eye, 
-  Star, Clock, DollarSign, Users, TrendingUp, Package,
+  Star, Clock, Users, TrendingUp, Package,
   X, Save, AlertCircle, CheckCircle, Image as ImageIcon,
   Utensils, Calendar, BarChart3
 } from 'lucide-react';
@@ -21,14 +21,11 @@ const AdminMenu = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
     price: '',
     category: '',
     subcategory: '',
     available: true,
-    preparationTime: '',
-    ingredients: '',
-    allergens: ''
+    preparationTime: ''
   });
 
   useEffect(() => {
@@ -56,14 +53,11 @@ const AdminMenu = () => {
   const resetForm = () => {
     setFormData({
       name: '',
-      description: '',
       price: '',
       category: '',
       subcategory: '',
       available: true,
-      preparationTime: '',
-      ingredients: '',
-      allergens: ''
+      preparationTime: ''
     });
     setEditingItem(null);
   };
@@ -84,14 +78,11 @@ const AdminMenu = () => {
   const handleEditItem = (item) => {
     setFormData({
       name: item.name,
-      description: item.description,
       price: item.price.toString(),
       category: item.category,
       subcategory: item.subcategory,
       available: item.available,
-      preparationTime: item.preparationTime.toString(),
-      ingredients: item.ingredients.join(', '),
-      allergens: item.allergens.join(', ')
+      preparationTime: item.preparationTime.toString()
     });
     setEditingItem(item);
     setShowAddModal(true);
@@ -105,9 +96,7 @@ const AdminMenu = () => {
       const itemData = {
         ...formData,
         price: parseFloat(formData.price),
-        preparationTime: parseInt(formData.preparationTime),
-        ingredients: formData.ingredients.split(',').map(ing => ing.trim()).filter(ing => ing),
-        allergens: formData.allergens.split(',').map(all => all.trim()).filter(all => all)
+        preparationTime: parseInt(formData.preparationTime)
       };
 
       if (editingItem) {
@@ -221,7 +210,7 @@ const AdminMenu = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="card animate-slide-up hover:scale-105 transition-transform duration-300" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center">
               <div className="p-3 bg-blue-100 rounded-xl animate-float">
@@ -242,30 +231,6 @@ const AdminMenu = () => {
               <div className="ml-4">
                 <p className="text-sm font-semibold text-gray-600">Available</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.availableItems}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="card animate-slide-up hover:scale-105 transition-transform duration-300" style={{ animationDelay: '0.3s' }}>
-            <div className="flex items-center">
-              <div className="p-3 bg-yellow-100 rounded-xl animate-float" style={{ animationDelay: '0.8s' }}>
-                <DollarSign className="h-7 w-7 text-yellow-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-semibold text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">₹{stats.totalRevenue?.toLocaleString()}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="card animate-slide-up hover:scale-105 transition-transform duration-300" style={{ animationDelay: '0.4s' }}>
-            <div className="flex items-center">
-              <div className="p-3 bg-purple-100 rounded-xl animate-float" style={{ animationDelay: '0.9s' }}>
-                <Star className="h-7 w-7 text-purple-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-semibold text-gray-600">Avg Rating</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.averageRating}</p>
               </div>
             </div>
           </div>
@@ -343,7 +308,6 @@ const AdminMenu = () => {
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">{item.name}</div>
-                          <div className="text-sm text-gray-500 truncate max-w-xs">{item.description}</div>
                         </div>
                       </div>
                     </td>
@@ -515,47 +479,6 @@ const AdminMenu = () => {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Description *
-                  </label>
-                  <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    required
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Ingredients (comma-separated)
-                  </label>
-                  <input
-                    type="text"
-                    name="ingredients"
-                    value={formData.ingredients}
-                    onChange={handleInputChange}
-                    placeholder="e.g., Rice, Chicken, Spices"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Allergens (comma-separated)
-                  </label>
-                  <input
-                    type="text"
-                    name="allergens"
-                    value={formData.allergens}
-                    onChange={handleInputChange}
-                    placeholder="e.g., Dairy, Nuts, Gluten"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  />
-                </div>
 
                 <div className="flex items-center justify-end space-x-3 pt-4">
                   <button

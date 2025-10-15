@@ -24,7 +24,7 @@ const CustomerCart = () => {
     if (savedCart) {
       setCart(JSON.parse(savedCart));
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const updateCart = (newCart) => {
     setCart(newCart);

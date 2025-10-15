@@ -56,36 +56,36 @@ const CustomerDashboard = () => {
     };
 
     fetchDashboardData();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const quickActions = [
     {
       title: 'Browse Menu',
       description: 'Explore our delicious offerings',
-      icon: <ChefHat className="h-6 w-6 text-primary-600" />,
+      icon: <ChefHat className="h-6 w-6 text-rose-600" />,
       link: ROUTES.CUSTOMER_MENU,
-      color: 'bg-blue-50 border-blue-200'
+      color: 'bg-gradient-to-br from-rose-100 to-pink-200 border-rose-400 hover:from-rose-200 hover:to-pink-300'
     },
     {
       title: 'Make Reservation',
       description: 'Book a table for your visit',
-      icon: <Calendar className="h-6 w-6 text-primary-600" />,
+      icon: <Calendar className="h-6 w-6 text-cyan-600" />,
       link: ROUTES.CUSTOMER_RESERVATIONS,
-      color: 'bg-green-50 border-green-200'
+      color: 'bg-gradient-to-br from-cyan-100 to-blue-200 border-cyan-400 hover:from-cyan-200 hover:to-blue-300'
     },
     {
       title: 'View Orders',
       description: 'Track your order history',
-      icon: <Package className="h-6 w-6 text-primary-600" />,
+      icon: <Package className="h-6 w-6 text-purple-600" />,
       link: ROUTES.CUSTOMER_ORDERS,
-      color: 'bg-purple-50 border-purple-200'
+      color: 'bg-gradient-to-br from-purple-100 to-violet-200 border-purple-400 hover:from-purple-200 hover:to-violet-300'
     },
     {
       title: 'Events',
       description: 'Discover upcoming events',
-      icon: <Users className="h-6 w-6 text-primary-600" />,
+      icon: <Users className="h-6 w-6 text-amber-600" />,
       link: ROUTES.CUSTOMER_EVENTS,
-      color: 'bg-orange-50 border-orange-200'
+      color: 'bg-gradient-to-br from-amber-100 to-yellow-200 border-amber-400 hover:from-amber-200 hover:to-yellow-300'
     }
   ];
 
@@ -192,16 +192,16 @@ const CustomerDashboard = () => {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-gray-900 group-hover:text-primary-600 transition-colors duration-300">
+                    <h3 className="font-bold text-black group-hover:text-gray-900 transition-colors duration-300">
                       {action.title}
                     </h3>
-                    <p className="text-sm text-gray-600 mt-1 group-hover:text-gray-700 transition-colors duration-300">{action.description}</p>
+                    <p className="text-sm text-black mt-1 group-hover:text-gray-800 transition-colors duration-300">{action.description}</p>
                   </div>
                   <div className="flex items-center">
                     <div className="group-hover:rotate-12 transition-transform duration-300">
                       {action.icon}
                     </div>
-                    <ArrowRight className="h-4 w-4 text-gray-400 ml-2 group-hover:text-primary-600 group-hover:translate-x-1 transition-all duration-300" />
+                    <ArrowRight className="h-4 w-4 text-black ml-2 group-hover:text-gray-800 group-hover:translate-x-1 transition-all duration-300" />
                   </div>
                 </div>
               </Link>

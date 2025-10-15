@@ -91,6 +91,12 @@ class EmployeeService {
     return mockEmployeeStats;
   }
 
+  async getActiveEmployees() {
+    await new Promise(resolve => setTimeout(resolve, 400));
+    const activeEmployees = mockEmployees.filter(employee => employee.status === 'active');
+    return { success: true, data: activeEmployees };
+  }
+
   async addEmployee(employeeData) {
     await new Promise(resolve => setTimeout(resolve, 800));
     const newEmployee = {

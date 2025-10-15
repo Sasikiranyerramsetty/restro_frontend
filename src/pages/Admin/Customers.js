@@ -7,8 +7,6 @@ import {
   UserCheck,
   UserX,
   Phone,
-  Mail,
-  Calendar,
   DollarSign,
   Star
 } from 'lucide-react';
@@ -35,7 +33,7 @@ const AdminCustomers = () => {
         setCustomers(customersResult);
         setStats(statsResult);
       } catch (error) {
-        console.error('Error fetching customers:', error);
+        // Error fetching customers
         toast.error('Failed to fetch customers');
       } finally {
         setIsLoading(false);
@@ -43,7 +41,7 @@ const AdminCustomers = () => {
     };
 
     fetchData();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filteredCustomers = customers.filter(customer => {
     const matchesSearch = customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -62,7 +60,7 @@ const AdminCustomers = () => {
         toast.success(`Customer status updated to ${newStatus}`);
       }
     } catch (error) {
-      console.error('Error updating customer status:', error);
+      // Error updating customer status
       toast.error('Failed to update customer status');
     }
   };
@@ -101,7 +99,7 @@ const AdminCustomers = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center">
               <div className="p-3 rounded-lg bg-blue-100 text-blue-600">
@@ -122,30 +120,6 @@ const AdminCustomers = () => {
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Active Customers</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.active}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-purple-100 text-purple-600">
-                <DollarSign className="h-8 w-8" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">{formatCurrency(stats.totalRevenue)}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-orange-100 text-orange-600">
-                <Star className="h-8 w-8" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Avg Order Value</p>
-                <p className="text-2xl font-bold text-gray-900">{formatCurrency(stats.averageOrderValue)}</p>
               </div>
             </div>
           </div>
@@ -201,9 +175,6 @@ const AdminCustomers = () => {
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Total Spent
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Loyalty
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status

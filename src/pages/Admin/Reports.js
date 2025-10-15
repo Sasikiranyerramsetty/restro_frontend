@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { 
   BarChart3, Download, TrendingUp, TrendingDown, DollarSign, 
-  Users, ShoppingBag, Calendar, Filter, RefreshCw
+  Users, ShoppingBag, Calendar, Filter, RefreshCw, CalendarDays
 } from 'lucide-react';
 import { 
-  LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer 
+  LineChart, Line, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
 import AdminLayout from '../../components/Admin/AdminLayout';
 
 const AdminReports = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('7d');
   const [loading, setLoading] = useState(false);
+  const [showCustomDateRange, setShowCustomDateRange] = useState(false);
+  const [customDateRange, setCustomDateRange] = useState({
+    from: '',
+    to: ''
+  });
 
   // Mock data for charts
   const salesData = [
@@ -24,29 +29,6 @@ const AdminReports = () => {
     { date: '2024-01-20', revenue: 25000, orders: 85, customers: 72 }
   ];
 
-  const categoryData = [
-    { name: 'Biryanis', revenue: 45000, orders: 120, color: '#8884d8' },
-    { name: 'Curries', revenue: 38000, orders: 95, color: '#82ca9d' },
-    { name: 'RESTRO Specials', revenue: 32000, orders: 80, color: '#ffc658' },
-    { name: 'Appetizers', revenue: 18000, orders: 60, color: '#ff7300' },
-    { name: 'Beverages', revenue: 12000, orders: 45, color: '#00ff00' }
-  ];
-
-  const hourlyData = [
-    { hour: '10:00', orders: 5, revenue: 2500 },
-    { hour: '11:00', orders: 8, revenue: 4000 },
-    { hour: '12:00', orders: 15, revenue: 7500 },
-    { hour: '13:00', orders: 22, revenue: 11000 },
-    { hour: '14:00', orders: 18, revenue: 9000 },
-    { hour: '15:00', orders: 12, revenue: 6000 },
-    { hour: '16:00', orders: 8, revenue: 4000 },
-    { hour: '17:00', orders: 10, revenue: 5000 },
-    { hour: '18:00', orders: 20, revenue: 10000 },
-    { hour: '19:00', orders: 25, revenue: 12500 },
-    { hour: '20:00', orders: 30, revenue: 15000 },
-    { hour: '21:00', orders: 18, revenue: 9000 },
-    { hour: '22:00', orders: 10, revenue: 5000 }
-  ];
 
   const paymentMethodData = [
     { name: 'Card', value: 45, color: '#0088FE' },
@@ -66,11 +48,9 @@ const AdminReports = () => {
     totalRevenue: 133000,
     totalOrders: 425,
     totalCustomers: 365,
-    averageOrderValue: 313,
     revenueGrowth: 15.2,
     ordersGrowth: 8.5,
-    customersGrowth: 12.3,
-    avgOrderValueGrowth: 6.8
+    customersGrowth: 12.3
   };
 
   const handleExport = () => {
@@ -88,6 +68,33 @@ const AdminReports = () => {
     setTimeout(() => {
       setLoading(false);
     }, 1000);
+  };
+
+  const handlePeriodChange = (period) => {
+    setSelectedPeriod(period);
+    if (period === 'custom') {
+      setShowCustomDateRange(true);
+    } else {
+      setShowCustomDateRange(false);
+    }
+  };
+
+  const handleCustomDateChange = (field, value) => {
+    setCustomDateRange(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const applyCustomDateRange = () => {
+    if (customDateRange.from && customDateRange.to) {
+      // Here you would typically fetch data for the custom date range
+      console.log('Custom date range:', customDateRange);
+      setLoading(true);
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
+    }
   };
 
   return (
@@ -119,25 +126,78 @@ const AdminReports = () => {
         </div>
 
         {/* Period Filter */}
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center space-x-4">
-            <Filter className="h-5 w-5 text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">Time Period:</span>
-            <select
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            >
-              <option value="7d">Last 7 Days</option>
-              <option value="30d">Last 30 Days</option>
-              <option value="90d">Last 90 Days</option>
-              <option value="1y">Last Year</option>
-            </select>
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+            <div className="flex items-center space-x-4">
+              <Filter className="h-5 w-5 text-gray-500" />
+              <span className="text-sm font-medium text-gray-700">Time Period:</span>
+              <select
+                value={selectedPeriod}
+                onChange={(e) => handlePeriodChange(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              >
+                <option value="7d">Last 7 Days</option>
+                <option value="30d">Last 30 Days</option>
+                <option value="6m">Last 6 Months</option>
+                <option value="this-year">This Year</option>
+                <option value="1y">Last Year</option>
+                <option value="custom">Custom Date Range</option>
+              </select>
+            </div>
+            
+            {showCustomDateRange && (
+              <div className="flex items-center space-x-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="flex items-center space-x-2">
+                  <Calendar className="h-5 w-5 text-white bg-primary-600 p-1 rounded" />
+                  <span className="text-sm font-medium text-gray-700">Select Date Range:</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <label className="text-sm font-medium text-gray-700">From:</label>
+                  <div className="relative">
+                    <input
+                      type="date"
+                      id="from-date"
+                      value={customDateRange.from}
+                      onChange={(e) => handleCustomDateChange('from', e.target.value)}
+                      className="px-3 py-2 pr-10 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    />
+                    <Calendar 
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white bg-primary-600 p-0.5 rounded cursor-pointer hover:bg-primary-700" 
+                      onClick={() => document.getElementById('from-date').showPicker()}
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <label className="text-sm font-medium text-gray-700">To:</label>
+                  <div className="relative">
+                    <input
+                      type="date"
+                      id="to-date"
+                      value={customDateRange.to}
+                      onChange={(e) => handleCustomDateChange('to', e.target.value)}
+                      className="px-3 py-2 pr-10 border border-gray-300 rounded-md text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    />
+                    <Calendar 
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white bg-primary-600 p-0.5 rounded cursor-pointer hover:bg-primary-700" 
+                      onClick={() => document.getElementById('to-date').showPicker()}
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={applyCustomDateRange}
+                  disabled={!customDateRange.from || !customDateRange.to}
+                  className="px-4 py-2 bg-primary-600 text-white text-sm rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                >
+                  <Calendar className="h-4 w-4 text-white" />
+                  <span>Apply</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Summary Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
@@ -185,112 +245,46 @@ const AdminReports = () => {
               </div>
             </div>
           </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Avg Order Value</p>
-                <p className="text-2xl font-bold text-gray-900">₹{summaryStats.averageOrderValue}</p>
-                <div className="flex items-center mt-1">
-                  <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
-                  <span className="text-sm text-green-600">+{summaryStats.avgOrderValueGrowth}%</span>
-                </div>
-              </div>
-              <div className="p-3 bg-yellow-100 rounded-lg">
-                <BarChart3 className="h-6 w-6 text-yellow-600" />
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Charts Row 1 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Revenue Trend */}
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue Trend</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={salesData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip formatter={(value) => [`₹${value.toLocaleString()}`, 'Revenue']} />
-                <Area type="monotone" dataKey="revenue" stroke="#8884d8" fill="#8884d8" fillOpacity={0.3} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Orders Trend */}
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Orders Trend</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={salesData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="orders" stroke="#82ca9d" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Charts Row 2 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Category Performance */}
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Category Performance</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={categoryData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip formatter={(value) => [`₹${value.toLocaleString()}`, 'Revenue']} />
-                <Bar dataKey="revenue" fill="#8884d8" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Payment Methods */}
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Methods</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={paymentMethodData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {paymentMethodData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Hourly Performance */}
+        {/* Orders Trend */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Hourly Performance</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Orders Trend</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={hourlyData}>
+            <LineChart data={salesData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="hour" />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
+              <XAxis dataKey="date" />
+              <YAxis />
               <Tooltip />
-              <Legend />
-              <Bar yAxisId="left" dataKey="orders" fill="#8884d8" name="Orders" />
-              <Bar yAxisId="right" dataKey="revenue" fill="#82ca9d" name="Revenue (₹)" />
-            </BarChart>
+              <Line type="monotone" dataKey="orders" stroke="#82ca9d" strokeWidth={2} />
+            </LineChart>
           </ResponsiveContainer>
         </div>
+
+        {/* Payment Methods */}
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Methods</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={paymentMethodData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {paymentMethodData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
 
         {/* Top Performing Items */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">

@@ -32,13 +32,11 @@ const CustomerNavbar = () => {
   const getNavigationItems = () => {
     if (!user) {
       return [
-        { name: 'Home', path: ROUTES.CUSTOMER_HOME },
         { name: 'Menu', path: ROUTES.CUSTOMER_MENU }
       ];
     }
     
     return [
-      { name: 'Home', path: ROUTES.CUSTOMER_HOME },
       { name: 'Menu', path: ROUTES.CUSTOMER_MENU },
       { name: 'Orders', path: ROUTES.CUSTOMER_ORDERS },
       { name: 'Reservations', path: ROUTES.CUSTOMER_RESERVATIONS },

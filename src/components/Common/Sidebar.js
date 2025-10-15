@@ -74,7 +74,6 @@ const Sidebar = ({ isOpen, onToggle, onCollapseChange }) => {
       case USER_ROLES.CUSTOMER:
         return [
           { name: 'Dashboard', path: ROUTES.CUSTOMER_DASHBOARD, icon: <BarChart3 className="h-5 w-5" /> },
-          { name: 'Home', path: ROUTES.CUSTOMER_HOME, icon: <Home className="h-5 w-5" /> },
           { name: 'Menu', path: ROUTES.CUSTOMER_MENU, icon: <ChefHat className="h-5 w-5" /> },
           { name: 'Orders', path: ROUTES.CUSTOMER_ORDERS, icon: <ShoppingBag className="h-5 w-5" /> },
           { name: 'Reservations', path: ROUTES.CUSTOMER_RESERVATIONS, icon: <Calendar className="h-5 w-5" /> },

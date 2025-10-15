@@ -48,7 +48,7 @@ const Login = () => {
   // Clear error when component unmounts
   useEffect(() => {
     return () => clearError();
-  }, [clearError]);
+  }, [clearError]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onSubmit = async (data) => {
     setIsLoading(true);
