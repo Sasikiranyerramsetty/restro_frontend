@@ -24,156 +24,10 @@ const EmployeeDashboard = () => {
   const [todayTasks, setTodayTasks] = useState([]);
 
   useEffect(() => {
-    // Mock data for employee dashboard
-    const mockStats = {
-      assignedOrders: 6,
-      completedTasks: 12,
-      todayShifts: 1,
-      pendingTasks: 3
-    };
-
-    const mockOrders = [
-      {
-        id: 1,
-        orderNumber: 'ORD-001',
-        customer: 'John Doe',
-        customerPhone: '9876543210',
-        status: 'preparing',
-        total: 850,
-        items: [
-          { name: 'Chicken Biryani', quantity: 2, price: 280 },
-          { name: 'Mutton Curry', quantity: 1, price: 320 },
-          { name: 'Garlic Naan', quantity: 2, price: 100 }
-        ],
-        tableNumber: 'T5',
-        orderType: 'dine-in',
-        assignedAt: new Date().toISOString(),
-        estimatedTime: '25 mins',
-        specialNotes: 'Extra spicy for biryani'
-      },
-      {
-        id: 2,
-        orderNumber: 'ORD-002',
-        customer: 'Jane Smith',
-        customerPhone: '9876543211',
-        status: 'ready',
-        total: 650,
-        items: [
-          { name: 'RESTRO Special Thali', quantity: 1, price: 350 },
-          { name: 'Paneer Tikka', quantity: 1, price: 220 },
-          { name: 'Fresh Lime Soda', quantity: 2, price: 90 }
-        ],
-        tableNumber: 'T3',
-        orderType: 'dine-in',
-        assignedAt: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-        estimatedTime: 'Ready',
-        specialNotes: 'Birthday celebration'
-      },
-      {
-        id: 3,
-        orderNumber: 'ORD-003',
-        customer: 'Mike Wilson',
-        customerPhone: '9876543212',
-        status: 'pending',
-        total: 420,
-        items: [
-          { name: 'Chicken Biryani', quantity: 1, price: 280 },
-          { name: 'Butter Chicken', quantity: 1, price: 290 }
-        ],
-        tableNumber: null,
-        orderType: 'takeaway',
-        assignedAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-        estimatedTime: '20 mins',
-        specialNotes: 'Pickup at 8:30 PM'
-      },
-      {
-        id: 4,
-        orderNumber: 'ORD-004',
-        customer: 'Emily Davis',
-        customerPhone: '9876543213',
-        status: 'preparing',
-        total: 720,
-        items: [
-          { name: 'Mutton Curry', quantity: 1, price: 320 },
-          { name: 'Dal Makhani', quantity: 1, price: 180 },
-          { name: 'Butter Naan', quantity: 3, price: 90 },
-          { name: 'Coca-Cola', quantity: 2, price: 45 }
-        ],
-        tableNumber: 'T7',
-        orderType: 'dine-in',
-        assignedAt: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-        estimatedTime: '15 mins',
-        specialNotes: 'Anniversary dinner'
-      },
-      {
-        id: 5,
-        orderNumber: 'ORD-005',
-        customer: 'Alice Wonderland',
-        customerPhone: '9876543214',
-        status: 'ready',
-        total: 580,
-        items: [
-          { name: 'Paneer Tikka', quantity: 2, price: 220 },
-          { name: 'Veg Spring Rolls', quantity: 1, price: 220 },
-          { name: 'Mango Lassi', quantity: 2, price: 70 }
-        ],
-        tableNumber: 'T2',
-        orderType: 'dine-in',
-        assignedAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-        estimatedTime: 'Ready',
-        specialNotes: 'Vegetarian options preferred'
-      },
-      {
-        id: 6,
-        orderNumber: 'ORD-006',
-        customer: 'Bob The Builder',
-        customerPhone: '9876543215',
-        status: 'preparing',
-        total: 1200,
-        items: [
-          { name: 'Chicken Biryani', quantity: 2, price: 280 },
-          { name: 'Dal Makhani', quantity: 1, price: 180 },
-          { name: 'RESTRO Special Thali', quantity: 1, price: 350 },
-          { name: 'Garlic Naan', quantity: 4, price: 100 }
-        ],
-        tableNumber: null,
-        orderType: 'delivery',
-        assignedAt: new Date(Date.now() - 20 * 60 * 1000).toISOString(),
-        estimatedTime: '30 mins',
-        specialNotes: 'Deliver to apartment 4B, ring doorbell twice'
-      }
-    ];
-
-    const mockTasks = [
-      {
-        id: 1,
-        title: 'Clean Table 5',
-        description: 'Clean and set up table 5 for next customers',
-        priority: 'high',
-        status: 'pending',
-        dueTime: '14:30'
-      },
-      {
-        id: 2,
-        title: 'Check Inventory',
-        description: 'Check stock levels for popular items',
-        priority: 'medium',
-        status: 'completed',
-        dueTime: '12:00'
-      },
-      {
-        id: 3,
-        title: 'Prepare Order ORD-003',
-        description: 'Prepare order for table 3',
-        priority: 'high',
-        status: 'in_progress',
-        dueTime: '15:00'
-      }
-    ];
-
-    setStats(mockStats);
-    setRecentOrders(mockOrders);
-    setTodayTasks(mockTasks);
+    // Static mock data removed. Integrate with real services here when available.
+    setStats({ assignedOrders: 0, completedTasks: 0, todayShifts: 0, pendingTasks: 0 });
+    setRecentOrders([]);
+    setTodayTasks([]);
   }, []);
 
   const statCards = [
@@ -232,8 +86,8 @@ const EmployeeDashboard = () => {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Employee Dashboard</h1>
-          <p className="text-gray-600 mt-1">Welcome back! Here's your work overview.</p>
+          <h1 className="text-4xl font-bold gradient-text restro-brand">Employee Dashboard</h1>
+          <p className="text-gray-600 mt-2 text-lg">Welcome back! Here's your work overview.</p>
         </div>
 
         {/* Stats Cards */}
@@ -401,10 +255,6 @@ const EmployeeDashboard = () => {
             <button className="btn-outline flex items-center justify-center">
               <MapPin className="h-5 w-5 mr-2" />
               Table Status
-            </button>
-            <button className="btn-outline flex items-center justify-center">
-              <CheckCircle className="h-5 w-5 mr-2" />
-              Complete Task
             </button>
             <button className="btn-outline flex items-center justify-center">
               <Calendar className="h-5 w-5 mr-2" />

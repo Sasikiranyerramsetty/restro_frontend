@@ -13,21 +13,12 @@ import toast from 'react-hot-toast';
 
 const OrderTaking = () => {
   const [menuItems, setMenuItems] = useState([]);
-  const [availableTables, setAvailableTables] = useState([
-    { id: 'T1', tableNumber: 'T1', status: 'available', capacity: 4 },
-    { id: 'T2', tableNumber: 'T2', status: 'available', capacity: 2 },
-    { id: 'T3', tableNumber: 'T3', status: 'occupied', capacity: 6 },
-    { id: 'T4', tableNumber: 'T4', status: 'available', capacity: 4 },
-    { id: 'T5', tableNumber: 'T5', status: 'available', capacity: 8 },
-    { id: 'T6', tableNumber: 'T6', status: 'occupied', capacity: 2 },
-    { id: 'T7', tableNumber: 'T7', status: 'available', capacity: 4 },
-    { id: 'T8', tableNumber: 'T8', status: 'available', capacity: 6 },
-    { id: 'T9', tableNumber: 'T9', status: 'available', capacity: 2 },
-    { id: 'T10', tableNumber: 'T10', status: 'occupied', capacity: 4 }
-  ]);
+  const [categories, setCategories] = useState([]); // not used for filters now
+  const [availableTables, setAvailableTables] = useState([]);
   const [cart, setCart] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [dietFilter, setDietFilter] = useState('all'); // all | veg | non-veg
+  const [subcategoryFilter, setSubcategoryFilter] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -47,21 +38,34 @@ const OrderTaking = () => {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [menuResult, tablesResult] = await Promise.all([
+      const [menuResult, categoriesResult, tablesResult] = await Promise.all([
         menuService.getMenuItems(),
-        tableService.getAvailableTables()
+        menuService.getCategories(),
+        tableService.getTables()
       ]);
       
       if (menuResult.success) {
+        console.log('Menu items loaded:', menuResult.data);
         setMenuItems(menuResult.data);
       } else {
+        console.error('Failed to load menu items:', menuResult.error);
         toast.error('Failed to load menu items');
       }
 
-      if (tablesResult.success) {
-        setAvailableTables(tablesResult.data);
+      if (categoriesResult.success) {
+        console.log('Categories loaded:', categoriesResult.data);
+        setCategories(categoriesResult.data);
       } else {
-        toast.error('Failed to load available tables');
+        console.error('Failed to load categories:', categoriesResult.error);
+        toast.error('Failed to load categories');
+      }
+
+      if (tablesResult.success) {
+        // Filter for available tables
+        const availableTables = tablesResult.data.filter(table => table.status === 'available');
+        setAvailableTables(availableTables);
+      } else {
+        toast.error('Failed to load tables');
       }
     } catch (error) {
       toast.error('Failed to load data');
@@ -72,12 +76,33 @@ const OrderTaking = () => {
 
   const filteredMenuItems = menuItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
-    return matchesSearch && matchesCategory && item.available;
+                         (item.description || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const isVeg = (item.category === 'veg') || (item.subcategory === 'veg');
+    const isNonVeg = (item.category === 'non-veg') || (item.subcategory === 'non-veg');
+    const matchesDiet = dietFilter === 'all' || (dietFilter === 'veg' && isVeg) || (dietFilter === 'non-veg' && isNonVeg);
+    const matchesSub = subcategoryFilter === 'all' || (item.subcategory || '') === subcategoryFilter;
+    return matchesSearch && matchesDiet && matchesSub && item.available;
   });
 
-  const categories = [...new Set(menuItems.map(item => item.category))];
+  // Debug logging
+  console.log('Menu items:', menuItems.length);
+  console.log('Filtered menu items:', filteredMenuItems.length);
+  console.log('Diet filter:', dietFilter, 'Subcategory:', subcategoryFilter);
+  console.log('Search term:', searchTerm);
+
+  // Subcategory options fixed like admin
+  const subcategoryOptions = [
+    { id: 'all', name: 'All Subcategories' },
+    { id: 'starters', name: 'Starters' },
+    { id: 'curries', name: 'Curries' },
+    { id: 'biryani', name: 'Biryani' },
+    { id: 'family-pack-biryanis', name: 'Family Pack Biryanis' },
+    { id: 'rotis', name: 'Rotis' },
+    { id: 'meals', name: 'Meals' },
+    { id: 'beverages', name: 'Beverages' },
+    { id: 'ice-creams', name: 'Ice Creams' },
+    { id: 'dharani-s-specials', name: "Dharani's Specials" }
+  ];
 
   const addToCart = (item) => {
     setCart(prev => {
@@ -242,17 +267,25 @@ const OrderTaking = () => {
                     />
                   </div>
                 </div>
-                <div className="sm:w-48">
+                <div className="sm:w-44">
                   <select
-                    value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    value={dietFilter}
+                    onChange={(e) => setDietFilter(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   >
-                    <option value="all">All Categories</option>
-                    {categories.map(category => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
+                    <option value="all">All</option>
+                    <option value="veg">Veg</option>
+                    <option value="non-veg">Non-Veg</option>
+                  </select>
+                </div>
+                <div className="sm:w-60">
+                  <select
+                    value={subcategoryFilter}
+                    onChange={(e) => setSubcategoryFilter(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  >
+                    {subcategoryOptions.map(opt => (
+                      <option key={opt.id} value={opt.id}>{opt.name}</option>
                     ))}
                   </select>
                 </div>
@@ -260,8 +293,20 @@ const OrderTaking = () => {
             </div>
 
             {/* Menu Items Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredMenuItems.map((item) => (
+            {filteredMenuItems.length === 0 ? (
+              <div className="text-center py-12">
+                <Utensils className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No menu items found</h3>
+                <p className="text-gray-600">
+                  {menuItems.length === 0 
+                    ? "Menu items are loading or not available" 
+                    : "Try adjusting your search or filter criteria"
+                  }
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredMenuItems.map((item) => (
                 <div key={item.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow duration-200">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
@@ -285,8 +330,9 @@ const OrderTaking = () => {
                     Add to Cart
                   </button>
                 </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Order Summary */}

@@ -16,6 +16,15 @@ import customerService from '../../services/customerService';
 import toast from 'react-hot-toast';
 
 const AdminCustomers = () => {
+  // Custom color palette
+  const colors = {
+    red: '#E63946',
+    cream: '#F1FAEE',
+    lightBlue: '#A8DADC',
+    mediumBlue: '#457B9D',
+    darkNavy: '#1D3557'
+  };
+
   const [customers, setCustomers] = useState([]);
   const [stats, setStats] = useState({});
   const [isLoading, setIsLoading] = useState(true);
@@ -66,9 +75,21 @@ const AdminCustomers = () => {
   };
 
   const getStatusColor = (status) => {
-    return status === 'active' 
-      ? 'bg-green-100 text-green-800' 
-      : 'bg-gray-100 text-gray-800';
+    if (status === 'active') {
+      return {
+        backgroundColor: colors.lightBlue,
+        color: colors.darkNavy,
+        borderColor: colors.mediumBlue,
+        borderWidth: '2px'
+      };
+    } else {
+      return {
+        backgroundColor: colors.red,
+        color: colors.cream,
+        borderColor: colors.red,
+        borderWidth: '2px'
+      };
+    }
   };
 
   const getLoyaltyLevel = (points) => {
@@ -82,8 +103,11 @@ const AdminCustomers = () => {
       <AdminLayout>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading customers...</p>
+            <div 
+              className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
+              style={{ borderColor: colors.red }}
+            ></div>
+            <p className="font-semibold" style={{ color: colors.darkNavy }}>Loading customers...</p>
           </div>
         </div>
       </AdminLayout>
@@ -92,60 +116,106 @@ const AdminCustomers = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6 animate-fade-in">
+      <div className="space-y-8 animate-fade-in" style={{ backgroundColor: colors.cream, minHeight: '100vh', padding: '2rem' }}>
         {/* Header */}
         <div className="animate-slide-up">
-          <h1 className="text-4xl font-bold gradient-text restro-brand">Customer Management</h1>
+          <h1 
+            className="text-4xl font-bold drop-shadow-lg mb-2" 
+            style={{ 
+              fontFamily: 'Rockybilly, sans-serif', 
+              letterSpacing: '0.05em',
+              color: colors.darkNavy 
+            }}
+          >
+            Customer Management
+          </h1>
+          <div style={{ height: '4px', background: `linear-gradient(90deg, ${colors.red} 0%, ${colors.mediumBlue} 100%)`, borderRadius: '2px', width: '220px' }}></div>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-blue-100 text-blue-600">
-                <Users className="h-8 w-8" />
+          <div 
+            className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
+            style={{ 
+              animationDelay: '0.1s',
+              background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
+              borderColor: colors.mediumBlue,
+              borderWidth: '2px'
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm font-semibold mb-2" style={{ color: colors.darkNavy, opacity: 0.8 }}>Total Customers</p>
+                <p className="text-3xl font-bold" style={{ color: colors.mediumBlue }}>{stats.total}</p>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Customers</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+              <div className="p-4 rounded-full shadow-lg" style={{ backgroundColor: colors.cream }}>
+                <Users className="h-8 w-8" style={{ color: colors.mediumBlue }} />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-3 rounded-lg bg-green-100 text-green-600">
-                <UserCheck className="h-8 w-8" />
+          <div 
+            className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
+            style={{ 
+              animationDelay: '0.2s',
+              background: `linear-gradient(135deg, ${colors.lightBlue} 0%, ${colors.mediumBlue} 100%)`,
+              borderColor: colors.mediumBlue,
+              borderWidth: '2px'
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm font-semibold mb-2" style={{ color: colors.cream }}>Active Customers</p>
+                <p className="text-3xl font-bold" style={{ color: colors.cream }}>{stats.active}</p>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Active Customers</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.active}</p>
+              <div className="p-4 rounded-full shadow-lg" style={{ backgroundColor: colors.cream }}>
+                <UserCheck className="h-8 w-8" style={{ color: colors.mediumBlue }} />
               </div>
             </div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div 
+          className="rounded-2xl shadow-lg p-6 animate-slide-up animate-delay-200 border-2"
+          style={{ 
+            backgroundColor: colors.cream,
+            borderColor: colors.mediumBlue,
+            borderWidth: '2px'
+          }}
+        >
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5" style={{ color: colors.mediumBlue }} />
                 <input
                   type="text"
                   placeholder="Search customers..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border-2 rounded-xl transition-all"
+                  style={{ 
+                    borderColor: colors.lightBlue,
+                    backgroundColor: 'white'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
+                  onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
                 />
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <Filter className="h-4 w-4 text-gray-400" />
+              <Filter className="h-4 w-4" style={{ color: colors.mediumBlue }} />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="px-4 py-3 border-2 rounded-xl font-medium transition-all"
+                style={{ 
+                  borderColor: colors.lightBlue,
+                  backgroundColor: 'white',
+                  color: colors.darkNavy
+                }}
+                onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
+                onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
               >
                 <option value="all">All Status</option>
                 <option value="active">Active</option>
@@ -156,82 +226,130 @@ const AdminCustomers = () => {
         </div>
 
         {/* Customer List */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Customer List</h3>
+        <div 
+          className="rounded-2xl shadow-xl overflow-hidden border-2"
+          style={{ 
+            backgroundColor: colors.cream,
+            borderColor: colors.mediumBlue,
+            borderWidth: '2px'
+          }}
+        >
+          <div 
+            className="px-6 py-4 border-b-2"
+            style={{ borderColor: colors.mediumBlue }}
+          >
+            <h3 className="text-xl font-bold" style={{ color: colors.darkNavy }}>Customer List</h3>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <table className="min-w-full">
+              <thead>
+                <tr style={{ backgroundColor: colors.lightBlue }}>
+                  <th 
+                    className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider rounded-l-lg"
+                    style={{ color: colors.darkNavy }}
+                  >
                     Customer
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th 
+                    className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
+                    style={{ color: colors.darkNavy }}
+                  >
                     Contact
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th 
+                    className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
+                    style={{ color: colors.darkNavy }}
+                  >
                     Orders
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th 
+                    className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
+                    style={{ color: colors.darkNavy }}
+                  >
                     Total Spent
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th 
+                    className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
+                    style={{ color: colors.darkNavy }}
+                  >
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th 
+                    className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider rounded-r-lg"
+                    style={{ color: colors.darkNavy }}
+                  >
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredCustomers.map((customer) => {
+              <tbody>
+                {filteredCustomers.map((customer, index) => {
                   const loyalty = getLoyaltyLevel(customer.loyaltyPoints);
                   return (
-                    <tr key={customer.id} className="hover:bg-gray-50">
+                    <tr 
+                      key={customer.id} 
+                      className="transition-colors border-b"
+                      style={{ 
+                        borderColor: colors.lightBlue,
+                        backgroundColor: index % 2 === 0 ? colors.cream : 'rgba(168, 218, 220, 0.2)'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.lightBlue}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = index % 2 === 0 ? colors.cream : 'rgba(168, 218, 220, 0.2)'}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{customer.name}</div>
-                          <div className="text-sm text-gray-500">ID: #{customer.id}</div>
+                          <div className="text-sm font-bold" style={{ color: colors.darkNavy }}>{customer.name}</div>
+                          <div className="text-sm" style={{ color: colors.mediumBlue }}>ID: #{customer.id}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{customer.email}</div>
-                        <div className="text-sm text-gray-500 flex items-center">
+                        <div className="text-sm" style={{ color: colors.darkNavy }}>{customer.email}</div>
+                        <div className="text-sm flex items-center" style={{ color: colors.mediumBlue }}>
                           <Phone className="h-3 w-3 mr-1" />
                           {customer.phone}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{customer.totalOrders}</div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm font-bold" style={{ color: colors.darkNavy }}>{customer.totalOrders}</div>
+                        <div className="text-sm" style={{ color: colors.mediumBlue }}>
                           Last: {formatDate(customer.lastOrder, 'MMM dd')}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-bold" style={{ color: colors.darkNavy }}>
                           {formatCurrency(customer.totalSpent)}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{customer.loyaltyPoints} pts</div>
-                        <div className={`text-sm ${loyalty.color}`}>{loyalty.level}</div>
+                        <div className="text-sm font-bold" style={{ color: colors.darkNavy }}>{customer.loyaltyPoints} pts</div>
+                        <div className="text-sm" style={{ color: loyalty.level === 'Gold' ? '#F59E0B' : loyalty.level === 'Silver' ? colors.mediumBlue : '#F97316' }}>{loyalty.level}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(customer.status)}`}>
+                        <span 
+                          className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide border-2"
+                          style={getStatusColor(customer.status)}
+                        >
                           {customer.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center space-x-2">
-                          <button className="text-primary-600 hover:text-primary-900">
-                            <Eye className="h-4 w-4" />
+                        <div className="flex items-center space-x-3">
+                          <button 
+                            className="transition-colors duration-200 hover:scale-110 transform"
+                            style={{ color: colors.mediumBlue }}
+                            onMouseEnter={(e) => e.target.style.color = colors.darkNavy}
+                            onMouseLeave={(e) => e.target.style.color = colors.mediumBlue}
+                          >
+                            <Eye className="h-5 w-5" />
                           </button>
                           <button
                             onClick={() => handleStatusChange(customer.id, customer.status === 'active' ? 'inactive' : 'active')}
-                            className={customer.status === 'active' ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}
+                            className="transition-colors duration-200 hover:scale-110 transform"
+                            style={{ color: customer.status === 'active' ? colors.red : colors.mediumBlue }}
+                            onMouseEnter={(e) => e.target.style.color = customer.status === 'active' ? '#d32f3e' : colors.darkNavy}
+                            onMouseLeave={(e) => e.target.style.color = customer.status === 'active' ? colors.red : colors.mediumBlue}
                           >
-                            {customer.status === 'active' ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+                            {customer.status === 'active' ? <UserX className="h-5 w-5" /> : <UserCheck className="h-5 w-5" />}
                           </button>
                         </div>
                       </td>

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { Eye, EyeOff, Mail, Lock, User, Phone, ChefHat } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Phone, Home } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ROUTES } from '../../constants';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -42,238 +43,266 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
-      {/* Subtle overlay pattern */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-900/10 via-transparent to-primary-800/5"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,107,53,0.1),transparent_50%)]"></div>
-      
-      <div className="max-w-md w-full space-y-8 relative z-10">
-        {/* Form Container */}
-        <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-gray-700/50">
-          {/* Header */}
-          <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-primary-500 rounded-full flex items-center justify-center">
-            <ChefHat className="h-8 w-8 text-white" />
-          </div>
-          <h2 className="mt-6 text-3xl font-bold text-white">
-            Create Account
-          </h2>
-          <p className="mt-2 text-sm text-gray-300">
-            Join our restaurant community
-          </p>
-        </div>
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url(${require('../../assets/images/login-bg.jpg.jpg')})`,
+        }}
+      >
+        {/* Dark Overlay for readability */}
+        <div className="absolute inset-0 bg-brand-navy/80"></div>
+      </div>
 
-        {/* Registration Form */}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-4">
-            {/* Name Field */}
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-300">
-                Full Name
-              </label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  {...register('name', {
-                    required: 'Name is required',
-                    minLength: {
-                      value: 2,
-                      message: 'Name must be at least 2 characters'
-                    }
-                  })}
-                  type="text"
-                  className="input-field pl-10"
-                  placeholder="Enter your full name"
-                />
-              </div>
-              {errors.name && (
-                <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
-              )}
-            </div>
+      {/* Back to Home Button */}
+      <Link 
+        to={ROUTES.CUSTOMER_HOME}
+        className="absolute top-6 left-6 flex items-center space-x-2 text-white hover:text-brand-teal transition-colors z-20"
+      >
+        <Home className="w-5 h-5" />
+        <span className="font-semibold">Back to Home</span>
+      </Link>
 
-            {/* Phone Field */}
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-300">
-                Phone Number
-              </label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Phone className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  {...register('phone', {
-                    required: 'Phone number is required',
-                    pattern: {
-                      value: /^[+]?[1-9][\d]{0,15}$/,
-                      message: 'Invalid phone number format'
-                    }
-                  })}
-                  type="tel"
-                  className="input-field pl-10"
-                  placeholder="Enter your phone number"
-                />
-              </div>
-              {errors.phone && (
-                <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
-              )}
-            </div>
-
-            {/* Email Field */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300">
-                Email Address (Optional)
-              </label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  {...register('email', {
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: 'Invalid email address'
-                    }
-                  })}
-                  type="email"
-                  className="input-field pl-10"
-                  placeholder="Enter your email (optional)"
-                />
-              </div>
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-              )}
-            </div>
-
-
-            {/* Password Field */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300">
-                Password
-              </label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  {...register('password', {
-                    required: 'Password is required',
-                    minLength: {
-                      value: 6,
-                      message: 'Password must be at least 6 characters'
-                    }
-                  })}
-                  type={showPassword ? 'text' : 'password'}
-                  className="input-field pl-10 pr-10"
-                  placeholder="Create a password"
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400" />
-                  )}
-                </button>
-              </div>
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
-              )}
-            </div>
-
-            {/* Confirm Password Field */}
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300">
-                Confirm Password
-              </label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  {...register('confirmPassword', {
-                    required: 'Please confirm your password',
-                    validate: value => value === password || 'Passwords do not match'
-                  })}
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  className="input-field pl-10 pr-10"
-                  placeholder="Confirm your password"
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400" />
-                  )}
-                </button>
-              </div>
-              {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Terms and Conditions */}
-          <div className="flex items-center">
-            <input
-              id="terms"
-              name="terms"
-              type="checkbox"
-              required
-              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-            />
-            <label htmlFor="terms" className="ml-2 block text-sm text-gray-300">
-              I agree to the{' '}
-              <button type="button" className="text-primary-400 hover:text-primary-300 underline">
-                Terms and Conditions
-              </button>{' '}
-              and{' '}
-              <button type="button" className="text-primary-400 hover:text-primary-300 underline">
-                Privacy Policy
-              </button>
-            </label>
-          </div>
-
-          {/* Submit Button */}
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-            >
-              {isLoading ? (
-                <div className="flex items-center">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Creating account...
-                </div>
-              ) : (
-                'Create Account'
-              )}
-            </button>
-          </div>
-
-          {/* Login Link */}
-          <div className="text-center">
-            <p className="text-sm text-gray-300">
-              Already have an account?{' '}
-              <Link
-                to={ROUTES.LOGIN}
-                className="font-medium text-primary-400 hover:text-primary-300"
+      {/* Main Content */}
+      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 py-12">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
+          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+            {/* Registration Form */}
+            <div className="p-12 bg-brand-cream">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
               >
-                Sign in here
-              </Link>
-            </p>
+                {/* Logo */}
+                <div className="flex justify-center mb-6">
+                  <img 
+                    src={require('../../assets/images/restrologo.png')} 
+                    alt="Restro Logo" 
+                    className="w-32 h-32 object-contain"
+                  />
+                </div>
+                
+                <h2 className="text-3xl font-bold text-brand-red mb-2 text-center" style={{ fontFamily: 'Rockybilly, sans-serif' }}>
+                  Create Account
+                </h2>
+                <p className="text-brand-navy mb-8 text-center">
+                  Join our restaurant community
+                </p>
+
+                <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+                  {/* Name Field */}
+                  <div>
+                    <label className="block text-sm font-semibold text-brand-navy mb-2">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <User className="h-5 w-5 text-brand-blue" />
+                      </div>
+                      <input
+                        {...register('name', {
+                          required: 'Name is required',
+                          minLength: {
+                            value: 2,
+                            message: 'Name must be at least 2 characters'
+                          }
+                        })}
+                        type="text"
+                        className="w-full pl-12 pr-4 py-3 bg-white border-2 border-brand-teal/40 focus:border-brand-red focus:outline-none rounded-lg text-brand-navy placeholder-brand-blue/50 transition-all"
+                        placeholder="Enter your full name"
+                      />
+                    </div>
+                    {errors.name && (
+                      <p className="mt-1 text-sm text-brand-red font-medium">{errors.name.message}</p>
+                    )}
+                  </div>
+
+                  {/* Phone Field */}
+                  <div>
+                    <label className="block text-sm font-semibold text-brand-navy mb-2">
+                      Phone Number
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Phone className="h-5 w-5 text-brand-blue" />
+                      </div>
+                      <input
+                        {...register('phone', {
+                          required: 'Phone number is required',
+                          pattern: {
+                            value: /^[+]?[1-9][\d]{0,15}$/,
+                            message: 'Invalid phone number format'
+                          }
+                        })}
+                        type="tel"
+                        className="w-full pl-12 pr-4 py-3 bg-white border-2 border-brand-teal/40 focus:border-brand-red focus:outline-none rounded-lg text-brand-navy placeholder-brand-blue/50 transition-all"
+                        placeholder="Enter phone number"
+                      />
+                    </div>
+                    {errors.phone && (
+                      <p className="mt-1 text-sm text-brand-red font-medium">{errors.phone.message}</p>
+                    )}
+                  </div>
+
+                  {/* Email Field */}
+                  <div>
+                    <label className="block text-sm font-semibold text-brand-navy mb-2">
+                      Email Address (Optional)
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Mail className="h-5 w-5 text-brand-blue" />
+                      </div>
+                      <input
+                        {...register('email', {
+                          pattern: {
+                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                            message: 'Invalid email address'
+                          }
+                        })}
+                        type="email"
+                        className="w-full pl-12 pr-4 py-3 bg-white border-2 border-brand-teal/40 focus:border-brand-red focus:outline-none rounded-lg text-brand-navy placeholder-brand-blue/50 transition-all"
+                        placeholder="Enter your email (optional)"
+                      />
+                    </div>
+                    {errors.email && (
+                      <p className="mt-1 text-sm text-brand-red font-medium">{errors.email.message}</p>
+                    )}
+                  </div>
+
+
+                  {/* Password Field */}
+                  <div>
+                    <label className="block text-sm font-semibold text-brand-navy mb-2">
+                      Password
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Lock className="h-5 w-5 text-brand-blue" />
+                      </div>
+                      <input
+                        {...register('password', {
+                          required: 'Password is required',
+                          minLength: {
+                            value: 6,
+                            message: 'Password must be at least 6 characters'
+                          }
+                        })}
+                        type={showPassword ? 'text' : 'password'}
+                        className="w-full pl-12 pr-12 py-3 bg-white border-2 border-brand-teal/40 focus:border-brand-red focus:outline-none rounded-lg text-brand-navy placeholder-brand-blue/50 transition-all"
+                        placeholder="Create a password"
+                      />
+                      <button
+                        type="button"
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-5 w-5 text-brand-blue hover:text-brand-red transition-colors" />
+                        ) : (
+                          <Eye className="h-5 w-5 text-brand-blue hover:text-brand-red transition-colors" />
+                        )}
+                      </button>
+                    </div>
+                    {errors.password && (
+                      <p className="mt-1 text-sm text-brand-red font-medium">{errors.password.message}</p>
+                    )}
+                  </div>
+
+                  {/* Confirm Password Field */}
+                  <div>
+                    <label className="block text-sm font-semibold text-brand-navy mb-2">
+                      Confirm Password
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Lock className="h-5 w-5 text-brand-blue" />
+                      </div>
+                      <input
+                        {...register('confirmPassword', {
+                          required: 'Please confirm your password',
+                          validate: value => value === password || 'Passwords do not match'
+                        })}
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        className="w-full pl-12 pr-12 py-3 bg-white border-2 border-brand-teal/40 focus:border-brand-red focus:outline-none rounded-lg text-brand-navy placeholder-brand-blue/50 transition-all"
+                        placeholder="Confirm your password"
+                      />
+                      <button
+                        type="button"
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-5 w-5 text-brand-blue hover:text-brand-red transition-colors" />
+                        ) : (
+                          <Eye className="h-5 w-5 text-brand-blue hover:text-brand-red transition-colors" />
+                        )}
+                      </button>
+                    </div>
+                    {errors.confirmPassword && (
+                      <p className="mt-1 text-sm text-brand-red font-medium">{errors.confirmPassword.message}</p>
+                    )}
+                  </div>
+
+                  {/* Terms and Conditions */}
+                  <div className="flex items-center">
+                    <input
+                      id="terms"
+                      name="terms"
+                      type="checkbox"
+                      required
+                      className="w-4 h-4 text-brand-red border-brand-teal rounded focus:ring-brand-red"
+                    />
+                    <label htmlFor="terms" className="ml-2 block text-sm text-brand-navy">
+                      I agree to the{' '}
+                      <button type="button" className="font-semibold text-brand-red hover:text-brand-navy transition-colors">
+                        Terms and Conditions
+                      </button>{' '}
+                      and{' '}
+                      <button type="button" className="font-semibold text-brand-red hover:text-brand-navy transition-colors">
+                        Privacy Policy
+                      </button>
+                    </label>
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-brand-red hover:bg-brand-navy text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                        Creating account...
+                      </div>
+                    ) : (
+                      'Create Account'
+                    )}
+                  </button>
+
+                  {/* Login Link */}
+                  <p className="text-center text-brand-blue">
+                    Already have an account?{' '}
+                    <Link
+                      to={ROUTES.LOGIN}
+                      className="font-bold text-brand-red hover:text-brand-navy transition-colors"
+                    >
+                      Sign In
+                    </Link>
+                  </p>
+                </form>
+              </motion.div>
+            </div>
           </div>
-        </form>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

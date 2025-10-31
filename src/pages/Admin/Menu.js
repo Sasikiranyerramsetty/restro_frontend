@@ -10,12 +10,22 @@ import menuManagementService from '../../services/menuManagementService';
 import toast from 'react-hot-toast';
 
 const AdminMenu = () => {
+  // Custom color palette
+  const colors = {
+    red: '#E63946',
+    cream: '#F1FAEE',
+    lightBlue: '#A8DADC',
+    mediumBlue: '#457B9D',
+    darkNavy: '#1D3557'
+  };
+
   const [menuItems, setMenuItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -76,13 +86,14 @@ const AdminMenu = () => {
   };
 
   const handleEditItem = (item) => {
+    // Use values as-is now (no swapping)
     setFormData({
       name: item.name,
       price: item.price.toString(),
-      category: item.category,
-      subcategory: item.subcategory,
+      category: item.category || '',
+      subcategory: item.subcategory || '',
       available: item.available,
-      preparationTime: item.preparationTime.toString()
+      preparationTime: (item.preparationTime ?? 0).toString()
     });
     setEditingItem(item);
     setShowAddModal(true);
@@ -93,10 +104,11 @@ const AdminMenu = () => {
     setIsSubmitting(true);
 
     try {
+      // Save as provided
       const itemData = {
         ...formData,
         price: parseFloat(formData.price),
-        preparationTime: parseInt(formData.preparationTime)
+        preparationTime: parseInt(formData.preparationTime || '0')
       };
 
       if (editingItem) {
@@ -142,29 +154,50 @@ const AdminMenu = () => {
   const filteredItems = menuItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          item.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    // Category filters on item.category (veg, non-veg, meals, etc.)
+    // Subcategory filters on item.subcategory (starters, curries, biryani, etc.)
+    const matchesCategory = selectedCategory === 'all' || (item.category || '') === selectedCategory;
+    const matchesSubcategory = selectedSubcategory === 'all' || (item.subcategory || '') === selectedSubcategory;
+    return matchesSearch && matchesCategory && matchesSubcategory;
   });
 
   const getStatusBadge = (available) => {
-    return available 
-      ? 'bg-green-100 text-green-800' 
-      : 'bg-red-100 text-red-800';
+    if (available) {
+      return {
+        backgroundColor: colors.lightBlue,
+        color: colors.darkNavy,
+        borderColor: colors.mediumBlue,
+        borderWidth: '2px'
+      };
+    } else {
+      return {
+        backgroundColor: colors.red,
+        color: colors.cream,
+        borderColor: colors.red,
+        borderWidth: '2px'
+      };
+    }
   };
 
   const getCategoryBadge = (category) => {
-    const colors = {
-      starters: 'bg-orange-100 text-orange-800',
-      rotis: 'bg-amber-100 text-amber-800',
-      curries: 'bg-green-100 text-green-800',
-      biryanis: 'bg-blue-100 text-blue-800',
-      'restro-specials': 'bg-purple-100 text-purple-800',
-      meals: 'bg-indigo-100 text-indigo-800',
-      beverages: 'bg-cyan-100 text-cyan-800',
-      icecreams: 'bg-pink-100 text-pink-800',
-      'family-pack-biryanis': 'bg-red-100 text-red-800'
+    const categoryColors = {
+      starters: { bg: colors.red, text: colors.cream, border: colors.red },
+      rotis: { bg: colors.lightBlue, text: colors.darkNavy, border: colors.mediumBlue },
+      curries: { bg: colors.mediumBlue, text: colors.cream, border: colors.mediumBlue },
+      biryanis: { bg: colors.darkNavy, text: colors.cream, border: colors.darkNavy },
+      'restro-specials': { bg: colors.red, text: colors.cream, border: colors.red },
+      meals: { bg: colors.lightBlue, text: colors.darkNavy, border: colors.darkNavy },
+      beverages: { bg: colors.mediumBlue, text: colors.cream, border: colors.mediumBlue },
+      icecreams: { bg: colors.lightBlue, text: colors.darkNavy, border: colors.lightBlue },
+      'family-pack-biryanis': { bg: colors.red, text: colors.cream, border: colors.red }
     };
-    return colors[category] || 'bg-gray-100 text-gray-800';
+    const color = categoryColors[category] || { bg: colors.cream, text: colors.darkNavy, border: colors.lightBlue };
+    return {
+      backgroundColor: color.bg,
+      color: color.text,
+      borderColor: color.border,
+      borderWidth: '2px'
+    };
   };
 
   const getCategoryDisplayName = (category) => {
@@ -186,7 +219,13 @@ const AdminMenu = () => {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+          <div className="text-center">
+            <div 
+              className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
+              style={{ borderColor: colors.red }}
+            ></div>
+            <p className="font-semibold" style={{ color: colors.darkNavy }}>Loading menu...</p>
+          </div>
         </div>
       </AdminLayout>
     );
@@ -194,15 +233,28 @@ const AdminMenu = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6 animate-fade-in">
+      <div className="space-y-8 animate-fade-in" style={{ backgroundColor: colors.cream, minHeight: '100vh', padding: '2rem' }}>
         {/* Header */}
         <div className="flex items-center justify-between animate-slide-up">
           <div>
-            <h1 className="text-4xl font-bold gradient-text restro-brand">Menu Management</h1>
+            <h1 
+              className="text-4xl font-bold drop-shadow-lg mb-2" 
+              style={{ 
+                fontFamily: 'Rockybilly, sans-serif', 
+                letterSpacing: '0.05em',
+                color: colors.darkNavy 
+              }}
+            >
+              Menu Management
+            </h1>
+            <div style={{ height: '4px', background: `linear-gradient(90deg, ${colors.red} 0%, ${colors.mediumBlue} 100%)`, borderRadius: '2px', width: '150px' }}></div>
           </div>
           <button 
             onClick={handleAddItem}
-            className="btn-primary flex items-center hover:scale-105 transition-transform duration-300"
+            className="px-8 py-3 text-white rounded-xl font-bold transition-all duration-300 hover:scale-105 shadow-lg flex items-center"
+            style={{ backgroundColor: colors.red }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#d32f3e'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = colors.red}
           >
             <Plus className="h-5 w-5 mr-2" />
             Add Menu Item
@@ -211,142 +263,245 @@ const AdminMenu = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="card animate-slide-up hover:scale-105 transition-transform duration-300" style={{ animationDelay: '0.1s' }}>
-            <div className="flex items-center">
-              <div className="p-3 bg-blue-100 rounded-xl animate-float">
-                <Package className="h-7 w-7 text-blue-600" />
+          <div 
+            className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
+            style={{ 
+              animationDelay: '0.1s',
+              background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
+              borderColor: colors.red,
+              borderWidth: '2px'
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm font-semibold mb-2" style={{ color: colors.darkNavy, opacity: 0.8 }}>Total Items</p>
+                <p className="text-3xl font-bold" style={{ color: colors.red }}>{stats.totalItems}</p>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-semibold text-gray-600">Total Items</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalItems}</p>
+              <div className="p-4 rounded-full shadow-lg" style={{ backgroundColor: colors.cream }}>
+                <Package className="h-8 w-8" style={{ color: colors.red }} />
               </div>
             </div>
           </div>
 
-          <div className="card animate-slide-up hover:scale-105 transition-transform duration-300" style={{ animationDelay: '0.2s' }}>
-            <div className="flex items-center">
-              <div className="p-3 bg-green-100 rounded-xl animate-float" style={{ animationDelay: '0.7s' }}>
-                <CheckCircle className="h-7 w-7 text-green-600" />
+          <div 
+            className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
+            style={{ 
+              animationDelay: '0.2s',
+              background: `linear-gradient(135deg, ${colors.lightBlue} 0%, ${colors.mediumBlue} 100%)`,
+              borderColor: colors.mediumBlue,
+              borderWidth: '2px'
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm font-semibold mb-2" style={{ color: colors.cream }}>Available</p>
+                <p className="text-3xl font-bold" style={{ color: colors.cream }}>{stats.availableItems}</p>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-semibold text-gray-600">Available</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.availableItems}</p>
+              <div className="p-4 rounded-full shadow-lg" style={{ backgroundColor: colors.cream }}>
+                <CheckCircle className="h-8 w-8" style={{ color: colors.mediumBlue }} />
               </div>
             </div>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="card animate-slide-up animate-delay-200">
+        <div 
+          className="rounded-2xl shadow-lg p-6 animate-slide-up animate-delay-200 border-2"
+          style={{ 
+            backgroundColor: colors.cream,
+            borderColor: colors.mediumBlue,
+            borderWidth: '2px'
+          }}
+        >
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5" style={{ color: colors.mediumBlue }} />
                 <input
                   type="text"
                   placeholder="Search menu items..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border-2 rounded-xl transition-all"
+                  style={{ 
+                    borderColor: colors.lightBlue,
+                    backgroundColor: 'white'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
+                  onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
                 />
               </div>
             </div>
-            <div className="sm:w-48">
+            <div className="sm:w-56">
               <select
+                aria-label="Category"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all"
+                style={{ 
+                  borderColor: colors.lightBlue,
+                  backgroundColor: 'white',
+                  color: colors.darkNavy
+                }}
+                onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
+                onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
               >
-                <option value="all">All Categories</option>
+                <option value="all">Category</option>
+                <option value="veg">Veg</option>
+                <option value="non-veg">Non-Veg</option>
+              </select>
+            </div>
+            <div className="sm:w-56">
+              <select
+                aria-label="Subcategory"
+                value={selectedSubcategory}
+                onChange={(e) => setSelectedSubcategory(e.target.value)}
+                className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all"
+                style={{ 
+                  borderColor: colors.lightBlue,
+                  backgroundColor: 'white',
+                  color: colors.darkNavy
+                }}
+                onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
+                onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
+              >
+                <option value="all">Subcategory</option>
                 <option value="starters">Starters</option>
-                <option value="rotis">Rotis</option>
                 <option value="curries">Curries</option>
-                <option value="biryanis">Biryanis</option>
-                <option value="restro-specials">Restro Specials</option>
+                <option value="biryani">Biryani</option>
+                <option value="family-pack-biryanis">Family Pack Biryanis</option>
+                <option value="rotis">Rotis</option>
                 <option value="meals">Meals</option>
                 <option value="beverages">Beverages</option>
-                <option value="icecreams">Ice Creams</option>
-                <option value="family-pack-biryanis">Family Pack Biryanis</option>
+                <option value="ice-creams">Ice Creams</option>
+                <option value="dharani-s-specials">Dharani's Specials</option>
               </select>
             </div>
           </div>
         </div>
 
         {/* Menu Items Table */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div 
+          className="rounded-2xl shadow-xl overflow-hidden border-2"
+          style={{ 
+            backgroundColor: colors.cream,
+            borderColor: colors.mediumBlue,
+            borderWidth: '2px'
+          }}
+        >
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <table className="min-w-full">
+              <thead>
+                <tr style={{ backgroundColor: colors.lightBlue }}>
+                  <th 
+                    className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider rounded-l-lg"
+                    style={{ color: colors.darkNavy }}
+                  >
                     Item
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th 
+                    className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
+                    style={{ color: colors.darkNavy }}
+                  >
                     Category
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th 
+                    className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
+                    style={{ color: colors.darkNavy }}
+                  >
                     Price
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th 
+                    className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
+                    style={{ color: colors.darkNavy }}
+                  >
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th 
+                    className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
+                    style={{ color: colors.darkNavy }}
+                  >
                     Popularity
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th 
+                    className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider rounded-r-lg"
+                    style={{ color: colors.darkNavy }}
+                  >
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredItems.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
+              <tbody>
+                {filteredItems.map((item, index) => (
+                  <tr 
+                    key={item.id} 
+                    className="transition-colors border-b"
+                    style={{ 
+                      borderColor: colors.lightBlue,
+                      backgroundColor: index % 2 === 0 ? colors.cream : 'rgba(168, 218, 220, 0.2)'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.lightBlue}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = index % 2 === 0 ? colors.cream : 'rgba(168, 218, 220, 0.2)'}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="h-12 w-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                          <Utensils className="h-6 w-6 text-gray-400" />
+                        <div 
+                          className="h-12 w-12 rounded-lg flex items-center justify-center"
+                          style={{ backgroundColor: colors.lightBlue }}
+                        >
+                          <Utensils className="h-6 w-6" style={{ color: colors.darkNavy }} />
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                          <div className="text-sm font-bold" style={{ color: colors.darkNavy }}>{item.name}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getCategoryBadge(item.category)}`}>
-                        {getCategoryDisplayName(item.category)}
+                      <span 
+                        className="inline-flex px-3 py-1 text-xs font-bold rounded-full border-2"
+                        style={getCategoryBadge(item.subcategory)}
+                      >
+                        {getCategoryDisplayName(item.subcategory)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold" style={{ color: colors.darkNavy }}>
                       ₹{item.price}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button
                         onClick={() => handleToggleAvailability(item.id)}
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(item.available)}`}
+                        className="inline-flex px-3 py-1 text-xs font-bold rounded-full transition-colors border-2"
+                        style={getStatusBadge(item.available)}
                       >
                         {item.available ? 'Available' : 'Unavailable'}
                       </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <Star className="h-4 w-4 text-yellow-400 mr-1" />
-                        <span className="text-sm text-gray-900">{item.popularity}</span>
-                        <span className="text-sm text-gray-500 ml-1">({item.totalOrders} orders)</span>
+                        <Star className="h-4 w-4 mr-1" style={{ color: '#F59E0B' }} />
+                        <span className="text-sm font-semibold" style={{ color: colors.darkNavy }}>{item.popularity}</span>
+                        <span className="text-sm ml-1" style={{ color: colors.mediumBlue }}>({item.totalOrders} orders)</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-3">
                         <button
                           onClick={() => handleEditItem(item)}
-                          className="text-primary-600 hover:text-primary-900 transition-colors duration-200"
+                          className="transition-colors duration-200 hover:scale-110 transform"
+                          style={{ color: colors.mediumBlue }}
+                          onMouseEnter={(e) => e.target.style.color = colors.darkNavy}
+                          onMouseLeave={(e) => e.target.style.color = colors.mediumBlue}
                         >
-                          <Edit className="h-4 w-4" />
+                          <Edit className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => handleDeleteItem(item.id)}
-                          className="text-red-600 hover:text-red-900 transition-colors duration-200"
+                          className="transition-colors duration-200 hover:scale-110 transform"
+                          style={{ color: colors.red }}
+                          onMouseEnter={(e) => e.target.style.color = '#d32f3e'}
+                          onMouseLeave={(e) => e.target.style.color = colors.red}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-5 w-5" />
                         </button>
                       </div>
                     </td>
@@ -359,24 +514,43 @@ const AdminMenu = () => {
 
         {/* Add/Edit Modal */}
         {showAddModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6">
+            <div 
+              className="rounded-2xl shadow-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto border-2"
+              style={{ 
+                backgroundColor: colors.cream,
+                borderColor: colors.mediumBlue,
+                borderWidth: '2px'
+              }}
+            >
+              <div 
+                className="flex items-center justify-between p-8 border-b-2"
+                style={{ borderColor: colors.mediumBlue }}
+              >
+                <h3 
+                  className="text-xl font-bold" 
+                  style={{ 
+                    fontFamily: 'Rockybilly, sans-serif',
+                    color: colors.darkNavy 
+                  }}
+                >
                   {editingItem ? 'Edit Menu Item' : 'Add New Menu Item'}
                 </h3>
                 <button
                   onClick={() => setShowAddModal(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                  className="transition-colors duration-200 hover:scale-110"
+                  style={{ color: colors.red }}
+                  onMouseEnter={(e) => e.target.style.color = '#d32f3e'}
+                  onMouseLeave={(e) => e.target.style.color = colors.red}
                 >
                   <X className="h-6 w-6" />
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-bold mb-2" style={{ color: colors.darkNavy }}>
                       Item Name *
                     </label>
                     <input
@@ -385,12 +559,18 @@ const AdminMenu = () => {
                       value={formData.name}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border-2 rounded-xl transition-all"
+                      style={{ 
+                        borderColor: colors.lightBlue,
+                        backgroundColor: 'white'
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
+                      onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-bold mb-2" style={{ color: colors.darkNavy }}>
                       Price (₹) *
                     </label>
                     <input
@@ -401,58 +581,75 @@ const AdminMenu = () => {
                       required
                       min="0"
                       step="0.01"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border-2 rounded-xl transition-all"
+                      style={{ 
+                        borderColor: colors.lightBlue,
+                        backgroundColor: 'white'
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
+                      onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-bold mb-2" style={{ color: colors.darkNavy }}>
                       Category *
                     </label>
                     <select
                       name="category"
                       value={formData.category}
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData(prev => ({ ...prev, category: value }));
+                      }}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all"
+                      style={{ 
+                        borderColor: colors.lightBlue,
+                        backgroundColor: 'white',
+                        color: colors.darkNavy
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
+                      onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
                     >
                       <option value="">Select Category</option>
-                      <option value="starters">Starters</option>
-                      <option value="rotis">Rotis</option>
-                      <option value="curries">Curries</option>
-                      <option value="biryanis">Biryanis</option>
-                      <option value="restro-specials">Restro Specials</option>
-                      <option value="meals">Meals</option>
-                      <option value="beverages">Beverages</option>
-                      <option value="icecreams">Ice Creams</option>
-                      <option value="family-pack-biryanis">Family Pack Biryanis</option>
+                      <option value="veg">Veg</option>
+                      <option value="non-veg">Non-Veg</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-bold mb-2" style={{ color: colors.darkNavy }}>
                       Subcategory
                     </label>
                     <select
                       name="subcategory"
                       value={formData.subcategory}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all"
+                      style={{ 
+                        borderColor: colors.lightBlue,
+                        backgroundColor: 'white',
+                        color: colors.darkNavy
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
+                      onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
                     >
                       <option value="">Select Subcategory</option>
-                      {formData.category === 'rotis' || formData.category === 'beverages' || formData.category === 'icecreams' ? (
-                        <option value="veg">Veg</option>
-                      ) : (
-                        <>
-                          <option value="vegetarian">Vegetarian</option>
-                          <option value="non-vegetarian">Non-Vegetarian</option>
-                        </>
-                      )}
+                      <option value="starters">Starters</option>
+                      <option value="curries">Curries</option>
+                      <option value="biryani">Biryani</option>
+                      <option value="family-pack-biryanis">Family Pack Biryanis</option>
+                      <option value="rotis">Rotis</option>
+                      <option value="meals">Meals</option>
+                      <option value="beverages">Beverages</option>
+                      <option value="ice-creams">Ice Creams</option>
+                      <option value="dharani-s-specials">Dharani's Specials</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-bold mb-2" style={{ color: colors.darkNavy }}>
                       Preparation Time (minutes)
                     </label>
                     <input
@@ -461,7 +658,13 @@ const AdminMenu = () => {
                       value={formData.preparationTime}
                       onChange={handleInputChange}
                       min="0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border-2 rounded-xl transition-all"
+                      style={{ 
+                        borderColor: colors.lightBlue,
+                        backgroundColor: 'white'
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
+                      onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
                     />
                   </div>
 
@@ -471,27 +674,47 @@ const AdminMenu = () => {
                       name="available"
                       checked={formData.available}
                       onChange={handleInputChange}
-                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                      className="h-5 w-5 rounded"
+                      style={{ accentColor: colors.mediumBlue }}
                     />
-                    <label className="ml-2 block text-sm text-gray-700">
+                    <label className="ml-3 block text-sm font-bold" style={{ color: colors.darkNavy }}>
                       Available
                     </label>
                   </div>
                 </div>
 
 
-                <div className="flex items-center justify-end space-x-3 pt-4">
+                <div 
+                  className="flex items-center justify-end space-x-3 pt-4 border-t-2 mt-6"
+                  style={{ borderColor: colors.mediumBlue }}
+                >
                   <button
                     type="button"
                     onClick={() => setShowAddModal(false)}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200"
+                    className="px-6 py-3 text-sm font-bold rounded-xl transition-all duration-200 border-2"
+                    style={{ 
+                      color: colors.darkNavy,
+                      backgroundColor: colors.lightBlue,
+                      borderColor: colors.mediumBlue
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = colors.mediumBlue;
+                      e.target.style.color = colors.cream;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = colors.lightBlue;
+                      e.target.style.color = colors.darkNavy;
+                    }}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="btn-primary flex items-center"
+                    className="px-6 py-3 text-white rounded-xl font-bold transition-all duration-300 shadow-lg flex items-center"
+                    style={{ backgroundColor: colors.red }}
+                    onMouseEnter={(e) => !isSubmitting && (e.target.style.backgroundColor = '#d32f3e')}
+                    onMouseLeave={(e) => !isSubmitting && (e.target.style.backgroundColor = colors.red)}
                   >
                     {isSubmitting ? (
                       <>

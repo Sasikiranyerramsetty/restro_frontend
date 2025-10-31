@@ -3,113 +3,126 @@ import { STORAGE_KEYS } from '../constants';
 import { setToStorage, getFromStorage, removeFromStorage } from '../utils';
 
 class AuthService {
-  // Login
+  // Login - Integrated with Backend (UNIFIED SOLUTION)
   async login(credentials) {
     try {
-      // Mock authentication for demo purposes
-      const mockUsers = {
-        '1234567890': {
-          id: 1,
-          name: 'Admin User',
-          email: 'admin@restaurant.com',
-          role: 'admin',
-          phone: '1234567890'
-        },
-        '1234567891': {
-          id: 2,
-          name: 'Employee User',
-          email: 'employee@restaurant.com',
-          role: 'employee',
-          phone: '1234567891'
-        },
-        '1234567892': {
-          id: 3,
-          name: 'Customer User',
-          email: 'customer@restaurant.com',
-          role: 'customer',
-          phone: '1234567892'
-        },
-        '9876543210': {
-          id: 4,
-          name: 'Test Admin',
-          email: 'test@restaurant.com',
-          role: 'admin',
-          phone: '9876543210'
-        },
-        '5551234567': {
-          id: 5,
-          name: 'Test Customer',
-          email: 'testcustomer@restaurant.com',
-          role: 'customer',
-          phone: '5551234567'
-        }
-      };
+      // Backend endpoint: POST /users/login
+      const response = await api.post('/users/login', {
+        phone_number_or_email: credentials.phone || credentials.email,
+        password: credentials.password
+      });
 
-      const mockPasswords = {
-        '1234567890': 'admin123',
-        '1234567891': 'employee123',
-        '1234567892': 'customer123',
-        '9876543210': 'admin123',
-        '5551234567': 'customer123'
-      };
-
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const user = mockUsers[credentials.phone];
-      const correctPassword = mockPasswords[credentials.phone];
-
-      if (user && credentials.password === correctPassword) {
-        const token = 'mock-jwt-token-' + Date.now();
-        const userData = { token, user };
+      if (response.data.success) {
+        // Backend now returns: {name, role, user_id, message, success}
+        // Role is automatically determined by which collection user is in!
+        // NO MORE HARDCODING - Fully dynamic and scalable! 🎉
         
-        // Store token and user data
+        const userData = {
+          id: response.data.user_id,  // Unique user ID from database
+          name: response.data.name,
+          phone: credentials.phone,
+          email: credentials.email,
+          role: response.data.role  // 'admin', 'employee', or 'customer' from backend
+        };
+        
+        const token = 'restro-token-' + Date.now();
+        
         setToStorage(STORAGE_KEYS.AUTH_TOKEN, token);
-        setToStorage(STORAGE_KEYS.USER_DATA, user);
+        setToStorage(STORAGE_KEYS.USER_DATA, userData);
         
-        return { success: true, data: userData };
+        console.log('✅ Login successful - User role:', userData.role);
+        
+        return { 
+          success: true, 
+          data: { token, user: userData },
+          message: response.data.message 
+        };
       } else {
-        return { success: false, error: 'Invalid phone number or password' };
+        return { 
+          success: false, 
+          error: response.data.message || 'Login failed' 
+        };
       }
     } catch (error) {
-      return { success: false, error: 'Login failed. Please try again.' };
+      console.error('❌ Login error:', error);
+      return { 
+        success: false, 
+        error: error.response?.data?.detail || 'Login failed. Please try again.' 
+      };
     }
   }
 
-  // Register
+  // Register - Integrated with Backend
   async register(userData) {
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock registration - just return success
-      return { 
-        success: true, 
-        data: { 
-          message: 'Registration successful! Please login to continue.',
-          user: {
-            id: Date.now(),
-            name: userData.name,
-            email: userData.email,
-            role: userData.role || 'customer', // Default to customer if no role specified
-            phone: userData.phone
-          }
-        } 
+      // Prepare request data
+      const requestData = {
+        name: userData.name,
+        phone_number: userData.phone,
+        email: userData.email || '',
+        password: userData.password,
+        confirm_password: userData.confirmPassword
       };
+
+      console.log('📤 Sending registration data to backend:', {
+        ...requestData,
+        password: '***',
+        confirm_password: '***'
+      });
+
+      // Backend endpoint: POST /users/signup
+      const response = await api.post('/users/signup', requestData);
+
+      console.log('✅ Backend response:', response.data);
+
+      if (response.data.success) {
+        console.log('🎉 Registration successful!');
+        return { 
+          success: true, 
+          data: { 
+            message: response.data.message,
+            user: { name: response.data.name }
+          } 
+        };
+      } else {
+        console.error('❌ Backend returned error:', response.data.message);
+        return { 
+          success: false, 
+          error: response.data.message || 'Registration failed' 
+        };
+      }
     } catch (error) {
-      return { success: false, error: 'Registration failed. Please try again.' };
+      console.error('❌ Registration error:', error);
+      console.error('Error response:', error.response?.data);
+      
+      // Handle validation errors from backend
+      let errorMessage;
+      if (error.response?.data?.detail) {
+        // If it's an array (validation errors)
+        if (Array.isArray(error.response.data.detail)) {
+          errorMessage = error.response.data.detail[0]?.msg || 'Validation failed';
+        } else {
+          // If it's a string
+          errorMessage = error.response.data.detail;
+        }
+      } else {
+        errorMessage = error.message || 'Registration failed. Please try again.';
+      }
+      
+      return { 
+        success: false, 
+        error: errorMessage
+      };
     }
   }
 
   // Logout
   async logout() {
     try {
-      // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 500));
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Clear local storage regardless of API response
       removeFromStorage(STORAGE_KEYS.AUTH_TOKEN);
       removeFromStorage(STORAGE_KEYS.USER_DATA);
     }
@@ -132,60 +145,19 @@ class AuthService {
     return !!(token && user);
   }
 
-  // Refresh token
-  async refreshToken() {
-    try {
-      const response = await api.post('/auth/refresh');
-      const { token } = response.data;
-      setToStorage(STORAGE_KEYS.AUTH_TOKEN, token);
-      return { success: true, token };
-    } catch (error) {
-      return { success: false, error: error.response?.data?.message || 'Token refresh failed' };
-    }
-  }
-
-  // Forgot password
-  async forgotPassword(phone) {
-    try {
-      const response = await api.post('/auth/forgot-password', { phone });
-      return { success: true, data: response.data };
-    } catch (error) {
-      return { success: false, error: error.response?.data?.message || 'Password reset failed' };
-    }
-  }
-
-  // Reset password
-  async resetPassword(token, newPassword) {
-    try {
-      const response = await api.post('/auth/reset-password', { token, password: newPassword });
-      return { success: true, data: response.data };
-    } catch (error) {
-      return { success: false, error: error.response?.data?.message || 'Password reset failed' };
-    }
-  }
-
-  // Change password
-  async changePassword(currentPassword, newPassword) {
-    try {
-      const response = await api.post('/auth/change-password', {
-        currentPassword,
-        newPassword
-      });
-      return { success: true, data: response.data };
-    } catch (error) {
-      return { success: false, error: error.response?.data?.message || 'Password change failed' };
-    }
-  }
-
-  // Update profile
+  // Update profile (not implemented in backend yet)
   async updateProfile(profileData) {
     try {
-      const response = await api.put('/auth/profile', profileData);
+      // You'll need to implement this endpoint in backend
+      const response = await api.put('/users/profile', profileData);
       const { user } = response.data;
       setToStorage(STORAGE_KEYS.USER_DATA, user);
       return { success: true, data: response.data };
     } catch (error) {
-      return { success: false, error: error.response?.data?.message || 'Profile update failed' };
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Profile update failed' 
+      };
     }
   }
 }

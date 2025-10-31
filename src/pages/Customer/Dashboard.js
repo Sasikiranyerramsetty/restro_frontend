@@ -125,7 +125,6 @@ const CustomerDashboard = () => {
         {/* Header */}
         <div className="animate-slide-up">
           <h1 className="text-4xl font-bold gradient-text restro-brand">Dashboard</h1>
-          <p className="text-gray-600 mt-2 text-lg">Welcome back! Here's what's happening with your account.</p>
         </div>
 
         {/* Stats Cards */}

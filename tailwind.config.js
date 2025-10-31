@@ -2,24 +2,38 @@
 module.exports = {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
+    "./public/index.html",
+  ],
+  // Optimize for production - remove unused CSS
+  safelist: [
+    // Add any dynamic classes that should never be purged
+    'animate-spin',
+    'animate-pulse',
   ],
   theme: {
     extend: {
       colors: {
+        brand: {
+          red: '#E63946',      // Primary red
+          cream: '#F1FAEE',    // Light cream/white
+          teal: '#A8DADC',     // Light teal
+          blue: '#457B9D',     // Medium blue
+          navy: '#1D3557',     // Dark navy
+        },
         primary: {
           50: '#FFF7ED',
           100: '#FFEDD5',
           200: '#FED7AA',
           300: '#FDBA74',
           400: '#FB923C',
-          500: '#FF6B35',
-          600: '#FF4500',
-          700: '#EA3A00',
-          800: '#C23100',
-          900: '#9A2700',
+          500: '#E63946',
+          600: '#D32F3D',
+          700: '#C12533',
+          800: '#9A1E28',
+          900: '#7A1820',
         },
-        background: '#F9FAFB',
-        foreground: '#1A1A1A',
+        background: '#F1FAEE',
+        foreground: '#1D3557',
         border: '#E5E7EB',
         dark: {
           50: '#F5F5F5',
@@ -31,19 +45,19 @@ module.exports = {
           600: '#4D4D4D',
           700: '#333333',
           800: '#2D2D2D',
-          900: '#1A1A1A',
+          900: '#1D3557',
         },
         secondary: {
-          50: '#ECFDF5',
-          100: '#D1FAE5',
-          200: '#A7F3D0',
-          300: '#6EE7B7',
-          400: '#34D399',
-          500: '#10B981',
-          600: '#059669',
-          700: '#047857',
-          800: '#065F46',
-          900: '#064E3B',
+          50: '#F0F8F9',
+          100: '#E0F1F3',
+          200: '#C7E6EA',
+          300: '#A8DADC',
+          400: '#8BCFD2',
+          500: '#6DC4C8',
+          600: '#457B9D',
+          700: '#396782',
+          800: '#2E5367',
+          900: '#1D3557',
         },
         accent: {
           50: '#FFFBEB',
@@ -59,8 +73,9 @@ module.exports = {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Poppins', 'system-ui', 'sans-serif'],
+        sans: ['Open Sans', 'system-ui', 'sans-serif'],
+        display: ['Playfair Display', 'serif'],
+        body: ['Open Sans', 'system-ui', 'sans-serif'],
       },
       animation: {
         'fade-in': 'none',

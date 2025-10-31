@@ -1,5 +1,5 @@
 // API Configuration
-export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 // User Roles
 export const USER_ROLES = {
@@ -33,6 +33,27 @@ export const EMPLOYEE_ROLES = {
   CHEF: 'chef',
   CASHIER: 'cashier',
   MANAGER: 'manager'
+};
+
+// Employee Shifts (matching backend schema)
+export const EMPLOYEE_SHIFTS = {
+  PART_TIME: 'part_time',
+  FULL_TIME: 'full_time'
+};
+
+// Employee Tags (matching backend schema)
+export const EMPLOYEE_TAGS = {
+  CHEF: 'chef',
+  WAITER: 'waiter',
+  CLEANER: 'cleaner',
+  DELIVERY: 'delivery'
+};
+
+// Employee Status (matching backend schema)
+export const EMPLOYEE_STATUS = {
+  ACTIVE: 'active',
+  INACTIVE: 'inactive',
+  LEAVE: 'leave'
 };
 
 // Menu Categories

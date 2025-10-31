@@ -15,247 +15,19 @@ const EmployeeShifts = () => {
     activeShifts: 0,
     totalHours: 0,
     totalEarnings: 0,
-    totalTips: 0,
     thisWeekHours: 0,
-    thisWeekEarnings: 0,
-    thisWeekTips: 0
+    thisWeekEarnings: 0
   });
   const [currentShift, setCurrentShift] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Mock data for employee shifts
-    const mockShifts = [
-      {
-        id: 1,
-        date: '2024-01-20',
-        startTime: '09:00',
-        endTime: '17:00',
-        status: 'completed',
-        type: 'full_day',
-        location: 'Main Restaurant',
-        position: 'Waiter',
-        checkInTime: '08:55',
-        checkOutTime: '17:05',
-        totalHours: 8.17,
-        breakTime: 60,
-        overtime: 0,
-        hourlyRate: 250,
-        totalEarnings: 2042.5,
-        tips: 450,
-        notes: 'Busy day, handled 15 tables'
-      },
-      {
-        id: 2,
-        date: '2024-01-19',
-        startTime: '18:00',
-        endTime: '23:00',
-        status: 'completed',
-        type: 'evening',
-        location: 'Main Restaurant',
-        position: 'Waiter',
-        checkInTime: '17:58',
-        checkOutTime: '23:02',
-        totalHours: 5.07,
-        breakTime: 30,
-        overtime: 0,
-        hourlyRate: 250,
-        totalEarnings: 1267.5,
-        tips: 320,
-        notes: 'Evening rush, good tips'
-      },
-      {
-        id: 3,
-        date: '2024-01-18',
-        startTime: '10:00',
-        endTime: '18:00',
-        status: 'completed',
-        type: 'full_day',
-        location: 'Main Restaurant',
-        position: 'Waiter',
-        checkInTime: '09:58',
-        checkOutTime: '18:05',
-        totalHours: 8.12,
-        breakTime: 60,
-        overtime: 0,
-        hourlyRate: 250,
-        totalEarnings: 2030,
-        tips: 380,
-        notes: 'Regular day'
-      },
-      {
-        id: 4,
-        date: '2024-01-17',
-        startTime: '18:00',
-        endTime: '23:00',
-        status: 'completed',
-        type: 'evening',
-        location: 'Main Restaurant',
-        position: 'Waiter',
-        checkInTime: '17:55',
-        checkOutTime: '23:10',
-        totalHours: 5.25,
-        breakTime: 30,
-        overtime: 0.25,
-        hourlyRate: 250,
-        totalEarnings: 1312.5,
-        tips: 280,
-        notes: 'Overtime due to late customers'
-      },
-      {
-        id: 5,
-        date: '2024-01-16',
-        startTime: '09:00',
-        endTime: '17:00',
-        status: 'completed',
-        type: 'full_day',
-        location: 'Main Restaurant',
-        position: 'Waiter',
-        checkInTime: '08:57',
-        checkOutTime: '17:03',
-        totalHours: 8.1,
-        breakTime: 60,
-        overtime: 0,
-        hourlyRate: 250,
-        totalEarnings: 2025,
-        tips: 420,
-        notes: 'Good day, many regular customers'
-      },
-      {
-        id: 6,
-        date: '2024-01-15',
-        startTime: '18:00',
-        endTime: '23:00',
-        status: 'completed',
-        type: 'evening',
-        location: 'Main Restaurant',
-        position: 'Waiter',
-        checkInTime: '17:59',
-        checkOutTime: '22:58',
-        totalHours: 4.98,
-        breakTime: 30,
-        overtime: 0,
-        hourlyRate: 250,
-        totalEarnings: 1245,
-        tips: 350,
-        notes: 'Early finish'
-      },
-      {
-        id: 7,
-        date: '2024-01-14',
-        startTime: '09:00',
-        endTime: '17:00',
-        status: 'completed',
-        type: 'full_day',
-        location: 'Main Restaurant',
-        position: 'Waiter',
-        checkInTime: '08:56',
-        checkOutTime: '17:08',
-        totalHours: 8.2,
-        breakTime: 60,
-        overtime: 0.2,
-        hourlyRate: 250,
-        totalEarnings: 2050,
-        tips: 480,
-        notes: 'Busy Sunday, family day'
-      },
-      {
-        id: 8,
-        date: '2024-01-13',
-        startTime: '18:00',
-        endTime: '23:00',
-        status: 'completed',
-        type: 'evening',
-        location: 'Main Restaurant',
-        position: 'Waiter',
-        checkInTime: '17:57',
-        checkOutTime: '23:05',
-        totalHours: 5.13,
-        breakTime: 30,
-        overtime: 0.13,
-        hourlyRate: 250,
-        totalEarnings: 1282.5,
-        tips: 290,
-        notes: 'Saturday night rush'
-      },
-      {
-        id: 9,
-        date: '2024-01-12',
-        startTime: '09:00',
-        endTime: '17:00',
-        status: 'completed',
-        type: 'full_day',
-        location: 'Main Restaurant',
-        position: 'Waiter',
-        checkInTime: '08:54',
-        checkOutTime: '17:06',
-        totalHours: 8.2,
-        breakTime: 60,
-        overtime: 0.2,
-        hourlyRate: 250,
-        totalEarnings: 2050,
-        tips: 410,
-        notes: 'Regular Friday'
-      },
-      {
-        id: 10,
-        date: '2024-01-11',
-        startTime: '18:00',
-        endTime: '23:00',
-        status: 'completed',
-        type: 'evening',
-        location: 'Main Restaurant',
-        position: 'Waiter',
-        checkInTime: '17:58',
-        checkOutTime: '23:03',
-        totalHours: 5.08,
-        breakTime: 30,
-        overtime: 0.08,
-        hourlyRate: 250,
-        totalEarnings: 1270,
-        tips: 330,
-        notes: 'Good tips from corporate group'
-      }
-    ];
-
-    const mockCurrentShift = {
-      id: 11,
-      date: '2024-01-21',
-      startTime: '09:00',
-      endTime: '17:00',
-      status: 'active',
-      type: 'full_day',
-      location: 'Main Restaurant',
-      position: 'Waiter',
-      checkInTime: '08:58',
-      checkOutTime: null,
-      totalHours: 0,
-      breakTime: 0,
-      overtime: 0,
-      hourlyRate: 250,
-      totalEarnings: 0,
-      tips: 0,
-      notes: 'Current shift in progress'
-    };
-
-    const mockStats = {
-      totalShifts: 10,
-      completedShifts: 10,
-      activeShifts: 1,
-      totalHours: 68.18,
-      totalEarnings: 17045,
-      totalTips: 3630,
-      averageHoursPerShift: 6.82,
-      averageEarningsPerShift: 1704.5,
-      thisWeekHours: 40.5,
-      thisWeekEarnings: 10125,
-      thisWeekTips: 2150
-    };
-
-    setShifts(mockShifts);
-    setCurrentShift(mockCurrentShift);
-    setStats(mockStats);
+    // Static mock data removed. Integrate with real shifts service here when available.
+    setShifts([]);
+    setCurrentShift(null);
+    setStats({ totalShifts: 0, completedShifts: 0, activeShifts: 0, totalHours: 0, totalEarnings: 0, thisWeekHours: 0, thisWeekEarnings: 0 });
   }, []);
 
   const filteredShifts = shifts.filter(shift => {
@@ -269,7 +41,7 @@ const EmployeeShifts = () => {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      active: { color: 'bg-green-100 text-green-800', icon: <Clock className="h-3 w-3" /> },
+      active: { color: 'bg-white text-orange-600', icon: <Clock className="h-3 w-3 text-orange-600" /> },
       completed: { color: 'bg-blue-100 text-blue-800', icon: <CheckCircle className="h-3 w-3" /> },
       cancelled: { color: 'bg-red-100 text-red-800', icon: <X className="h-3 w-3" /> }
     };
@@ -286,39 +58,146 @@ const EmployeeShifts = () => {
     return typeColors[type] || 'bg-gray-100 text-gray-800';
   };
 
+  // Check-in function
+  const handleCheckIn = async () => {
+    setIsLoading(true);
+    try {
+      const currentTime = new Date().toLocaleTimeString('en-US', { 
+        hour12: false, 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Update current shift with check-in time
+      const updatedShift = {
+        ...currentShift,
+        status: 'active',
+        checkInTime: currentTime,
+        actualStartTime: currentTime
+      };
+      
+      setCurrentShift(updatedShift);
+      
+      // Update shifts array
+      setShifts(prevShifts => 
+        prevShifts.map(shift => 
+          shift.id === currentShift.id ? updatedShift : shift
+        )
+      );
+      
+      // Show success message (you can replace with a toast notification)
+      alert(`Checked in successfully at ${currentTime}`);
+      
+    } catch (error) {
+      console.error('Check-in failed:', error);
+      alert('Check-in failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Check-out function
+  const handleCheckOut = async () => {
+    setIsLoading(true);
+    try {
+      const currentTime = new Date().toLocaleTimeString('en-US', { 
+        hour12: false, 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Calculate hours worked
+      const checkInTime = currentShift.checkInTime;
+      const checkInDate = new Date(`2000-01-01 ${checkInTime}`);
+      const checkOutDate = new Date(`2000-01-01 ${currentTime}`);
+      const hoursWorked = (checkOutDate - checkInDate) / (1000 * 60 * 60);
+      
+      // Update current shift with check-out time
+      const updatedShift = {
+        ...currentShift,
+        status: 'completed',
+        checkOutTime: currentTime,
+        actualEndTime: currentTime,
+        hoursWorked: Math.round(hoursWorked * 100) / 100,
+        totalEarnings: Math.round(hoursWorked * currentShift.hourlyRate * 100) / 100
+      };
+      
+      setCurrentShift(null); // Clear current shift after check-out
+      
+      // Update shifts array
+      setShifts(prevShifts => 
+        prevShifts.map(shift => 
+          shift.id === currentShift.id ? updatedShift : shift
+        )
+      );
+      
+      // Update stats
+      setStats(prevStats => ({
+        ...prevStats,
+        completedShifts: prevStats.completedShifts + 1,
+        activeShifts: 0,
+        totalHours: prevStats.totalHours + hoursWorked,
+        totalEarnings: prevStats.totalEarnings + updatedShift.totalEarnings
+      }));
+      
+      // Show success message
+      alert(`Checked out successfully at ${currentTime}. Hours worked: ${hoursWorked.toFixed(2)}`);
+      
+    } catch (error) {
+      console.error('Check-out failed:', error);
+      alert('Check-out failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <EmployeeLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Shift Management</h1>
-            <p className="text-gray-600 mt-1">View your shifts and check-in/out</p>
+            <h1 className="text-4xl font-bold gradient-text restro-brand">Shift Management</h1>
+            <p className="text-gray-600 mt-2 text-lg">View your shifts and check-in/out</p>
           </div>
           {currentShift && currentShift.status === 'active' ? (
-            <button className="btn-secondary flex items-center">
+            <button 
+              onClick={handleCheckOut}
+              disabled={isLoading}
+              className="btn-secondary flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               <Clock className="h-5 w-5 mr-2" />
-              Check Out
+              {isLoading ? 'Checking Out...' : 'Check Out'}
             </button>
           ) : (
-            <button className="btn-primary flex items-center">
+            <button 
+              onClick={handleCheckIn}
+              disabled={isLoading || !currentShift}
+              className="btn-primary flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               <Clock className="h-5 w-5 mr-2" />
-              Check In
+              {isLoading ? 'Checking In...' : 'Check In'}
             </button>
           )}
         </div>
 
         {/* Current Shift Card */}
-        {currentShift && currentShift.status === 'active' && (
-          <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-lg p-6">
+        {currentShift && (currentShift.status === 'active' || currentShift.status === 'scheduled') && (
+          <div className="bg-orange-500 border border-orange-600 rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <Clock className="h-6 w-6 text-orange-600" />
+                <div className="p-2 bg-white bg-opacity-20 rounded-lg">
+                  <Clock className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Current Shift</h3>
-                  <p className="text-sm text-gray-600">{formatDate(currentShift.date, 'MMMM dd, yyyy')}</p>
+                  <h3 className="text-lg font-semibold text-white">Current Shift</h3>
+                  <p className="text-sm text-orange-100">{formatDate(currentShift.date, 'MMMM dd, yyyy')}</p>
                 </div>
               </div>
               <span className={`inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full ${getStatusBadge(currentShift.status).color}`}>
@@ -336,7 +215,9 @@ const EmployeeShifts = () => {
                 <p className="text-lg font-semibold text-gray-900">
                   {currentShift.startTime} - {currentShift.endTime}
                 </p>
-                <p className="text-xs text-gray-500">Checked in at {currentShift.checkInTime}</p>
+                <p className="text-xs text-gray-500">
+                  {currentShift.checkInTime ? `Checked in at ${currentShift.checkInTime}` : 'Not checked in yet'}
+                </p>
               </div>
 
               <div className="bg-white rounded-lg p-4">
@@ -361,7 +242,7 @@ const EmployeeShifts = () => {
         )}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-center">
               <div className="p-2 bg-blue-100 rounded-lg">
@@ -398,23 +279,12 @@ const EmployeeShifts = () => {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-purple-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Tips</p>
-                <p className="text-2xl font-bold text-gray-900">₹{(stats.totalTips || 0).toLocaleString()}</p>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Weekly Summary */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">This Week Summary</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">{(stats.thisWeekHours || 0).toFixed(1)}h</div>
               <div className="text-sm text-gray-600">Hours Worked</div>
@@ -422,10 +292,6 @@ const EmployeeShifts = () => {
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">₹{(stats.thisWeekEarnings || 0).toLocaleString()}</div>
               <div className="text-sm text-gray-600">Earnings</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">₹{(stats.thisWeekTips || 0).toLocaleString()}</div>
-              <div className="text-sm text-gray-600">Tips</div>
             </div>
           </div>
         </div>
@@ -515,16 +381,9 @@ const EmployeeShifts = () => {
                     <p className="text-sm font-medium text-gray-900">₹{(shift.totalEarnings || 0).toLocaleString()}</p>
                   </div>
 
-                  <div>
-                    <div className="flex items-center space-x-2 mb-1">
-                      <TrendingUp className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm text-gray-600">Tips</span>
-                    </div>
-                    <p className="text-sm font-medium text-gray-900">₹{(shift.tips || 0).toLocaleString()}</p>
-                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
                     <div className="flex items-center space-x-2 mb-1">
                       <Clock className="h-4 w-4 text-gray-400" />

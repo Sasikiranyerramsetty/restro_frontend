@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   LogOut, 
@@ -23,13 +23,13 @@ import { useAuth } from '../../context/AuthContext';
 import { ROUTES, USER_ROLES } from '../../constants';
 import toast from 'react-hot-toast';
 
-const Navbar = () => {
+const Navbar = memo(() => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { user, logout, getUserRole } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
       await logout();
       toast.success('Logged out successfully');
@@ -37,9 +37,9 @@ const Navbar = () => {
     } catch (error) {
       toast.error('Logout failed');
     }
-  };
+  }, [logout, navigate]);
 
-  const getNavigationItems = () => {
+  const navigationItems = useMemo(() => {
     const role = getUserRole();
     
     switch (role) {
@@ -74,9 +74,7 @@ const Navbar = () => {
       default:
         return [];
     }
-  };
-
-  const navigationItems = getNavigationItems();
+  }, [getUserRole]);
 
   return (
     <nav className="bg-gradient-to-r from-blue-600 via-blue-800 to-gray-900 shadow-lg">
@@ -200,6 +198,8 @@ const Navbar = () => {
       </div>
     </nav>
   );
-};
+});
+
+Navbar.displayName = 'Navbar';
 
 export default Navbar;

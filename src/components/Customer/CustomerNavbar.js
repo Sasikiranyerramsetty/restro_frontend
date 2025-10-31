@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   LogOut, 
@@ -13,13 +13,13 @@ import { useAuth } from '../../context/AuthContext';
 import { ROUTES } from '../../constants';
 import toast from 'react-hot-toast';
 
-const CustomerNavbar = () => {
+const CustomerNavbar = memo(() => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
       await logout();
       toast.success('Logged out successfully');
@@ -27,9 +27,9 @@ const CustomerNavbar = () => {
     } catch (error) {
       toast.error('Logout failed');
     }
-  };
+  }, [logout, navigate]);
 
-  const getNavigationItems = () => {
+  const navigationItems = useMemo(() => {
     if (!user) {
       return [
         { name: 'Menu', path: ROUTES.CUSTOMER_MENU }
@@ -43,9 +43,7 @@ const CustomerNavbar = () => {
       { name: 'Events', path: ROUTES.CUSTOMER_EVENTS },
       { name: 'Profile', path: ROUTES.CUSTOMER_PROFILE }
     ];
-  };
-
-  const navigationItems = getNavigationItems();
+  }, [user]);
 
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200">
@@ -209,6 +207,8 @@ const CustomerNavbar = () => {
       </div>
     </nav>
   );
-};
+});
+
+CustomerNavbar.displayName = 'CustomerNavbar';
 
 export default CustomerNavbar;

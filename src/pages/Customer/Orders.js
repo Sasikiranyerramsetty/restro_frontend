@@ -166,8 +166,7 @@ const CustomerOrders = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
-            <p className="text-gray-600 mt-1">Track your order history and reorder favorites</p>
+            <h1 className="text-4xl font-bold gradient-text restro-brand">My Orders</h1>
           </div>
         </div>
 

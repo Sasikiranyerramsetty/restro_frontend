@@ -11,7 +11,9 @@ import {
   Search,
   Star,
   Phone,
-  Mail
+  Mail,
+  Utensils,
+  Truck
 } from 'lucide-react';
 import DashboardLayout from '../../components/Common/DashboardLayout';
 import { formatCurrency } from '../../utils';
@@ -19,6 +21,21 @@ import { formatCurrency } from '../../utils';
 const CustomerEvents = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showNewEventModal, setShowNewEventModal] = useState(false);
+  const [formData, setFormData] = useState({
+    bookingType: '',
+    eventName: '',
+    eventType: '',
+    date: '',
+    time: '',
+    guestCount: '',
+    location: '',
+    budget: '',
+    contactPerson: '',
+    contactPhone: '',
+    contactEmail: '',
+    specialRequests: ''
+  });
 
   // Static event data
   const events = [
@@ -181,6 +198,43 @@ const CustomerEvents = () => {
     }
   };
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    // Validate booking type is selected
+    if (!formData.bookingType) {
+      alert('Please select a booking type (Dine-In or Catering)');
+      return;
+    }
+    
+    // In a real app, this would call an API
+    console.log('New event booking:', formData);
+    alert(`${formData.bookingType === 'dinein' ? 'Dine-In' : 'Catering'} event booking request submitted! Our event coordinator will contact you shortly.`);
+    setShowNewEventModal(false);
+    setFormData({
+      bookingType: '',
+      eventName: '',
+      eventType: '',
+      date: '',
+      time: '',
+      guestCount: '',
+      location: '',
+      budget: '',
+      contactPerson: '',
+      contactPhone: '',
+      contactEmail: '',
+      specialRequests: ''
+    });
+  };
+
   const filteredEvents = events.filter(event => {
     const matchesStatus = statusFilter === 'all' || event.status === statusFilter;
     const matchesSearch = event.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -196,10 +250,12 @@ const CustomerEvents = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Event Booking</h1>
-            <p className="text-gray-600 mt-1">Manage your event catering and special occasions</p>
+            <h1 className="text-4xl font-bold gradient-text restro-brand">Event Booking</h1>
           </div>
-          <button className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-colors">
+          <button 
+            onClick={() => setShowNewEventModal(true)}
+            className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-colors"
+          >
             <Plus className="h-5 w-5" />
             <span>Book New Event</span>
           </button>
@@ -403,6 +459,327 @@ const CustomerEvents = () => {
             <Gift className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No events found</h3>
             <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
+          </div>
+        )}
+
+        {/* New Event Modal */}
+        {showNewEventModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <h3 className="text-xl font-semibold text-gray-900">Book New Event</h3>
+                <button
+                  onClick={() => setShowNewEventModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Booking Type *
+                    </label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, bookingType: 'dinein' }))}
+                        className={`p-4 border-2 rounded-lg text-left transition-all ${
+                          formData.bookingType === 'dinein'
+                            ? 'border-primary-500 bg-primary-50'
+                            : 'border-gray-300 hover:border-gray-400'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className={`p-2 rounded-lg ${
+                            formData.bookingType === 'dinein'
+                              ? 'bg-primary-500'
+                              : 'bg-gray-200'
+                          }`}>
+                            <Utensils className={`h-6 w-6 ${
+                              formData.bookingType === 'dinein'
+                                ? 'text-white'
+                                : 'text-gray-600'
+                            }`} />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-900">Dine-In Event</h4>
+                            <p className="text-sm text-gray-600">Host at our restaurant</p>
+                          </div>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, bookingType: 'catering' }))}
+                        className={`p-4 border-2 rounded-lg text-left transition-all ${
+                          formData.bookingType === 'catering'
+                            ? 'border-primary-500 bg-primary-50'
+                            : 'border-gray-300 hover:border-gray-400'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className={`p-2 rounded-lg ${
+                            formData.bookingType === 'catering'
+                              ? 'bg-primary-500'
+                              : 'bg-gray-200'
+                          }`}>
+                            <Truck className={`h-6 w-6 ${
+                              formData.bookingType === 'catering'
+                                ? 'text-white'
+                                : 'text-gray-600'
+                            }`} />
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-900">Catering Service</h4>
+                            <p className="text-sm text-gray-600">We cater at your location</p>
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Event Name *
+                    </label>
+                    <input
+                      type="text"
+                      name="eventName"
+                      value={formData.eventName}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="e.g., Wedding Reception, Birthday Party, Corporate Event"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Event Type *
+                    </label>
+                    <select
+                      name="eventType"
+                      value={formData.eventType}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    >
+                      <option value="">Select Type</option>
+                      <option value="wedding">Wedding</option>
+                      <option value="birthday">Birthday</option>
+                      <option value="corporate">Corporate</option>
+                      <option value="anniversary">Anniversary</option>
+                      <option value="conference">Conference</option>
+                      <option value="party">Party</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Number of Guests *
+                    </label>
+                    <div className="relative">
+                      <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="number"
+                        name="guestCount"
+                        value={formData.guestCount}
+                        onChange={handleInputChange}
+                        required
+                        min="10"
+                        placeholder="Number of guests"
+                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Date *
+                    </label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="date"
+                        name="date"
+                        value={formData.date}
+                        onChange={handleInputChange}
+                        required
+                        min={new Date().toISOString().split('T')[0]}
+                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Time *
+                    </label>
+                    <div className="relative">
+                      <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="time"
+                        name="time"
+                        value={formData.time}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  {formData.bookingType === 'dinein' ? (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Location
+                      </label>
+                      <div className="relative">
+                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <input
+                          type="text"
+                          value="RESTRO Restaurant"
+                          disabled
+                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Event will be hosted at our restaurant</p>
+                    </div>
+                  ) : formData.bookingType === 'catering' ? (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Event Location *
+                      </label>
+                      <div className="relative">
+                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <input
+                          type="text"
+                          name="location"
+                          value={formData.location}
+                          onChange={handleInputChange}
+                          required
+                          placeholder="Enter your event location address"
+                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">We will cater at your specified location</p>
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Location
+                      </label>
+                      <div className="relative">
+                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <input
+                          type="text"
+                          disabled
+                          placeholder="Select booking type first"
+                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-400"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Budget (₹)
+                    </label>
+                    <input
+                      type="number"
+                      name="budget"
+                      value={formData.budget}
+                      onChange={handleInputChange}
+                      placeholder="Estimated budget"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Contact Person *
+                    </label>
+                    <input
+                      type="text"
+                      name="contactPerson"
+                      value={formData.contactPerson}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="Full name"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Contact Phone *
+                    </label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="tel"
+                        name="contactPhone"
+                        value={formData.contactPhone}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="+91 98765 43210"
+                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Contact Email *
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <input
+                        type="email"
+                        name="contactEmail"
+                        value={formData.contactEmail}
+                        onChange={handleInputChange}
+                        required
+                        placeholder="email@example.com"
+                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Special Requests
+                    </label>
+                    <textarea
+                      name="specialRequests"
+                      value={formData.specialRequests}
+                      onChange={handleInputChange}
+                      rows="3"
+                      placeholder="Any special requirements, dietary restrictions, decoration preferences, etc."
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowNewEventModal(false)}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg"
+                  >
+                    Submit Event Booking
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
       </div>

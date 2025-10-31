@@ -1,25 +1,16 @@
 import api from './api';
+import { buildMenuFromSections } from '../data/restaurantData';
+
+// Build once from the DB-sourced sections (kept in repo under src/data)
+const built = buildMenuFromSections();
 
 class MenuService {
   // Get all menu categories
   async getCategories() {
     try {
-      // Mock categories data
-      const mockCategories = [
-        { id: 'starters', name: 'Starters' },
-        { id: 'curries', name: 'Curries' },
-        { id: 'biryanis', name: 'Biryanis' },
-        { id: 'family_pack_biryanis', name: 'Family Pack Biryanis' },
-        { id: 'meals', name: 'Meals' },
-        { id: 'beverages', name: 'Beverages' },
-        { id: 'ice_creams', name: 'Ice Creams' },
-        { id: 'restro_specials', name: 'RESTRO Specials' }
-      ];
-
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      return { success: true, data: mockCategories };
+      // Use built categories from DB JSON
+      const normalized = built.categories.map(c => ({ id: c.id, name: c.name }));
+      return { success: true, data: normalized };
     } catch (error) {
       return { success: false, error: 'Failed to fetch categories' };
     }
@@ -28,107 +19,11 @@ class MenuService {
   // Get menu items by category
   async getMenuItems(categoryId = null, params = {}) {
     try {
-      // Mock menu items data
-      const mockMenuItems = [
-        {
-          id: 1,
-          name: 'Chicken Biryani',
-          description: 'Fragrant basmati rice cooked with tender chicken pieces and aromatic spices',
-          price: 250,
-          category: 'biryanis',
-          image: null,
-          available: true,
-          rating: 4.8,
-          preparationTime: 25
-        },
-        {
-          id: 2,
-          name: 'Mutton Curry',
-          description: 'Rich and flavorful mutton curry cooked with traditional spices',
-          price: 320,
-          category: 'curries',
-          image: null,
-          available: true,
-          rating: 4.6,
-          preparationTime: 30
-        },
-        {
-          id: 3,
-          name: 'Chicken Tikka',
-          description: 'Tender chicken pieces marinated in yogurt and spices, grilled to perfection',
-          price: 180,
-          category: 'starters',
-          image: null,
-          available: true,
-          rating: 4.7,
-          preparationTime: 20
-        },
-        {
-          id: 4,
-          name: 'Family Pack Biryani',
-          description: 'Large portion of biryani perfect for 4-6 people',
-          price: 800,
-          category: 'family_pack_biryanis',
-          image: null,
-          available: true,
-          rating: 4.9,
-          preparationTime: 35
-        },
-        {
-          id: 5,
-          name: 'Thali Meal',
-          description: 'Complete meal with rice, dal, vegetables, roti, and dessert',
-          price: 150,
-          category: 'meals',
-          image: null,
-          available: true,
-          rating: 4.5,
-          preparationTime: 15
-        },
-        {
-          id: 6,
-          name: 'Mango Lassi',
-          description: 'Refreshing yogurt drink with fresh mango pulp',
-          price: 80,
-          category: 'beverages',
-          image: null,
-          available: true,
-          rating: 4.4,
-          preparationTime: 5
-        },
-        {
-          id: 7,
-          name: 'Kulfi',
-          description: 'Traditional Indian ice cream with cardamom and pistachios',
-          price: 60,
-          category: 'ice_creams',
-          image: null,
-          available: true,
-          rating: 4.6,
-          preparationTime: 2
-        },
-        {
-          id: 8,
-          name: 'RESTRO Special Thali',
-          description: 'Our signature thali with chef\'s special dishes',
-          price: 280,
-          category: 'restro_specials',
-          image: null,
-          available: true,
-          rating: 4.8,
-          preparationTime: 25
-        }
-      ];
-
-      // Filter by category if specified
-      let filteredItems = mockMenuItems;
+      // Filter by category if specified using built menu
+      let filteredItems = built.menuItems;
       if (categoryId) {
-        filteredItems = mockMenuItems.filter(item => item.category === categoryId);
+        filteredItems = built.menuItems.filter(item => item.subcategory === categoryId || item.category === categoryId);
       }
-
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
       return { success: true, data: filteredItems };
     } catch (error) {
       return { success: false, error: 'Failed to fetch menu items' };
@@ -248,92 +143,9 @@ class MenuService {
   // Get popular menu items
   async getPopularItems(limit = 10) {
     try {
-      // Mock popular items data
-      const mockPopularItems = [
-        {
-          id: 1,
-          name: 'Chicken Biryani',
-          description: 'Fragrant basmati rice cooked with tender chicken pieces and aromatic spices',
-          price: 250,
-          category: 'biryanis',
-          image: null,
-          available: true,
-          rating: 4.8,
-          preparationTime: 25,
-          orders: 150,
-          revenue: 37500
-        },
-        {
-          id: 2,
-          name: 'Mutton Curry',
-          description: 'Rich and flavorful mutton curry cooked with traditional spices',
-          price: 320,
-          category: 'curries',
-          image: null,
-          available: true,
-          rating: 4.6,
-          preparationTime: 30,
-          orders: 120,
-          revenue: 38400
-        },
-        {
-          id: 3,
-          name: 'Chicken Tikka',
-          description: 'Tender chicken pieces marinated in yogurt and spices, grilled to perfection',
-          price: 180,
-          category: 'starters',
-          image: null,
-          available: true,
-          rating: 4.7,
-          preparationTime: 20,
-          orders: 200,
-          revenue: 36000
-        },
-        {
-          id: 4,
-          name: 'Family Pack Biryani',
-          description: 'Large portion of biryani perfect for 4-6 people',
-          price: 800,
-          category: 'family_pack_biryanis',
-          image: null,
-          available: true,
-          rating: 4.9,
-          preparationTime: 35,
-          orders: 80,
-          revenue: 64000
-        },
-        {
-          id: 5,
-          name: 'Thali Meal',
-          description: 'Complete meal with rice, dal, vegetables, roti, and dessert',
-          price: 150,
-          category: 'meals',
-          image: null,
-          available: true,
-          rating: 4.5,
-          preparationTime: 15,
-          orders: 300,
-          revenue: 45000
-        },
-        {
-          id: 6,
-          name: 'Mango Lassi',
-          description: 'Refreshing yogurt drink with fresh mango pulp',
-          price: 80,
-          category: 'beverages',
-          image: null,
-          available: true,
-          rating: 4.4,
-          preparationTime: 5,
-          orders: 250,
-          revenue: 20000
-        }
-      ];
-
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      return { success: true, data: mockPopularItems.slice(0, limit) };
+      // Derive "popular" by using price as tie-breaker (no real orders data)
+      const ranked = [...built.menuItems].slice(0, limit);
+      return { success: true, data: ranked };
     } catch (error) {
       return { success: false, error: 'Failed to fetch popular items' };
     }

@@ -140,6 +140,26 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Register function
+  const register = async (userData) => {
+    try {
+      console.log('🔵 Registering user:', userData);
+      const result = await authService.register(userData);
+      
+      if (result.success) {
+        console.log('✅ Registration successful:', result);
+        return { success: true, data: result.data };
+      } else {
+        console.error('❌ Registration failed:', result.error);
+        return { success: false, error: result.error };
+      }
+    } catch (error) {
+      console.error('❌ Registration error:', error);
+      const errorMessage = 'Registration failed. Please try again.';
+      return { success: false, error: errorMessage };
+    }
+  };
+
   // Logout function
   const logout = async () => {
     try {
@@ -219,6 +239,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     ...state,
     login,
+    register,
     logout,
     updateUser,
     clearError,

@@ -14,6 +14,7 @@ import { ROUTES, MENU_CATEGORIES } from '../../constants';
 import menuService from '../../services/menuService';
 import { formatCurrency } from '../../utils';
 import toast from 'react-hot-toast';
+import CustomerLayout from '../../components/Customer/CustomerLayout';
 
 const CustomerMenu = () => {
   const [categories, setCategories] = useState([]);
@@ -115,44 +116,25 @@ const CustomerMenu = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading menu...</p>
+      <CustomerLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading menu...</p>
+          </div>
         </div>
-      </div>
+      </CustomerLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Our Menu</h1>
-              <p className="text-gray-600 mt-1">Discover our delicious offerings</p>
-            </div>
-            
-            {/* Cart Button */}
-            <Link
-              to={ROUTES.CUSTOMER_CART}
-              className="relative btn-primary inline-flex items-center"
-            >
-              <ShoppingCart className="h-5 w-5 mr-2" />
-              Cart
-              {getCartItemCount() > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center">
-                  {getCartItemCount()}
-                </span>
-              )}
-            </Link>
-          </div>
+    <CustomerLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-4xl font-bold gradient-text restro-brand">Our Menu</h1>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar */}
           <div className="lg:w-1/4">
@@ -323,7 +305,7 @@ const CustomerMenu = () => {
           </div>
         </div>
       )}
-    </div>
+    </CustomerLayout>
   );
 };
 

@@ -130,7 +130,6 @@ const CustomerProfile = () => {
     { id: 'personal', name: 'Personal Info', icon: <User className="h-4 w-4" /> },
     { id: 'preferences', name: 'Preferences', icon: <Heart className="h-4 w-4" /> },
     { id: 'orders', name: 'Order History', icon: <ShoppingBag className="h-4 w-4" /> },
-    { id: 'loyalty', name: 'Loyalty Program', icon: <Gift className="h-4 w-4" /> },
     { id: 'settings', name: 'Account Settings', icon: <Shield className="h-4 w-4" /> }
   ];
 
@@ -140,8 +139,7 @@ const CustomerProfile = () => {
         {/* Header */}
         <div className="flex items-center justify-between animate-slide-up">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 restro-brand">My Profile</h1>
-            <p className="text-gray-600 mt-1">Manage your account settings and preferences</p>
+            <h1 className="text-4xl font-bold gradient-text restro-brand">My Profile</h1>
           </div>
           <button
             onClick={() => setIsEditing(!isEditing)}
@@ -170,14 +168,7 @@ const CustomerProfile = () => {
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-gray-900">{customerData.personal.name}</h2>
               <p className="text-gray-600">{customerData.personal.email}</p>
-              <div className="flex items-center mt-2">
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getTierColor(customerData.loyalty.tier)}`}>
-                  {customerData.loyalty.tier} Member
-                </span>
-                <span className="ml-3 text-sm text-gray-500">
-                  {customerData.loyalty.points} points
-                </span>
-              </div>
+              <p className="text-sm text-gray-500 mt-2">{customerData.personal.phone}</p>
             </div>
             <div className="text-right">
               <p className="text-sm text-gray-500">Member since</p>
@@ -414,48 +405,6 @@ const CustomerProfile = () => {
                         </div>
                       </div>
                     ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Loyalty Program Tab */}
-            {activeTab === 'loyalty' && (
-              <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-gray-900">Loyalty Program</h3>
-                <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg p-6 text-white">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h4 className="text-xl font-bold">{customerData.loyalty.tier} Member</h4>
-                      <p className="text-primary-100">You're doing great!</p>
-                    </div>
-                    <Gift className="h-12 w-12 text-primary-200" />
-                  </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold">{customerData.loyalty.points}</p>
-                      <p className="text-sm text-primary-100">Points</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold">{customerData.loyalty.totalOrders}</p>
-                      <p className="text-sm text-primary-100">Orders</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold">{formatCurrency(customerData.loyalty.totalSpent)}</p>
-                      <p className="text-sm text-primary-100">Total Spent</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700">Progress to {customerData.loyalty.nextTier}</span>
-                    <span className="text-sm text-gray-500">{customerData.loyalty.pointsToNext} points to go</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-primary-500 h-2 rounded-full" 
-                      style={{ width: `${(customerData.loyalty.points / (customerData.loyalty.points + customerData.loyalty.pointsToNext)) * 100}%` }}
-                    ></div>
                   </div>
                 </div>
               </div>

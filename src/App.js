@@ -1,47 +1,47 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { USER_ROLES, ROUTES } from './constants';
 
-// Import pages
-import Login from './pages/Auth/Login';
-import Register from './pages/Auth/Register';
-import ForgotPassword from './pages/Auth/ForgotPassword';
-
-// Admin pages
-import AdminDashboard from './pages/Admin/Dashboard';
-import AdminMenu from './pages/Admin/Menu';
-import AdminOrders from './pages/Admin/Orders';
-import AdminEmployees from './pages/Admin/Employees';
-import AdminCustomers from './pages/Admin/Customers';
-import AdminReports from './pages/Admin/Reports';
-import AdminTables from './pages/Admin/Tables';
-import AdminEvents from './pages/Admin/Events';
-
-// Customer pages
-import CustomerHome from './pages/Customer/Home';
-import CustomerDashboard from './pages/Customer/Dashboard';
-import CustomerMenu from './pages/Customer/Menu';
-import CustomerCart from './pages/Customer/Cart';
-import CustomerCheckout from './pages/Customer/Checkout';
-import CustomerOrders from './pages/Customer/Orders';
-import CustomerReservations from './pages/Customer/Reservations';
-import CustomerEvents from './pages/Customer/Events';
-import CustomerProfile from './pages/Customer/Profile';
-
-// Employee pages
-import EmployeeDashboard from './pages/Employee/Dashboard';
-import EmployeeOrders from './pages/Employee/Orders';
-import EmployeeOrderTaking from './pages/Employee/OrderTaking';
-import EmployeeTables from './pages/Employee/Tables';
-import EmployeeTasks from './pages/Employee/Tasks';
-import EmployeeShifts from './pages/Employee/Shifts';
-
-// Common components
+// Common components (loaded eagerly as they're used everywhere)
 import LoadingSpinner from './components/Common/LoadingSpinner';
 import ProtectedRoute from './components/Common/ProtectedRoute';
 import HybridRoute from './components/Common/HybridRoute';
+
+// Lazy load Auth pages (only when needed)
+const Login = lazy(() => import('./pages/Auth/Login'));
+const Register = lazy(() => import('./pages/Auth/Register'));
+const ForgotPassword = lazy(() => import('./pages/Auth/ForgotPassword'));
+
+// Lazy load Admin pages (only for admin users)
+const AdminDashboard = lazy(() => import('./pages/Admin/Dashboard'));
+const AdminMenu = lazy(() => import('./pages/Admin/Menu'));
+const AdminOrders = lazy(() => import('./pages/Admin/Orders'));
+const AdminEmployees = lazy(() => import('./pages/Admin/Employees'));
+const AdminCustomers = lazy(() => import('./pages/Admin/Customers'));
+const AdminReports = lazy(() => import('./pages/Admin/Reports'));
+const AdminTables = lazy(() => import('./pages/Admin/Tables'));
+const AdminEvents = lazy(() => import('./pages/Admin/Events'));
+
+// Lazy load Customer pages (only for customer users)
+const CustomerHome = lazy(() => import('./pages/Customer/Home'));
+const CustomerDashboard = lazy(() => import('./pages/Customer/Dashboard'));
+const CustomerMenu = lazy(() => import('./pages/Customer/Menu'));
+const CustomerCart = lazy(() => import('./pages/Customer/Cart'));
+const CustomerCheckout = lazy(() => import('./pages/Customer/Checkout'));
+const CustomerOrders = lazy(() => import('./pages/Customer/Orders'));
+const CustomerReservations = lazy(() => import('./pages/Customer/Reservations'));
+const CustomerEvents = lazy(() => import('./pages/Customer/Events'));
+const CustomerProfile = lazy(() => import('./pages/Customer/Profile'));
+
+// Lazy load Employee pages (only for employee users)
+const EmployeeDashboard = lazy(() => import('./pages/Employee/Dashboard'));
+const EmployeeOrders = lazy(() => import('./pages/Employee/Orders'));
+const EmployeeOrderTaking = lazy(() => import('./pages/Employee/OrderTaking'));
+const EmployeeTables = lazy(() => import('./pages/Employee/Tables'));
+const EmployeeTasks = lazy(() => import('./pages/Employee/Tasks'));
+const EmployeeShifts = lazy(() => import('./pages/Employee/Shifts'));
 
 // Main App component
 function AppContent() {
@@ -54,19 +54,20 @@ function AppContent() {
   return (
     <Router>
       <div className="App">
-        <Routes>
-          {/* Public routes */}
-          <Route path={ROUTES.LOGIN} element={
-            isAuthenticated ? <Navigate to={getUserRole() === USER_ROLES.ADMIN ? ROUTES.ADMIN_DASHBOARD : 
-              getUserRole() === USER_ROLES.EMPLOYEE ? ROUTES.EMPLOYEE_DASHBOARD : ROUTES.CUSTOMER_HOME} /> : 
-              <Login />
-          } />
-          <Route path={ROUTES.REGISTER} element={
-            isAuthenticated ? <Navigate to={getUserRole() === USER_ROLES.ADMIN ? ROUTES.ADMIN_DASHBOARD : 
-              getUserRole() === USER_ROLES.EMPLOYEE ? ROUTES.EMPLOYEE_DASHBOARD : ROUTES.CUSTOMER_HOME} /> : 
-              <Register />
-          } />
-          <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPassword />} />
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            {/* Public routes */}
+            <Route path={ROUTES.LOGIN} element={
+              isAuthenticated ? <Navigate to={getUserRole() === USER_ROLES.ADMIN ? ROUTES.ADMIN_DASHBOARD : 
+                getUserRole() === USER_ROLES.EMPLOYEE ? ROUTES.EMPLOYEE_DASHBOARD : ROUTES.CUSTOMER_HOME} /> : 
+                <Login />
+            } />
+            <Route path={ROUTES.REGISTER} element={
+              isAuthenticated ? <Navigate to={getUserRole() === USER_ROLES.ADMIN ? ROUTES.ADMIN_DASHBOARD : 
+                getUserRole() === USER_ROLES.EMPLOYEE ? ROUTES.EMPLOYEE_DASHBOARD : ROUTES.CUSTOMER_HOME} /> : 
+                <Register />
+            } />
+            <Route path={ROUTES.FORGOT_PASSWORD} element={<ForgotPassword />} />
 
           {/* Admin routes */}
           <Route path="/admin/*" element={
@@ -140,9 +141,10 @@ function AppContent() {
             </Routes>
           } />
 
-          {/* Default redirect */}
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
+            {/* Default redirect */}
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </Suspense>
 
         {/* Toast notifications */}
         <Toaster
