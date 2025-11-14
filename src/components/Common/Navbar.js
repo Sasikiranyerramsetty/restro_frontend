@@ -81,15 +81,15 @@ const Navbar = memo(() => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center h-20">
           {/* Logo */}
-          <div className="flex items-center mr-8">
+          <div className="flex items-center mr-8 pt-4 pb-2">
             <Link to={user ? (getUserRole() === USER_ROLES.ADMIN ? ROUTES.ADMIN_DASHBOARD : 
               getUserRole() === USER_ROLES.EMPLOYEE ? ROUTES.EMPLOYEE_DASHBOARD : ROUTES.CUSTOMER_HOME) : ROUTES.CUSTOMER_HOME} 
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-3"
             >
-              <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center">
-                <ChefHat className="h-6 w-6 text-blue-600" />
+              <div className="h-12 w-12 bg-white rounded-lg flex items-center justify-center">
+                <ChefHat className="h-7 w-7 text-blue-600" />
               </div>
-              <span className="text-2xl font-bold text-white restro-brand">RESTRO</span>
+              <span className="font-bold text-white restro-brand" style={{ fontSize: '1.875rem' }}>RESTRO</span>
             </Link>
           </div>
 

@@ -72,6 +72,59 @@ class ReservationService {
       return { success: false, error: errorMessage };
     }
   }
+
+  async checkAvailability(date, time, partySize, tableNumber = null) {
+    try {
+      const params = { date, time, party_size: partySize };
+      if (tableNumber) params.table_number = tableNumber;
+      
+      const response = await api.get('/table-reservations/availability/check', { params });
+      return { success: true, data: response.data };
+    } catch (error) {
+      console.error('Error checking availability:', error);
+      const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.message || 'Failed to check availability';
+      return { success: false, error: errorMessage };
+    }
+  }
+
+  async deleteReservationsByCustomerNames(customerNames) {
+    try {
+      // Get all reservations
+      const allReservations = await this.getReservations();
+      if (!allReservations.success) {
+        return { success: false, error: 'Failed to fetch reservations' };
+      }
+
+      // Normalize customer names for comparison (case-insensitive)
+      const normalizedNames = customerNames.map(name => name.toLowerCase().trim());
+      
+      // Filter reservations to delete
+      const reservationsToDelete = allReservations.data.filter(reservation => {
+        const customerName = (reservation.customer_name || '').toLowerCase().trim();
+        return normalizedNames.includes(customerName);
+      });
+
+      // Delete all matching reservations
+      const deletePromises = reservationsToDelete.map(reservation => {
+        const reservationId = reservation.id || reservation._id;
+        return this.deleteReservation(reservationId);
+      });
+
+      const results = await Promise.all(deletePromises);
+      const successCount = results.filter(r => r.success).length;
+      const failCount = results.length - successCount;
+
+      return {
+        success: true,
+        deleted: successCount,
+        failed: failCount,
+        total: reservationsToDelete.length
+      };
+    } catch (error) {
+      console.error('Error deleting reservations by customer names:', error);
+      return { success: false, error: error.message || 'Failed to delete reservations' };
+    }
+  }
 }
 
 export default new ReservationService();

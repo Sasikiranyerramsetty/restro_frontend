@@ -1,4 +1,6 @@
-// Mock data for order management
+import api from './api';
+
+// Mock data for order management (fallback)
 const mockOrders = [
   {
     id: 1,
@@ -226,34 +228,114 @@ const mockOrderStats = {
 
 class OrderManagementService {
   async getOrders() {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return mockOrders;
+    try {
+      const response = await api.get('/api/user-orders/admin/orders');
+      if (response.data.success) {
+        return response.data.data || [];
+      }
+      // Fallback to mock data if API fails
+      return mockOrders;
+    } catch (error) {
+      console.error('Failed to fetch orders from API, using mock data:', error);
+      return mockOrders;
+    }
   }
 
   async getOrderStats() {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return mockOrderStats;
+    try {
+      // Fetch orders to calculate stats
+      const orders = await this.getOrders();
+      
+      // Calculate stats from orders
+      const stats = {
+        totalOrders: orders.length,
+        pendingOrders: orders.filter(o => o.status === 'pending').length,
+        preparingOrders: orders.filter(o => o.status === 'preparing').length,
+        readyOrders: orders.filter(o => o.status === 'ready').length,
+        completedOrders: orders.filter(o => o.status === 'completed' || o.status === 'delivered').length,
+        cancelledOrders: orders.filter(o => o.status === 'cancelled').length,
+        totalRevenue: orders.reduce((sum, o) => sum + (o.total || 0), 0),
+        averageOrderValue: orders.length > 0 ? orders.reduce((sum, o) => sum + (o.total || 0), 0) / orders.length : 0,
+        todayRevenue: orders
+          .filter(o => {
+            const today = new Date().toISOString().split('T')[0];
+            return o.orderDate === today;
+          })
+          .reduce((sum, o) => sum + (o.total || 0), 0),
+        popularItems: this._calculatePopularItems(orders),
+        orderTypes: {
+          'dine-in': orders.filter(o => o.orderType === 'dine-in').length,
+          'takeaway': orders.filter(o => o.orderType === 'takeaway').length,
+          'delivery': orders.filter(o => o.orderType === 'delivery').length
+        },
+        paymentMethods: {
+          'card': orders.filter(o => o.paymentMethod === 'card').length,
+          'upi': orders.filter(o => o.paymentMethod === 'upi').length,
+          'cash': orders.filter(o => o.paymentMethod === 'cash').length,
+          'wallet': orders.filter(o => o.paymentMethod === 'wallet').length
+        }
+      };
+      
+      return stats;
+    } catch (error) {
+      console.error('Failed to calculate order stats, using mock data:', error);
+      return mockOrderStats;
+    }
+  }
+
+  _calculatePopularItems(orders) {
+    const itemCounts = {};
+    orders.forEach(order => {
+      (order.items || []).forEach(item => {
+        const itemName = item.name || 'Unknown';
+        if (!itemCounts[itemName]) {
+          itemCounts[itemName] = { orders: 0, revenue: 0 };
+        }
+        itemCounts[itemName].orders += 1;
+        itemCounts[itemName].revenue += (item.total || item.price * item.quantity || 0);
+      });
+    });
+    
+    return Object.entries(itemCounts)
+      .map(([name, data]) => ({ name, ...data }))
+      .sort((a, b) => b.orders - a.orders)
+      .slice(0, 5);
   }
 
   async getOrderById(id) {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return mockOrders.find(order => order.id === id);
+    try {
+      const orders = await this.getOrders();
+      return orders.find(order => order.orderNumber === id || order.id === id) || null;
+    } catch (error) {
+      console.error('Failed to fetch order by ID:', error);
+      return null;
+    }
   }
 
   async updateOrderStatus(id, status) {
-    await new Promise(resolve => setTimeout(resolve, 400));
-    const order = mockOrders.find(order => order.id === id);
-    if (order) {
-      order.status = status;
-      if (status === 'completed') {
-        order.completedTime = new Date().toLocaleTimeString('en-IN', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        });
+    try {
+      // Find order by orderNumber (which is the order_id from backend)
+      const orders = await this.getOrders();
+      const order = orders.find(o => o.orderNumber === id || o.id === id);
+      
+      if (order) {
+        // Update status in backend
+        // For now, we'll update locally and sync later
+        // TODO: Create backend endpoint to update order status
+        order.status = status;
+        if (status === 'completed') {
+          order.completedTime = new Date().toLocaleTimeString('en-IN', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          });
+        }
+        return { success: true, data: order };
       }
-      return { success: true, data: order };
+      return { success: false, error: 'Order not found' };
+    } catch (error) {
+      console.error('Failed to update order status:', error);
+      return { success: false, error: 'Failed to update order status' };
     }
-    return { success: false, error: 'Order not found' };
   }
 
   async assignWaiter(orderId, waiterName) {

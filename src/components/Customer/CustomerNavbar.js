@@ -50,15 +50,15 @@ const CustomerNavbar = memo(() => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center h-20">
           {/* Logo */}
-          <div className="flex items-center mr-8">
+          <div className="flex items-center mr-8 pt-4 pb-2">
             <Link 
               to={ROUTES.CUSTOMER_HOME}
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-3"
             >
-              <div className="h-10 w-10 bg-primary-500 rounded-lg flex items-center justify-center">
-                <ChefHat className="h-6 w-6 text-white" />
+              <div className="h-12 w-12 bg-primary-500 rounded-lg flex items-center justify-center">
+                <ChefHat className="h-7 w-7 text-white" />
               </div>
-              <span className="text-2xl font-bold text-gray-900 restro-brand">RESTRO</span>
+              <span className="font-bold text-gray-900 restro-brand" style={{ fontSize: '1.875rem' }}>RESTRO</span>
             </Link>
           </div>
 

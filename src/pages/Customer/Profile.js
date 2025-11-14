@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   User, 
   Mail, 
@@ -16,33 +16,43 @@ import {
   CreditCard,
   Gift
 } from 'lucide-react';
-import DashboardLayout from '../../components/Common/DashboardLayout';
+import CustomerLayout from '../../components/Customer/CustomerLayout';
 import { formatCurrency } from '../../utils';
+import { useAuth } from '../../context/AuthContext';
 
 const CustomerProfile = () => {
+  const { user } = useAuth();
+  
+  // Custom color palette (matching admin)
+  const colors = {
+    red: '#E63946',
+    cream: '#F1FAEE',
+    lightBlue: '#A8DADC',
+    mediumBlue: '#457B9D',
+    darkNavy: '#1D3557'
+  };
+
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('personal');
-
-  // Static customer data
-  const customerData = {
+  const [customerData, setCustomerData] = useState({
     personal: {
-      name: 'John Doe',
-      email: 'john.doe@email.com',
-      phone: '+1 (555) 123-4567',
-      dateOfBirth: '1990-05-15',
+      name: '',
+      email: '',
+      phone: '',
+      dateOfBirth: '',
       address: {
-        street: '123 Main Street',
-        city: 'New York',
-        state: 'NY',
-        zipCode: '10001',
-        country: 'United States'
+        street: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        country: ''
       },
-      joinDate: '2023-01-15',
+      joinDate: '',
       profileImage: null
     },
     preferences: {
-      favoriteCuisine: ['Italian', 'Indian', 'Mexican'],
-      dietaryRestrictions: ['Vegetarian'],
+      favoriteCuisine: [],
+      dietaryRestrictions: [],
       spiceLevel: 'Medium',
       notifications: {
         email: true,
@@ -56,15 +66,31 @@ const CustomerProfile = () => {
       timezone: 'EST'
     },
     loyalty: {
-      points: 1250,
-      tier: 'Gold',
-      nextTier: 'Platinum',
-      pointsToNext: 750,
-      totalOrders: 45,
-      totalSpent: 1250.75,
-      memberSince: '2023-01-15'
+      points: 0,
+      tier: 'Bronze',
+      nextTier: 'Silver',
+      pointsToNext: 100,
+      totalOrders: 0,
+      totalSpent: 0,
+      memberSince: ''
     }
-  };
+  });
+
+  // Update customer data when user changes
+  useEffect(() => {
+    if (user) {
+      setCustomerData(prev => ({
+        ...prev,
+        personal: {
+          ...prev.personal,
+          name: user.name || '',
+          email: user.email || '',
+          phone: user.phone || '',
+          joinDate: user.created_at || new Date().toISOString().split('T')[0]
+        }
+      }));
+    }
+  }, [user]);
 
   const recentOrders = [
     {
@@ -134,25 +160,70 @@ const CustomerProfile = () => {
   ];
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6 animate-fade-in">
+    <CustomerLayout>
+      <div className="space-y-6" style={{ backgroundColor: colors.cream, minHeight: '100vh', padding: '2rem' }}>
         {/* Header */}
-        <div className="flex items-center justify-between animate-slide-up">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-4xl font-bold gradient-text restro-brand">My Profile</h1>
+            <h1 
+              className="text-3xl font-bold restro-brand"
+              style={{
+                fontFamily: "'BBH Sans Bartle', sans-serif",
+                background: `linear-gradient(135deg, ${colors.red} 0%, ${colors.darkNavy} 100%)`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                marginBottom: '0.5rem',
+                fontFeatureSettings: '"liga" off',
+                fontVariantLigatures: 'none',
+                textRendering: 'geometricPrecision',
+                fontKerning: 'none'
+              }}
+            >
+              My Profile
+            </h1>
+            <div 
+              style={{
+                height: '3px',
+                width: '150px',
+                background: `linear-gradient(90deg, ${colors.red} 0%, ${colors.darkNavy} 100%)`,
+                borderRadius: '2px'
+              }}
+            />
           </div>
           <button
             onClick={() => setIsEditing(!isEditing)}
-            className="btn-outline flex items-center hover:scale-105 transition-transform duration-300"
+            style={{
+              padding: '0.75rem 1.5rem',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+              color: colors.darkNavy,
+              background: colors.cream,
+              border: `2px solid ${colors.mediumBlue}`,
+              borderRadius: '0.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = colors.lightBlue;
+              e.target.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = colors.cream;
+              e.target.style.transform = 'scale(1)';
+            }}
           >
             {isEditing ? (
               <>
-                <X className="h-4 w-4 mr-2" />
+                <X className="h-4 w-4" />
                 Cancel
               </>
             ) : (
               <>
-                <Edit3 className="h-4 w-4 mr-2" />
+                <Edit3 className="h-4 w-4" />
                 Edit Profile
               </>
             )}
@@ -160,19 +231,47 @@ const CustomerProfile = () => {
         </div>
 
         {/* Profile Overview Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-slide-up animate-delay-200 hover:shadow-lg transition-shadow duration-300">
+        <div 
+          style={{
+            background: `linear-gradient(135deg, ${colors.cream} 0%, white 100%)`,
+            borderRadius: '0.5rem',
+            border: `2px solid ${colors.lightBlue}`,
+            padding: '1.5rem',
+            boxShadow: '0 2px 8px rgba(29, 53, 87, 0.1)',
+            transition: 'all 0.3s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(29, 53, 87, 0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(29, 53, 87, 0.1)';
+          }}
+        >
           <div className="flex items-center space-x-6">
-            <div className="h-20 w-20 bg-primary-100 rounded-full flex items-center justify-center animate-float">
-              <User className="h-10 w-10 text-primary-600" />
+            <div 
+              style={{
+                height: '5rem',
+                width: '5rem',
+                background: colors.lightBlue,
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: `3px solid ${colors.mediumBlue}`
+              }}
+            >
+              <User className="h-10 w-10" style={{ color: colors.darkNavy }} />
             </div>
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-gray-900">{customerData.personal.name}</h2>
-              <p className="text-gray-600">{customerData.personal.email}</p>
-              <p className="text-sm text-gray-500 mt-2">{customerData.personal.phone}</p>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: colors.darkNavy }}>{customerData.personal.name}</h2>
+              <p style={{ color: colors.mediumBlue }}>{customerData.personal.email}</p>
+              <p style={{ fontSize: '0.875rem', color: colors.mediumBlue, marginTop: '0.5rem' }}>{customerData.personal.phone}</p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-500">Member since</p>
-              <p className="font-semibold text-gray-900">
+              <p style={{ fontSize: '0.875rem', color: colors.mediumBlue }}>Member since</p>
+              <p style={{ fontWeight: '600', color: colors.darkNavy }}>
                 {new Date(customerData.personal.joinDate).toLocaleDateString()}
               </p>
             </div>
@@ -180,18 +279,51 @@ const CustomerProfile = () => {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="border-b border-gray-200">
+        <div 
+          style={{
+            background: `linear-gradient(135deg, ${colors.cream} 0%, white 100%)`,
+            borderRadius: '0.5rem',
+            border: `2px solid ${colors.lightBlue}`,
+            boxShadow: '0 2px 8px rgba(29, 53, 87, 0.1)'
+          }}
+        >
+          <div style={{ borderBottom: `2px solid ${colors.lightBlue}` }}>
             <nav className="flex space-x-8 px-6">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                    activeTab === tab.id
-                      ? 'border-primary-500 text-primary-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    paddingTop: '1rem',
+                    paddingBottom: '1rem',
+                    paddingLeft: '0.25rem',
+                    paddingRight: '0.25rem',
+                    borderBottom: `2px solid ${activeTab === tab.id ? colors.mediumBlue : 'transparent'}`,
+                    fontWeight: '500',
+                    fontSize: '0.875rem',
+                    color: activeTab === tab.id ? colors.darkNavy : colors.mediumBlue,
+                    background: 'transparent',
+                    borderTop: 'none',
+                    borderLeft: 'none',
+                    borderRight: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (activeTab !== tab.id) {
+                      e.target.style.color = colors.darkNavy;
+                      e.target.style.borderBottomColor = colors.lightBlue;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (activeTab !== tab.id) {
+                      e.target.style.color = colors.mediumBlue;
+                      e.target.style.borderBottomColor = 'transparent';
+                    }
+                  }}
                 >
                   {tab.icon}
                   <span>{tab.name}</span>
@@ -204,89 +336,249 @@ const CustomerProfile = () => {
             {/* Personal Information Tab */}
             {activeTab === 'personal' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
+                <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: colors.darkNavy }}>Personal Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.5rem' }}>Full Name</label>
                     <div className="flex items-center space-x-2">
-                      <User className="h-5 w-5 text-gray-400" />
+                      <User className="h-5 w-5" style={{ color: colors.mediumBlue }} />
                       <input
                         type="text"
                         value={customerData.personal.name}
                         disabled={!isEditing}
-                        className="input-field"
+                        onChange={(e) => setCustomerData(prev => ({
+                          ...prev,
+                          personal: { ...prev.personal, name: e.target.value }
+                        }))}
+                        style={{
+                          flex: 1,
+                          padding: '0.5rem 0.75rem',
+                          border: `2px solid ${colors.lightBlue}`,
+                          borderRadius: '0.5rem',
+                          outline: 'none',
+                          transition: 'all 0.3s ease',
+                          background: isEditing ? 'white' : colors.cream,
+                          color: colors.darkNavy
+                        }}
+                        onFocus={(e) => {
+                          if (isEditing) {
+                            e.target.style.borderColor = colors.mediumBlue;
+                            e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                          }
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.lightBlue;
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.5rem' }}>Email</label>
                     <div className="flex items-center space-x-2">
-                      <Mail className="h-5 w-5 text-gray-400" />
+                      <Mail className="h-5 w-5" style={{ color: colors.mediumBlue }} />
                       <input
                         type="email"
                         value={customerData.personal.email}
                         disabled={!isEditing}
-                        className="input-field"
+                        onChange={(e) => setCustomerData(prev => ({
+                          ...prev,
+                          personal: { ...prev.personal, email: e.target.value }
+                        }))}
+                        style={{
+                          flex: 1,
+                          padding: '0.5rem 0.75rem',
+                          border: `2px solid ${colors.lightBlue}`,
+                          borderRadius: '0.5rem',
+                          outline: 'none',
+                          transition: 'all 0.3s ease',
+                          background: isEditing ? 'white' : colors.cream,
+                          color: colors.darkNavy
+                        }}
+                        onFocus={(e) => {
+                          if (isEditing) {
+                            e.target.style.borderColor = colors.mediumBlue;
+                            e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                          }
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.lightBlue;
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.5rem' }}>Phone</label>
                     <div className="flex items-center space-x-2">
-                      <Phone className="h-5 w-5 text-gray-400" />
+                      <Phone className="h-5 w-5" style={{ color: colors.mediumBlue }} />
                       <input
                         type="tel"
                         value={customerData.personal.phone}
                         disabled={!isEditing}
-                        className="input-field"
+                        onChange={(e) => setCustomerData(prev => ({
+                          ...prev,
+                          personal: { ...prev.personal, phone: e.target.value }
+                        }))}
+                        style={{
+                          flex: 1,
+                          padding: '0.5rem 0.75rem',
+                          border: `2px solid ${colors.lightBlue}`,
+                          borderRadius: '0.5rem',
+                          outline: 'none',
+                          transition: 'all 0.3s ease',
+                          background: isEditing ? 'white' : colors.cream,
+                          color: colors.darkNavy
+                        }}
+                        onFocus={(e) => {
+                          if (isEditing) {
+                            e.target.style.borderColor = colors.mediumBlue;
+                            e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                          }
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.lightBlue;
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.5rem' }}>Date of Birth</label>
                     <div className="flex items-center space-x-2">
-                      <Calendar className="h-5 w-5 text-gray-400" />
+                      <Calendar className="h-5 w-5" style={{ color: colors.mediumBlue }} />
                       <input
                         type="date"
                         value={customerData.personal.dateOfBirth}
                         disabled={!isEditing}
-                        className="input-field"
+                        style={{
+                          flex: 1,
+                          padding: '0.5rem 0.75rem',
+                          border: `2px solid ${colors.lightBlue}`,
+                          borderRadius: '0.5rem',
+                          outline: 'none',
+                          transition: 'all 0.3s ease',
+                          background: isEditing ? 'white' : colors.cream,
+                          color: colors.darkNavy
+                        }}
+                        onFocus={(e) => {
+                          if (isEditing) {
+                            e.target.style.borderColor = colors.mediumBlue;
+                            e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                          }
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.lightBlue;
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                     </div>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                  <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.5rem' }}>Address</label>
                   <div className="flex items-start space-x-2">
-                    <MapPin className="h-5 w-5 text-gray-400 mt-2" />
+                    <MapPin className="h-5 w-5 mt-2" style={{ color: colors.mediumBlue }} />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
                       <input
                         type="text"
                         placeholder="Street Address"
                         value={customerData.personal.address.street}
                         disabled={!isEditing}
-                        className="input-field"
+                        style={{
+                          padding: '0.5rem 0.75rem',
+                          border: `2px solid ${colors.lightBlue}`,
+                          borderRadius: '0.5rem',
+                          outline: 'none',
+                          transition: 'all 0.3s ease',
+                          background: isEditing ? 'white' : colors.cream,
+                          color: colors.darkNavy
+                        }}
+                        onFocus={(e) => {
+                          if (isEditing) {
+                            e.target.style.borderColor = colors.mediumBlue;
+                            e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                          }
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.lightBlue;
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                       <input
                         type="text"
                         placeholder="City"
                         value={customerData.personal.address.city}
                         disabled={!isEditing}
-                        className="input-field"
+                        style={{
+                          padding: '0.5rem 0.75rem',
+                          border: `2px solid ${colors.lightBlue}`,
+                          borderRadius: '0.5rem',
+                          outline: 'none',
+                          transition: 'all 0.3s ease',
+                          background: isEditing ? 'white' : colors.cream,
+                          color: colors.darkNavy
+                        }}
+                        onFocus={(e) => {
+                          if (isEditing) {
+                            e.target.style.borderColor = colors.mediumBlue;
+                            e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                          }
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.lightBlue;
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                       <input
                         type="text"
                         placeholder="State"
                         value={customerData.personal.address.state}
                         disabled={!isEditing}
-                        className="input-field"
+                        style={{
+                          padding: '0.5rem 0.75rem',
+                          border: `2px solid ${colors.lightBlue}`,
+                          borderRadius: '0.5rem',
+                          outline: 'none',
+                          transition: 'all 0.3s ease',
+                          background: isEditing ? 'white' : colors.cream,
+                          color: colors.darkNavy
+                        }}
+                        onFocus={(e) => {
+                          if (isEditing) {
+                            e.target.style.borderColor = colors.mediumBlue;
+                            e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                          }
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.lightBlue;
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                       <input
                         type="text"
                         placeholder="ZIP Code"
                         value={customerData.personal.address.zipCode}
                         disabled={!isEditing}
-                        className="input-field"
+                        style={{
+                          padding: '0.5rem 0.75rem',
+                          border: `2px solid ${colors.lightBlue}`,
+                          borderRadius: '0.5rem',
+                          outline: 'none',
+                          transition: 'all 0.3s ease',
+                          background: isEditing ? 'white' : colors.cream,
+                          color: colors.darkNavy
+                        }}
+                        onFocus={(e) => {
+                          if (isEditing) {
+                            e.target.style.borderColor = colors.mediumBlue;
+                            e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                          }
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.lightBlue;
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                     </div>
                   </div>
@@ -297,54 +589,95 @@ const CustomerProfile = () => {
             {/* Preferences Tab */}
             {activeTab === 'preferences' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-gray-900">Preferences</h3>
+                <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: colors.darkNavy }}>Preferences</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Favorite Cuisines</label>
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.5rem' }}>Favorite Cuisines</label>
                     <div className="flex flex-wrap gap-2">
                       {customerData.preferences.favoriteCuisine.map((cuisine, index) => (
-                        <span key={index} className="px-3 py-1 bg-primary-100 text-primary-800 rounded-full text-sm">
+                        <span 
+                          key={index} 
+                          style={{
+                            padding: '0.25rem 0.75rem',
+                            background: colors.lightBlue,
+                            color: colors.darkNavy,
+                            borderRadius: '9999px',
+                            fontSize: '0.875rem',
+                            border: `1px solid ${colors.mediumBlue}`
+                          }}
+                        >
                           {cuisine}
                         </span>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Dietary Restrictions</label>
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.5rem' }}>Dietary Restrictions</label>
                     <div className="flex flex-wrap gap-2">
                       {customerData.preferences.dietaryRestrictions.map((restriction, index) => (
-                        <span key={index} className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                        <span 
+                          key={index} 
+                          style={{
+                            padding: '0.25rem 0.75rem',
+                            background: colors.cream,
+                            color: colors.darkNavy,
+                            borderRadius: '9999px',
+                            fontSize: '0.875rem',
+                            border: `1px solid ${colors.mediumBlue}`
+                          }}
+                        >
                           {restriction}
                         </span>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Spice Level</label>
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.5rem' }}>Spice Level</label>
                     <div className="flex items-center space-x-2">
-                      <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm">
+                      <span style={{
+                        padding: '0.25rem 0.75rem',
+                        background: '#FEE2E2',
+                        color: colors.red,
+                        borderRadius: '9999px',
+                        fontSize: '0.875rem',
+                        border: `1px solid ${colors.red}`
+                      }}>
                         {customerData.preferences.spiceLevel}
                       </span>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
-                    <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.5rem' }}>Language</label>
+                    <span style={{
+                      padding: '0.25rem 0.75rem',
+                      background: colors.cream,
+                      color: colors.darkNavy,
+                      borderRadius: '9999px',
+                      fontSize: '0.875rem',
+                      border: `1px solid ${colors.mediumBlue}`
+                    }}>
                       {customerData.preferences.language}
                     </span>
                   </div>
                 </div>
                 <div>
-                  <h4 className="text-md font-medium text-gray-900 mb-4">Notification Preferences</h4>
+                  <h4 style={{ fontSize: '1rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '1rem' }}>Notification Preferences</h4>
                   <div className="space-y-3">
                     {Object.entries(customerData.preferences.notifications).map(([key, value]) => (
-                      <div key={key} className="flex items-center justify-between">
-                        <span className="text-sm text-gray-700 capitalize">
+                      <div key={key} className="flex items-center justify-between" style={{ padding: '0.75rem', background: colors.cream, borderRadius: '0.5rem', border: `1px solid ${colors.lightBlue}` }}>
+                        <span style={{ fontSize: '0.875rem', color: colors.darkNavy, textTransform: 'capitalize' }}>
                           {key.replace(/([A-Z])/g, ' $1').trim()}
                         </span>
                         <div className="flex items-center space-x-2">
-                          <Bell className="h-4 w-4 text-gray-400" />
-                          <span className={`px-2 py-1 rounded text-xs ${value ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
+                          <Bell className="h-4 w-4" style={{ color: colors.mediumBlue }} />
+                          <span style={{
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: '0.25rem',
+                            fontSize: '0.75rem',
+                            background: value ? colors.lightBlue : colors.cream,
+                            color: value ? colors.darkNavy : colors.mediumBlue,
+                            border: `1px solid ${value ? colors.mediumBlue : colors.lightBlue}`
+                          }}>
                             {value ? 'On' : 'Off'}
                           </span>
                         </div>
@@ -358,49 +691,99 @@ const CustomerProfile = () => {
             {/* Order History Tab */}
             {activeTab === 'orders' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-gray-900">Recent Orders</h3>
+                <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: colors.darkNavy }}>Recent Orders</h3>
                 <div className="space-y-4">
                   {recentOrders.map((order) => (
-                    <div key={order.id} className="bg-gray-50 rounded-lg p-4">
+                    <div 
+                      key={order.id} 
+                      style={{
+                        background: `linear-gradient(135deg, ${colors.cream} 0%, white 100%)`,
+                        borderRadius: '0.5rem',
+                        padding: '1rem',
+                        border: `2px solid ${colors.lightBlue}`,
+                        boxShadow: '0 2px 8px rgba(29, 53, 87, 0.1)',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(29, 53, 87, 0.2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(29, 53, 87, 0.1)';
+                      }}
+                    >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-4">
-                          <span className="font-medium text-gray-900">#{order.id}</span>
-                          <span className="text-sm text-gray-500">{order.date}</span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                          <span style={{ fontWeight: '500', color: colors.darkNavy }}>#{order.id}</span>
+                          <span style={{ fontSize: '0.875rem', color: colors.mediumBlue }}>{order.date}</span>
+                          <span 
+                            style={{
+                              padding: '0.25rem 0.5rem',
+                              borderRadius: '9999px',
+                              fontSize: '0.75rem',
+                              fontWeight: '500',
+                              backgroundColor: order.status === 'completed' ? colors.lightBlue : colors.cream,
+                              color: colors.darkNavy,
+                              border: `1px solid ${colors.mediumBlue}`
+                            }}
+                          >
                             {order.status}
                           </span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          <span className="font-semibold text-gray-900">{formatCurrency(order.total)}</span>
+                          <span style={{ fontWeight: '600', color: colors.darkNavy }}>{formatCurrency(order.total)}</span>
                           <div className="flex items-center">
                             {[...Array(5)].map((_, i) => (
                               <Star
                                 key={i}
-                                className={`h-4 w-4 ${i < order.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                                className="h-4 w-4"
+                                style={{ 
+                                  color: i < order.rating ? '#F59E0B' : colors.lightBlue,
+                                  fill: i < order.rating ? '#F59E0B' : 'none'
+                                }}
                               />
                             ))}
                           </div>
                         </div>
                       </div>
-                      <div className="text-sm text-gray-600">
-                        <span className="font-medium">Items:</span> {order.items.join(', ')}
+                      <div style={{ fontSize: '0.875rem', color: colors.darkNavy }}>
+                        <span style={{ fontWeight: '500' }}>Items:</span> {order.items.join(', ')}
                       </div>
                     </div>
                   ))}
                 </div>
                 <div className="mt-6">
-                  <h4 className="text-md font-medium text-gray-900 mb-4">Favorite Items</h4>
+                  <h4 style={{ fontSize: '1rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '1rem' }}>Favorite Items</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {favoriteItems.map((item, index) => (
-                      <div key={index} className="bg-gray-50 rounded-lg p-4">
+                      <div 
+                        key={index} 
+                        style={{
+                          background: `linear-gradient(135deg, ${colors.cream} 0%, white 100%)`,
+                          borderRadius: '0.5rem',
+                          padding: '1rem',
+                          border: `2px solid ${colors.lightBlue}`,
+                          boxShadow: '0 2px 8px rgba(29, 53, 87, 0.1)',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(29, 53, 87, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = '0 2px 8px rgba(29, 53, 87, 0.1)';
+                        }}
+                      >
                         <div className="flex items-center justify-between">
                           <div>
-                            <h5 className="font-medium text-gray-900">{item.name}</h5>
-                            <p className="text-sm text-gray-500">{item.category}</p>
+                            <h5 style={{ fontWeight: '500', color: colors.darkNavy }}>{item.name}</h5>
+                            <p style={{ fontSize: '0.875rem', color: colors.mediumBlue }}>{item.category}</p>
                           </div>
                           <div className="text-right">
-                            <p className="font-semibold text-gray-900">{formatCurrency(item.price)}</p>
-                            <p className="text-sm text-gray-500">Ordered {item.orderCount} times</p>
+                            <p style={{ fontWeight: '600', color: colors.darkNavy }}>{formatCurrency(item.price)}</p>
+                            <p style={{ fontSize: '0.875rem', color: colors.mediumBlue }}>Ordered {item.orderCount} times</p>
                           </div>
                         </div>
                       </div>
@@ -413,47 +796,199 @@ const CustomerProfile = () => {
             {/* Account Settings Tab */}
             {activeTab === 'settings' && (
               <div className="space-y-6">
-                <h3 className="text-lg font-semibold text-gray-900">Account Settings</h3>
+                <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: colors.darkNavy }}>Account Settings</h3>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div 
+                    className="flex items-center justify-between p-4 rounded-lg"
+                    style={{
+                      background: `linear-gradient(135deg, ${colors.cream} 0%, white 100%)`,
+                      border: `2px solid ${colors.lightBlue}`,
+                      boxShadow: '0 2px 8px rgba(29, 53, 87, 0.1)',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(29, 53, 87, 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(29, 53, 87, 0.1)';
+                    }}
+                  >
                     <div className="flex items-center space-x-3">
-                      <Shield className="h-5 w-5 text-gray-400" />
+                      <Shield className="h-5 w-5" style={{ color: colors.mediumBlue }} />
                       <div>
-                        <h4 className="font-medium text-gray-900">Change Password</h4>
-                        <p className="text-sm text-gray-500">Update your account password</p>
+                        <h4 style={{ fontWeight: '500', color: colors.darkNavy }}>Change Password</h4>
+                        <p style={{ fontSize: '0.875rem', color: colors.mediumBlue }}>Update your account password</p>
                       </div>
                     </div>
-                    <button className="btn-outline">Change</button>
+                    <button 
+                      style={{
+                        padding: '0.5rem 1rem',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        color: colors.darkNavy,
+                        background: colors.cream,
+                        border: `2px solid ${colors.mediumBlue}`,
+                        borderRadius: '0.5rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.background = colors.lightBlue;
+                        e.target.style.borderColor = colors.darkNavy;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.background = colors.cream;
+                        e.target.style.borderColor = colors.mediumBlue;
+                      }}
+                    >
+                      Change
+                    </button>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div 
+                    className="flex items-center justify-between p-4 rounded-lg"
+                    style={{
+                      background: `linear-gradient(135deg, ${colors.cream} 0%, white 100%)`,
+                      border: `2px solid ${colors.lightBlue}`,
+                      boxShadow: '0 2px 8px rgba(29, 53, 87, 0.1)',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(29, 53, 87, 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(29, 53, 87, 0.1)';
+                    }}
+                  >
                     <div className="flex items-center space-x-3">
-                      <CreditCard className="h-5 w-5 text-gray-400" />
+                      <CreditCard className="h-5 w-5" style={{ color: colors.mediumBlue }} />
                       <div>
-                        <h4 className="font-medium text-gray-900">Payment Methods</h4>
-                        <p className="text-sm text-gray-500">Manage your saved payment methods</p>
+                        <h4 style={{ fontWeight: '500', color: colors.darkNavy }}>Payment Methods</h4>
+                        <p style={{ fontSize: '0.875rem', color: colors.mediumBlue }}>Manage your saved payment methods</p>
                       </div>
                     </div>
-                    <button className="btn-outline">Manage</button>
+                    <button 
+                      style={{
+                        padding: '0.5rem 1rem',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        color: colors.darkNavy,
+                        background: colors.cream,
+                        border: `2px solid ${colors.mediumBlue}`,
+                        borderRadius: '0.5rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.background = colors.lightBlue;
+                        e.target.style.borderColor = colors.darkNavy;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.background = colors.cream;
+                        e.target.style.borderColor = colors.mediumBlue;
+                      }}
+                    >
+                      Manage
+                    </button>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div 
+                    className="flex items-center justify-between p-4 rounded-lg"
+                    style={{
+                      background: `linear-gradient(135deg, ${colors.cream} 0%, white 100%)`,
+                      border: `2px solid ${colors.lightBlue}`,
+                      boxShadow: '0 2px 8px rgba(29, 53, 87, 0.1)',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(29, 53, 87, 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(29, 53, 87, 0.1)';
+                    }}
+                  >
                     <div className="flex items-center space-x-3">
-                      <Bell className="h-5 w-5 text-gray-400" />
+                      <Bell className="h-5 w-5" style={{ color: colors.mediumBlue }} />
                       <div>
-                        <h4 className="font-medium text-gray-900">Notification Settings</h4>
-                        <p className="text-sm text-gray-500">Configure your notification preferences</p>
+                        <h4 style={{ fontWeight: '500', color: colors.darkNavy }}>Notification Settings</h4>
+                        <p style={{ fontSize: '0.875rem', color: colors.mediumBlue }}>Configure your notification preferences</p>
                       </div>
                     </div>
-                    <button className="btn-outline">Configure</button>
+                    <button 
+                      style={{
+                        padding: '0.5rem 1rem',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        color: colors.darkNavy,
+                        background: colors.cream,
+                        border: `2px solid ${colors.mediumBlue}`,
+                        borderRadius: '0.5rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.background = colors.lightBlue;
+                        e.target.style.borderColor = colors.darkNavy;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.background = colors.cream;
+                        e.target.style.borderColor = colors.mediumBlue;
+                      }}
+                    >
+                      Configure
+                    </button>
                   </div>
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div 
+                    className="flex items-center justify-between p-4 rounded-lg"
+                    style={{
+                      background: `linear-gradient(135deg, ${colors.cream} 0%, white 100%)`,
+                      border: `2px solid ${colors.red}`,
+                      boxShadow: '0 2px 8px rgba(29, 53, 87, 0.1)',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(230, 57, 70, 0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(29, 53, 87, 0.1)';
+                    }}
+                  >
                     <div className="flex items-center space-x-3">
-                      <User className="h-5 w-5 text-gray-400" />
+                      <User className="h-5 w-5" style={{ color: colors.red }} />
                       <div>
-                        <h4 className="font-medium text-gray-900">Delete Account</h4>
-                        <p className="text-sm text-gray-500">Permanently delete your account</p>
+                        <h4 style={{ fontWeight: '500', color: colors.darkNavy }}>Delete Account</h4>
+                        <p style={{ fontSize: '0.875rem', color: colors.mediumBlue }}>Permanently delete your account</p>
                       </div>
                     </div>
-                    <button className="btn-outline text-red-600 border-red-600 hover:bg-red-600 hover:text-white">Delete</button>
+                    <button 
+                      style={{
+                        padding: '0.5rem 1rem',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        color: colors.red,
+                        background: '#FEE2E2',
+                        border: `2px solid ${colors.red}`,
+                        borderRadius: '0.5rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.background = colors.red;
+                        e.target.style.color = 'white';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.background = '#FEE2E2';
+                        e.target.style.color = colors.red;
+                      }}
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               </div>
@@ -464,14 +999,37 @@ const CustomerProfile = () => {
         {/* Save Button */}
         {isEditing && (
           <div className="flex justify-end">
-            <button className="btn-primary flex items-center">
-              <Save className="h-4 w-4 mr-2" />
+            <button 
+              style={{
+                padding: '0.75rem 1.5rem',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                color: 'white',
+                background: `linear-gradient(135deg, ${colors.red} 0%, ${colors.darkNavy} 100%)`,
+                border: 'none',
+                borderRadius: '0.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'scale(1.05)';
+                e.target.style.boxShadow = `0 4px 12px rgba(29, 53, 87, 0.3)`;
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'scale(1)';
+                e.target.style.boxShadow = 'none';
+              }}
+            >
+              <Save className="h-4 w-4" />
               Save Changes
             </button>
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </CustomerLayout>
   );
 };
 

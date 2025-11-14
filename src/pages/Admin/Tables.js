@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Table as TableIcon, Plus, Search, MapPin, Users, Clock, 
   CheckCircle, X, AlertCircle, Edit, Trash2, Eye, Calendar,
-  User, Phone, Mail, DollarSign, CalendarDays
+  User, Phone, Mail, DollarSign, CalendarDays, RefreshCw
 } from 'lucide-react';
 import AdminLayout from '../../components/Admin/AdminLayout';
 import tableService from '../../services/tableService';
@@ -38,12 +38,28 @@ const AdminTables = () => {
   useEffect(() => {
     fetchData();
     fetchReservations();
+    
+    // Auto-refresh every 30 seconds to show latest reservations
+    const interval = setInterval(() => {
+      fetchData();
+      fetchReservations();
+    }, 30000); // 30 seconds
+    
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
     // Fetch reservations when selected date changes
     fetchReservationsForDate(selectedDate);
   }, [selectedDate]);
+
+  // Refresh when tables or reservations change
+  useEffect(() => {
+    if (tables.length > 0 && reservations.length > 0) {
+      // Tables are already updated by backend when reservations are created
+      // Just ensure we have the latest data
+    }
+  }, [reservations]);
 
   const fetchData = async () => {
     try {
@@ -128,6 +144,43 @@ const AdminTables = () => {
     return reservations.filter(r => r.date === dateStr && r.status !== 'cancelled');
   };
 
+  // Get active reservation for a specific table
+  const getReservationForTable = (tableNumber) => {
+    const today = new Date().toISOString().split('T')[0];
+    const now = new Date();
+    
+    // Find active reservations (pending or confirmed) for this table
+    const activeReservations = reservations.filter(r => 
+      r.table_number === tableNumber &&
+      (r.status === 'pending' || r.status === 'confirmed') &&
+      r.status !== 'cancelled' &&
+      r.status !== 'completed'
+    );
+    
+    // Sort by date and time, get the next upcoming reservation
+    activeReservations.sort((a, b) => {
+      const dateCompare = a.date.localeCompare(b.date);
+      if (dateCompare !== 0) return dateCompare;
+      return a.time.localeCompare(b.time);
+    });
+    
+    // Return the first upcoming reservation (today or future)
+    for (const res of activeReservations) {
+      const resDate = new Date(`${res.date}T${res.time}:00`);
+      if (resDate >= now) {
+        return res;
+      }
+    }
+    
+    // If no upcoming reservation, return the most recent one for today
+    const todayReservations = activeReservations.filter(r => r.date === today);
+    if (todayReservations.length > 0) {
+      return todayReservations[0];
+    }
+    
+    return null;
+  };
+
   const resetForm = () => {
     setFormData({
       number: '',
@@ -174,7 +227,17 @@ const AdminTables = () => {
         const tableId = editingTable._id || editingTable.id;
         const response = await tableService.updateTable(tableId, tableData);
         if (response.success) {
+          // Optimistic update
+          setTables(prevTables => 
+            prevTables.map(t => 
+              (t._id || t.id) === tableId 
+                ? { ...t, ...tableData, number: tableData.number, capacity: tableData.capacity }
+                : t
+            )
+          );
           toast.success('Table updated successfully');
+          // Refresh in background
+          fetchData().catch(err => console.error('Error refreshing tables:', err));
         } else {
           toast.error(response.error || 'Failed to update table');
         }
@@ -182,7 +245,12 @@ const AdminTables = () => {
         // Add new table
         const response = await tableService.addTable(tableData);
         if (response.success) {
+          // Optimistic update - add new table to list
+          const newTable = { ...tableData, id: response.data?.id || response.data?._id || Date.now(), ...response.data };
+          setTables(prevTables => [...prevTables, newTable]);
           toast.success('Table added successfully');
+          // Refresh in background
+          fetchData().catch(err => console.error('Error refreshing tables:', err));
         } else {
           toast.error(response.error || 'Failed to add table');
         }
@@ -190,7 +258,6 @@ const AdminTables = () => {
 
       setShowAddModal(false);
       resetForm();
-      fetchData();
     } catch (error) {
       toast.error('Failed to save table');
     } finally {
@@ -200,16 +267,26 @@ const AdminTables = () => {
 
   const handleDeleteTable = async (table) => {
     if (window.confirm('Are you sure you want to delete this table?')) {
+      const tableId = table._id || table.id;
+      
+      // Optimistic update - remove from UI immediately
+      setTables(prevTables => prevTables.filter(t => (t._id || t.id) !== tableId));
+      
       try {
-        const tableId = table._id || table.id;
         const response = await tableService.deleteTable(tableId);
         if (response.success) {
           toast.success('Table deleted successfully');
-          fetchData();
+          // Refresh in background
+          fetchData().catch(err => console.error('Error refreshing tables:', err));
+          fetchReservations().catch(err => console.error('Error refreshing reservations:', err));
         } else {
+          // Revert on error
+          setTables(prevTables => [...prevTables, table]);
           toast.error(response.error || 'Failed to delete table');
         }
       } catch (error) {
+        // Revert on error
+        setTables(prevTables => [...prevTables, table]);
         console.error('Error deleting table:', error);
         toast.error('Failed to delete table');
       }
@@ -217,18 +294,105 @@ const AdminTables = () => {
   };
 
   const handleStatusChange = async (table, newStatus) => {
+    // Optimistic update - update UI immediately
+    setTables(prevTables => 
+      prevTables.map(t => 
+        (t._id || t.id) === (table._id || table.id) 
+          ? { ...t, status: newStatus }
+          : t
+      )
+    );
+    
     try {
       const tableId = table._id || table.id;
       const response = await tableService.updateTableStatus(tableId, newStatus);
       if (response.success) {
         toast.success('Table status updated');
-        fetchData();
+        // Refresh data in background to ensure consistency
+        fetchData().catch(err => console.error('Error refreshing tables:', err));
+        fetchReservations().catch(err => console.error('Error refreshing reservations:', err));
       } else {
+        // Revert on error
+        setTables(prevTables => 
+          prevTables.map(t => 
+            (t._id || t.id) === (table._id || table.id) 
+              ? { ...t, status: table.status }
+              : t
+          )
+        );
         toast.error(response.error || 'Failed to update table status');
       }
     } catch (error) {
+      // Revert on error
+      setTables(prevTables => 
+        prevTables.map(t => 
+          (t._id || t.id) === (table._id || table.id) 
+            ? { ...t, status: table.status }
+            : t
+        )
+      );
       console.error('Error updating table status:', error);
       toast.error('Failed to update table status');
+    }
+  };
+
+  const handleRefresh = async () => {
+    await fetchData();
+    await fetchReservations();
+    toast.success('Tables and reservations refreshed');
+  };
+
+  const handleRemoveCustomersFromTables = async () => {
+    const customerNames = ['Emma Wilson', 'Michael Johnson', 'Sophia Williams'];
+    const confirmed = window.confirm(
+      `Are you sure you want to remove reservations and clear table assignments for:\n${customerNames.join(', ')}?\n\nThis will delete all their reservations.`
+    );
+    
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      toast.loading('Removing customers from tables...', { id: 'remove-customers' });
+      
+      // Delete reservations for these customers
+      const reservationResult = await reservationService.deleteReservationsByCustomerNames(customerNames);
+      
+      // Clear table customer assignments
+      const tablesToUpdate = tables.filter(table => {
+        const customer = (table.customer || '').trim();
+        return customerNames.some(name => 
+          customer.toLowerCase() === name.toLowerCase()
+        );
+      });
+
+      const tableUpdatePromises = tablesToUpdate.map(table => {
+        const tableId = table._id || table.id;
+        return tableService.updateTable(tableId, {
+          number: table.number || table.tableNumber,
+          capacity: table.capacity,
+          status: 'available',
+          customer: null,
+          currentOrder: null
+        });
+      });
+
+      const tableResults = await Promise.all(tableUpdatePromises);
+      const tableSuccessCount = tableResults.filter(r => r.success).length;
+
+      if (reservationResult.success) {
+        toast.success(
+          `Removed ${reservationResult.deleted} reservations and cleared ${tableSuccessCount} table assignments.`,
+          { id: 'remove-customers' }
+        );
+        await fetchReservations();
+        await fetchData();
+      } else {
+        toast.error(reservationResult.error || 'Failed to remove customers', { id: 'remove-customers' });
+      }
+    } catch (error) {
+      console.error('Error removing customers:', error);
+      toast.error('An error occurred while removing customers', { id: 'remove-customers' });
     }
   };
 
@@ -286,9 +450,7 @@ const AdminTables = () => {
     const available = tables.filter(t => t.status === 'available').length;
     const occupied = tables.filter(t => t.status === 'occupied').length;
     const reserved = tables.filter(t => t.status === 'reserved').length;
-    const cleaning = tables.filter(t => t.status === 'cleaning').length;
-    
-    return { total, available, occupied, reserved, cleaning };
+    return { total, available, occupied, reserved };
   };
 
   const stats = getStats();
@@ -327,20 +489,44 @@ const AdminTables = () => {
             </h1>
             <div style={{ height: '4px', background: `linear-gradient(90deg, ${colors.red} 0%, ${colors.mediumBlue} 100%)`, borderRadius: '2px', width: '200px' }}></div>
           </div>
-          <button 
-            onClick={handleAddTable}
-            className="px-8 py-3 text-white rounded-xl font-bold transition-all duration-300 hover:scale-105 shadow-lg flex items-center"
-            style={{ backgroundColor: colors.red }}
-            onMouseEnter={(e) => e.target.style.backgroundColor = '#d32f3e'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = colors.red}
-          >
-            <Plus className="h-5 w-5 mr-2" />
-            Add Table
-          </button>
+          <div className="flex items-center space-x-3">
+            <button 
+              onClick={handleRemoveCustomersFromTables}
+              className="px-6 py-3 rounded-xl font-bold transition-all duration-300 hover:scale-105 shadow-lg flex items-center"
+              style={{ backgroundColor: '#FF6B35', color: colors.cream }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#FF4500'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#FF6B35'}
+              title="Remove Emma Wilson, Michael Johnson, Sophia Williams from tables"
+            >
+              <X className="h-5 w-5 mr-2" />
+              Remove Customers
+            </button>
+            <button 
+              onClick={handleRefresh}
+              className="px-6 py-3 rounded-xl font-bold transition-all duration-300 hover:scale-105 shadow-lg flex items-center"
+              style={{ backgroundColor: colors.mediumBlue, color: colors.cream }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#3a6a8a'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = colors.mediumBlue}
+              title="Refresh tables and reservations"
+            >
+              <RefreshCw className="h-5 w-5 mr-2" />
+              Refresh
+            </button>
+            <button 
+              onClick={handleAddTable}
+              className="px-8 py-3 text-white rounded-xl font-bold transition-all duration-300 hover:scale-105 shadow-lg flex items-center"
+              style={{ backgroundColor: colors.red }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#d32f3e'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = colors.red}
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Add Table
+            </button>
+          </div>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div 
             className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
             style={{ 
@@ -417,26 +603,6 @@ const AdminTables = () => {
               </div>
               <div className="p-4 rounded-full shadow-lg" style={{ backgroundColor: colors.cream }}>
                 <Calendar className="h-8 w-8" style={{ color: colors.darkNavy }} />
-              </div>
-            </div>
-          </div>
-
-          <div 
-            className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
-            style={{ 
-              animationDelay: '0.5s',
-              background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
-              borderColor: colors.mediumBlue,
-              borderWidth: '2px'
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-semibold mb-2" style={{ color: colors.darkNavy, opacity: 0.8 }}>Cleaning</p>
-                <p className="text-3xl font-bold" style={{ color: colors.mediumBlue }}>{stats.cleaning}</p>
-              </div>
-              <div className="p-4 rounded-full shadow-lg" style={{ backgroundColor: colors.cream }}>
-                <AlertCircle className="h-8 w-8" style={{ color: colors.mediumBlue }} />
               </div>
             </div>
           </div>
@@ -649,7 +815,6 @@ const AdminTables = () => {
                 <option value="available">Available</option>
                 <option value="occupied">Occupied</option>
                 <option value="reserved">Reserved</option>
-                <option value="cleaning">Cleaning</option>
               </select>
             </div>
             </div>
@@ -679,6 +844,9 @@ const AdminTables = () => {
             {filteredTables.map((table) => {
               const statusConfig = getStatusBadge(table.status);
               const tableId = table._id || table.id;
+              const tableNumber = table.number || table.tableNumber;
+              const reservation = getReservationForTable(tableNumber);
+              
               return (
                 <div 
                   key={tableId} 
@@ -699,7 +867,7 @@ const AdminTables = () => {
                         <TableIcon className="h-6 w-6" style={{ color: colors.darkNavy }} />
                       </div>
                         <div className="ml-3">
-                          <h3 className="text-lg font-bold" style={{ color: colors.darkNavy }}>{table.number || table.tableNumber || 'N/A'}</h3>
+                          <h3 className="text-lg font-bold" style={{ color: colors.darkNavy }}>{tableNumber || 'N/A'}</h3>
                           <p className="text-sm font-semibold" style={{ color: colors.mediumBlue }}>{table.capacity || 0} seats</p>
                         </div>
                     </div>
@@ -712,8 +880,35 @@ const AdminTables = () => {
                     </span>
                   </div>
 
+                  {/* Show reservation info if table is reserved */}
+                  {(table.status === 'reserved' && reservation) && (
+                    <div 
+                      className="p-3 rounded-lg mb-4 border-2"
+                      style={{ 
+                        backgroundColor: colors.lightBlue,
+                        borderColor: colors.mediumBlue,
+                        borderWidth: '2px'
+                      }}
+                    >
+                      <div className="flex items-center text-sm font-bold mb-1" style={{ color: colors.darkNavy }}>
+                        <User className="h-4 w-4 mr-2" />
+                        <span>{reservation.customer_name || 'Guest'}</span>
+                      </div>
+                      <div className="text-xs font-semibold mb-1" style={{ color: colors.mediumBlue }}>
+                        <Calendar className="h-3 w-3 inline mr-1" />
+                        {reservation.date} at {reservation.time}
+                      </div>
+                      {reservation.party_size && (
+                        <div className="text-xs font-semibold" style={{ color: colors.mediumBlue }}>
+                          <Users className="h-3 w-3 inline mr-1" />
+                          {reservation.party_size} guests
+                        </div>
+                      )}
+                    </div>
+                  )}
 
-                  {table.customer && (
+                  {/* Show customer info if table is occupied */}
+                  {table.customer && table.status === 'occupied' && (
                     <div 
                       className="p-3 rounded-lg mb-4 border-2"
                       style={{ 
@@ -772,7 +967,6 @@ const AdminTables = () => {
                       <option value="available">Available</option>
                       <option value="occupied">Occupied</option>
                       <option value="reserved">Reserved</option>
-                      <option value="cleaning">Cleaning</option>
                     </select>
                   </div>
                 </div>

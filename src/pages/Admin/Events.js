@@ -482,7 +482,10 @@ const AdminEvents = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-bold" style={{ color: colors.darkNavy }}>{event.customer}</div>
-                          <div className="text-sm" style={{ color: colors.mediumBlue }}>{event.contact}</div>
+                          <div className="text-sm flex items-center" style={{ color: colors.mediumBlue }}>
+                            <Phone className="h-3 w-3 mr-1" />
+                            {event.contact}
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -717,22 +720,26 @@ const AdminEvents = () => {
 
                   <div>
                     <label className="block text-sm font-bold mb-1" style={{ color: colors.darkNavy }}>
-                      Contact Info *
+                      Phone Number *
                     </label>
-                    <input
-                      type="text"
-                      name="contact"
-                      value={formData.contact}
-                      onChange={handleInputChange}
-                      required
-                      className="w-full px-3 py-2 border-2 rounded-lg transition-all"
-                      style={{ 
-                        borderColor: colors.lightBlue,
-                        backgroundColor: 'white'
-                      }}
-                      onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
-                      onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
-                    />
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4" style={{ color: colors.mediumBlue }} />
+                      <input
+                        type="tel"
+                        name="contact"
+                        value={formData.contact}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full pl-10 pr-3 py-2 border-2 rounded-lg transition-all"
+                        style={{ 
+                          borderColor: colors.lightBlue,
+                          backgroundColor: 'white'
+                        }}
+                        onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
+                        onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
+                        placeholder="Enter phone number"
+                      />
+                    </div>
                   </div>
 
                 </div>

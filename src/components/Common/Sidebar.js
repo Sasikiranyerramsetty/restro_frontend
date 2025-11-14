@@ -101,24 +101,24 @@ const Sidebar = memo(({ isOpen, onToggle, onCollapseChange }) => {
       <div className={`
         fixed top-0 left-0 h-full bg-brand-navy shadow-2xl border-r border-brand-blue/30 z-50
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-        ${isCollapsed ? 'w-16' : 'w-64'}
+        ${isCollapsed ? 'w-16' : 'w-80'}
         lg:translate-x-0
         transition-all duration-300
       `}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-brand-blue/30">
+        <div className="flex items-center justify-between px-4 pt-6 pb-4 border-b border-brand-blue/30">
           {!isCollapsed && (
             <Link 
               to={user ? (getUserRole() === USER_ROLES.ADMIN ? ROUTES.ADMIN_DASHBOARD : 
                 getUserRole() === USER_ROLES.EMPLOYEE ? ROUTES.EMPLOYEE_DASHBOARD : ROUTES.CUSTOMER_DASHBOARD) : ROUTES.CUSTOMER_HOME}
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-3 mt-2"
             >
               <img 
                 src={require('../../assets/images/restrologo.png')} 
                 alt="Restro Logo" 
-                className="w-8 h-8 object-contain"
+                className="w-12 h-12 object-contain"
               />
-              <span className="text-xl font-bold text-white" style={{ fontFamily: 'Rockybilly, sans-serif' }}>Restro</span>
+              <span className="text-xl font-bold text-white" style={{ fontFamily: "'BBH Sans Bartle', sans-serif", letterSpacing: '0.1em' }}>Restro</span>
             </Link>
           )}
           
@@ -127,7 +127,7 @@ const Sidebar = memo(({ isOpen, onToggle, onCollapseChange }) => {
               <img 
                 src={require('../../assets/images/restrologo.png')} 
                 alt="Restro Logo" 
-                className="w-8 h-8 object-contain"
+                className="w-12 h-12 object-contain"
               />
             </div>
           )}

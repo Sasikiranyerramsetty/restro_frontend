@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Calendar, 
   Clock, 
@@ -8,25 +8,111 @@ import {
   X, 
   Plus,
   Search,
-  Filter
+  Loader2,
+  ChevronDown
 } from 'lucide-react';
-import DashboardLayout from '../../components/Common/DashboardLayout';
+import CustomerLayout from '../../components/Customer/CustomerLayout';
 import reservationService from '../../services/reservationService';
 import toast from 'react-hot-toast';
 
 const CustomerReservations = () => {
+  // Custom color palette (matching admin)
+  const colors = {
+    red: '#E63946',
+    cream: '#F1FAEE',
+    lightBlue: '#A8DADC',
+    mediumBlue: '#457B9D',
+    darkNavy: '#1D3557'
+  };
+
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showNewReservationModal, setShowNewReservationModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [reservations, setReservations] = useState([]);
+  const [availableTables, setAvailableTables] = useState([]);
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
+  const [tableSelectionMode, setTableSelectionMode] = useState('auto'); // 'auto' or 'manual'
   const [formData, setFormData] = useState({
     date: '',
     time: '',
     partySize: '',
+    tableNumber: '',
     specialRequests: '',
     contactPhone: '',
     customerName: ''
   });
+  const [timePeriod, setTimePeriod] = useState('PM'); // 'AM' or 'PM'
+
+  // Fetch reservations on component mount
+  useEffect(() => {
+    fetchReservations();
+  }, []);
+
+  // Check availability when date, time, or party size changes
+  useEffect(() => {
+    if (formData.date && formData.time && formData.partySize) {
+      checkAvailability();
+    } else {
+      setAvailableTables([]);
+    }
+  }, [formData.date, formData.time, formData.partySize]);
+
+  const fetchReservations = async () => {
+    setIsLoading(true);
+    try {
+      const response = await reservationService.getReservations();
+      if (response.success) {
+        setReservations(response.data || []);
+      } else {
+        toast.error(response.error || 'Failed to fetch reservations');
+        setReservations([]);
+      }
+    } catch (error) {
+      console.error('Error fetching reservations:', error);
+      toast.error('Failed to fetch reservations');
+      setReservations([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const checkAvailability = async () => {
+    if (!formData.date || !formData.time || !formData.partySize) {
+      return;
+    }
+
+    setIsCheckingAvailability(true);
+    try {
+      const response = await reservationService.checkAvailability(
+        formData.date,
+        formData.time,
+        parseInt(formData.partySize)
+      );
+
+      if (response.success) {
+        setAvailableTables(response.data.available_tables || []);
+        if (tableSelectionMode === 'auto' && response.data.available_tables?.length > 0) {
+          // Auto-select the best table
+          setFormData(prev => ({
+            ...prev,
+            tableNumber: response.data.available_tables[0].number
+          }));
+        }
+      } else {
+        setAvailableTables([]);
+        if (tableSelectionMode === 'manual') {
+          toast.error(response.error || 'No tables available');
+        }
+      }
+    } catch (error) {
+      console.error('Error checking availability:', error);
+      setAvailableTables([]);
+    } finally {
+      setIsCheckingAvailability(false);
+    }
+  };
 
   // Calculate min and max dates (today to 7 days from today)
   const getMinDate = () => {
@@ -36,15 +122,13 @@ const CustomerReservations = () => {
 
   const getMaxDate = () => {
     const maxDate = new Date();
-    maxDate.setDate(maxDate.getDate() + 6); // 7 days including today (0-6 = 7 days)
+    maxDate.setDate(maxDate.getDate() + 6);
     return maxDate.toISOString().split('T')[0];
   };
 
   // Get min time based on selected date
-  // Time must ALWAYS be between 11:30 AM (11:30) and 10:00 PM (22:00)
   const getMinTime = () => {
-    // If no date selected, minimum is always 11:30 AM
-    if (!formData.date) return '11:30';
+    if (!formData.date) return '11:00';
     
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
@@ -55,136 +139,101 @@ const CustomerReservations = () => {
       const currentHour = now.getHours();
       const currentMinute = now.getMinutes();
       const currentTimeInMinutes = currentHour * 60 + currentMinute;
-      const minAllowedTimeInMinutes = 11 * 60 + 30; // 11:30 AM (690 minutes)
-      const maxAllowedTimeInMinutes = 22 * 60; // 10:00 PM (1320 minutes)
+      const minAllowedTimeInMinutes = 11 * 60; // 11:00
+      const maxAllowedTimeInMinutes = 22 * 60;
       
-      // If current time is before 11:30 AM, minimum is 11:30 AM
       if (currentTimeInMinutes < minAllowedTimeInMinutes) {
-        return '11:30';
+        return '11:00';
       }
       
-      // If current time is after 10:00 PM, no valid times available (max will prevent selection)
       if (currentTimeInMinutes >= maxAllowedTimeInMinutes) {
-        return '22:00'; // This effectively disables time selection for today
+        return '22:00';
       }
       
-      // Current time is between 11:30 AM and 10:00 PM
-      // Use current time + 30 minutes as minimum, but ensure it doesn't exceed 10:00 PM
-      const minTime = new Date(now.getTime() + 30 * 60 * 1000); // Add 30 minutes
+      // Round up to next hour
+      const minTime = new Date(now.getTime() + 60 * 60 * 1000); // Add 1 hour
       const minHours = minTime.getHours();
-      const minMinutes = minTime.getMinutes();
       
-      // Ensure the calculated min time doesn't exceed 10:00 PM
       if (minHours >= 22) {
-        return '22:00'; // This effectively disables time selection for today
+        return '22:00';
       }
       
-      return `${String(minHours).padStart(2, '0')}:${String(minMinutes).padStart(2, '0')}`;
+      return `${String(minHours).padStart(2, '0')}:00`;
     }
     
-    // For future dates, always start from 11:30 AM
-    return '11:30';
+    return '11:00';
   };
 
   const getMaxTime = () => {
-    // Maximum time is always 10:00 PM (22:00)
     return '22:00';
   };
 
-  // Static reservation data
-  const reservations = [
-    {
-      id: 'RES-001',
-      date: '2024-01-25',
-      time: '19:00',
-      status: 'confirmed',
-      partySize: 4,
-      tableNumber: 'T5',
-      duration: 120,
-      specialRequests: 'Birthday celebration, need high chair',
-      contactPhone: '+91 98765 43210',
-      notes: 'Anniversary dinner',
-      createdAt: '2024-01-20T10:30:00Z'
-    },
-    {
-      id: 'RES-002',
-      date: '2024-01-23',
-      time: '18:30',
-      status: 'confirmed',
-      partySize: 2,
-      tableNumber: 'T2',
-      duration: 90,
-      specialRequests: 'Window table preferred',
-      contactPhone: '+91 98765 43210',
-      notes: 'Date night',
-      createdAt: '2024-01-19T14:15:00Z'
-    },
-    {
-      id: 'RES-003',
-      date: '2024-01-22',
-      time: '20:00',
-      status: 'completed',
-      partySize: 6,
-      tableNumber: 'T8',
-      duration: 150,
-      specialRequests: 'Family gathering, vegetarian options',
-      contactPhone: '+91 98765 43210',
-      notes: 'Family dinner - completed successfully',
-      createdAt: '2024-01-18T16:45:00Z'
-    },
-    {
-      id: 'RES-004',
-      date: '2024-01-21',
-      time: '12:30',
-      status: 'cancelled',
-      partySize: 3,
-      tableNumber: 'T3',
-      duration: 60,
-      specialRequests: 'Business lunch',
-      contactPhone: '+91 98765 43210',
-      notes: 'Cancelled due to meeting conflict',
-      createdAt: '2024-01-17T09:20:00Z'
-    },
-    {
-      id: 'RES-005',
-      date: '2024-01-20',
-      time: '19:30',
-      status: 'completed',
-      partySize: 8,
-      tableNumber: 'T10',
-      duration: 180,
-      specialRequests: 'Corporate dinner, private area',
-      contactPhone: '+91 98765 43210',
-      notes: 'Team celebration - excellent service',
-      createdAt: '2024-01-16T11:00:00Z'
-    },
-    {
-      id: 'RES-006',
-      date: '2024-01-19',
-      time: '13:00',
-      status: 'completed',
-      partySize: 2,
-      tableNumber: 'T1',
-      duration: 75,
-      specialRequests: 'Quiet corner table',
-      contactPhone: '+91 98765 43210',
-      notes: 'Lunch meeting - good experience',
-      createdAt: '2024-01-15T08:30:00Z'
+  // Generate time slots organized by hour groups (1-hour intervals)
+  const generateTimeSlots = () => {
+    const minTime = getMinTime(); // Get minimum allowed time
+    const maxTime = getMaxTime(); // Get maximum allowed time (22:00)
+    
+    // Parse min time
+    const [minHour, minMinute] = minTime.split(':').map(Number);
+    const minTimeInMinutes = minHour * 60 + minMinute;
+    
+    // Parse max time
+    const [maxHour, maxMinute] = maxTime.split(':').map(Number);
+    const maxTimeInMinutes = maxHour * 60 + maxMinute;
+    
+    const groups = {};
+    
+    // Generate slots from 11:00 to 22:00 (1-hour intervals only)
+    for (let hour = 11; hour <= 22; hour++) {
+      const minute = 0; // Only :00 minutes, no :30
+      
+      const timeInMinutes = hour * 60 + minute;
+      
+      // Only include times within allowed range
+      if (timeInMinutes >= minTimeInMinutes && timeInMinutes <= maxTimeInMinutes) {
+        const time24 = `${String(hour).padStart(2, '0')}:00`;
+        
+        // Convert to 12-hour format
+        let hour12 = hour;
+        let ampm = 'AM';
+        if (hour === 0) {
+          hour12 = 12;
+        } else if (hour === 12) {
+          ampm = 'PM';
+        } else if (hour > 12) {
+          hour12 = hour - 12;
+          ampm = 'PM';
+        }
+        
+        const slot = {
+          value: time24,
+          label: `${hour12}:00 ${ampm}`
+        };
+        
+        // Group by hour (e.g., "11 AM", "12 PM", "1 PM", "2 PM")
+        const groupKey = `${hour12} ${ampm}`;
+        if (!groups[groupKey]) {
+          groups[groupKey] = [];
+        }
+        groups[groupKey].push(slot);
+      }
     }
-  ];
+    
+    return groups;
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
       case 'confirmed':
-        return 'bg-green-100 text-green-800';
+        return { bg: 'rgba(34, 197, 94, 0.1)', text: '#16a34a' };
       case 'completed':
-        return 'bg-blue-100 text-blue-800';
+        return { bg: 'rgba(59, 130, 246, 0.1)', text: colors.mediumBlue };
       case 'cancelled':
-        return 'bg-red-100 text-red-800';
+        return { bg: 'rgba(230, 57, 70, 0.1)', text: colors.red };
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return { bg: 'rgba(234, 179, 8, 0.1)', text: '#ca8a04' };
       default:
-        return 'bg-gray-100 text-gray-800';
+        return { bg: 'rgba(107, 114, 128, 0.1)', text: '#6b7280' };
     }
   };
 
@@ -226,14 +275,14 @@ const CustomerReservations = () => {
       return;
     }
     
-    // Validate time is strictly between 11:30 AM and 10:00 PM
+    // Validate time
     const [hours, minutes] = formData.time.split(':').map(Number);
     const timeInMinutes = hours * 60 + minutes;
-    const minTimeInMinutes = 11 * 60 + 30; // 11:30 AM (690 minutes)
-    const maxTimeInMinutes = 22 * 60; // 10:00 PM (1320 minutes)
+    const minTimeInMinutes = 11 * 60; // 11:00
+    const maxTimeInMinutes = 22 * 60;
     
     if (timeInMinutes < minTimeInMinutes) {
-      toast.error('Reservations are only available from 11:30 AM onwards.');
+      toast.error('Reservations are only available from 11:00 AM onwards.');
       return;
     }
     if (timeInMinutes > maxTimeInMinutes) {
@@ -241,7 +290,6 @@ const CustomerReservations = () => {
       return;
     }
     
-    // If today, validate time is not in the past
     if (formData.date === today.toISOString().split('T')[0]) {
       const now = new Date();
       const selectedDateTime = new Date(selectedDate);
@@ -251,6 +299,12 @@ const CustomerReservations = () => {
         toast.error('Please select a future time.');
         return;
       }
+    }
+
+    // If manual mode and no table selected, show error
+    if (tableSelectionMode === 'manual' && !formData.tableNumber) {
+      toast.error('Please select a table or switch to automatic assignment.');
+      return;
     }
     
     setIsSubmitting(true);
@@ -264,21 +318,30 @@ const CustomerReservations = () => {
         special_requests: formData.specialRequests || '',
         status: 'pending'
       };
+
+      // Only include table_number if manually selected
+      if (tableSelectionMode === 'manual' && formData.tableNumber) {
+        reservationData.table_number = formData.tableNumber;
+      }
       
       const response = await reservationService.createReservation(reservationData);
       
       if (response.success) {
-        toast.success('Reservation request submitted! We will confirm your booking shortly.');
+        toast.success(`Reservation created successfully! ${response.data.table_number ? `Table ${response.data.table_number} has been assigned.` : ''}`);
         setShowNewReservationModal(false);
         setFormData({
           date: '',
           time: '',
           partySize: '',
+          tableNumber: '',
           specialRequests: '',
           contactPhone: '',
           customerName: ''
         });
-        // Optionally refresh reservations list here
+        setTableSelectionMode('auto');
+        setAvailableTables([]);
+        // Refresh reservations list
+        await fetchReservations();
       } else {
         toast.error(response.error || 'Failed to submit reservation');
       }
@@ -290,259 +353,422 @@ const CustomerReservations = () => {
     }
   };
 
+  const handleDeleteReservation = async (reservationId) => {
+    if (!window.confirm('Are you sure you want to cancel this reservation?')) {
+      return;
+    }
+
+    try {
+      const response = await reservationService.deleteReservation(reservationId);
+      if (response.success) {
+        toast.success('Reservation cancelled successfully');
+        await fetchReservations();
+      } else {
+        toast.error(response.error || 'Failed to cancel reservation');
+      }
+    } catch (error) {
+      console.error('Error deleting reservation:', error);
+      toast.error('Failed to cancel reservation');
+    }
+  };
+
   const filteredReservations = reservations.filter(reservation => {
     const matchesStatus = statusFilter === 'all' || reservation.status === statusFilter;
-    const matchesSearch = reservation.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         reservation.notes.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         reservation.tableNumber.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch = 
+      (reservation.id && reservation.id.toLowerCase().includes(searchLower)) ||
+      (reservation.table_number && reservation.table_number.toLowerCase().includes(searchLower)) ||
+      (reservation.customer_name && reservation.customer_name.toLowerCase().includes(searchLower)) ||
+      (reservation.contact_phone && reservation.contact_phone.includes(searchTerm));
     return matchesStatus && matchesSearch;
   });
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-bold gradient-text restro-brand">Table Reservations</h1>
-          </div>
-          <button 
-            onClick={() => setShowNewReservationModal(true)}
-            className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-colors"
-          >
-            <Plus className="h-5 w-5" />
-            <span>New Reservation</span>
-          </button>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Calendar className="h-6 w-6 text-blue-600" />
+    <CustomerLayout>
+      <div className="space-y-6 animate-fade-in" style={{ backgroundColor: colors.cream, minHeight: '100vh', width: '100%', padding: '1.5rem 2rem', overflowX: 'hidden' }}>
+        <div className="w-full max-w-full">
+          {/* Header */}
+          <div className="mb-6 animate-slide-up">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h1 
+                  className="text-3xl font-bold drop-shadow-lg mb-2" 
+                  style={{ 
+                    fontFamily: "'BBH Sans Bartle', sans-serif", 
+                    letterSpacing: '0.05em',
+                    color: colors.darkNavy,
+                    fontFeatureSettings: '"liga" off',
+                    fontVariantLigatures: 'none',
+                    textRendering: 'geometricPrecision',
+                    fontKerning: 'none'
+                  }}
+                >
+                  Table Reservations
+                </h1>
+                <div style={{ height: '4px', background: `linear-gradient(90deg, ${colors.red} 0%, ${colors.mediumBlue} 100%)`, borderRadius: '2px', width: '250px' }}></div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Reservations</p>
-                <p className="text-2xl font-bold text-gray-900">{reservations.length}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Confirmed</p>
-                <p className="text-2xl font-bold text-gray-900">{reservations.filter(r => r.status === 'confirmed').length}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Completed</p>
-                <p className="text-2xl font-bold text-gray-900">{reservations.filter(r => r.status === 'completed').length}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Users className="h-6 w-6 text-purple-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Avg Party Size</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {(reservations.reduce((sum, r) => sum + r.partySize, 0) / reservations.length).toFixed(1)}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search reservations by ID, table, or notes..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-            <div className="sm:w-48">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              <button 
+                onClick={() => {
+                  setShowNewReservationModal(true);
+                  setFormData({
+                    date: '',
+                    time: '',
+                    partySize: '',
+                    tableNumber: '',
+                    specialRequests: '',
+                    contactPhone: '',
+                    customerName: ''
+                  });
+                  setTableSelectionMode('auto');
+                  setAvailableTables([]);
+                }}
+                className="px-8 py-3 text-white rounded-xl font-bold transition-all duration-300 hover:scale-105 shadow-lg flex items-center"
+                style={{ backgroundColor: colors.red }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#d32f3e'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = colors.red}
               >
-                <option value="all">All Status</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="pending">Pending</option>
-              </select>
+                <Plus className="h-5 w-5 mr-2" />
+                New Reservation
+              </button>
             </div>
           </div>
-        </div>
 
-        {/* Reservations List */}
-        <div className="space-y-4">
-          {filteredReservations.map((reservation) => (
-            <div key={reservation.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center space-x-3">
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="h-5 w-5 text-gray-400" />
-                    <h3 className="text-lg font-semibold text-gray-900">{reservation.id}</h3>
-                  </div>
-                  <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(reservation.status)}`}>
-                    {getStatusIcon(reservation.status)}
-                    <span className="ml-1 capitalize">{reservation.status}</span>
-                  </span>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div 
+              className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
+              style={{ 
+                animationDelay: '0.1s',
+                background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
+                borderColor: colors.mediumBlue
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-semibold mb-2" style={{ color: colors.darkNavy, opacity: 0.8 }}>Total Reservations</p>
+                  <p className="text-3xl font-bold" style={{ color: colors.mediumBlue }}>{reservations.length}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">
-                    {reservation.date} at {reservation.time}
+                <div className="p-4 rounded-full shadow-lg" style={{ backgroundColor: colors.cream }}>
+                  <Calendar className="h-8 w-8" style={{ color: colors.mediumBlue }} />
+                </div>
+              </div>
+            </div>
+
+            <div 
+              className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
+              style={{ 
+                animationDelay: '0.2s',
+                background: `linear-gradient(135deg, ${colors.lightBlue} 0%, ${colors.mediumBlue} 100%)`,
+                borderColor: colors.red
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-semibold mb-2" style={{ color: colors.darkNavy, opacity: 0.8 }}>Confirmed</p>
+                  <p className="text-3xl font-bold" style={{ color: colors.red }}>
+                    {reservations.filter(r => r.status === 'confirmed').length}
                   </p>
-                  <p className="text-xs text-gray-500">Table {reservation.tableNumber}</p>
+                </div>
+                <div className="p-4 rounded-full shadow-lg" style={{ backgroundColor: colors.cream }}>
+                  <CheckCircle className="h-8 w-8" style={{ color: colors.red }} />
                 </div>
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Reservation Details</h4>
-                  <div className="space-y-1 text-sm">
-                    <div className="flex items-center space-x-2">
-                      <Users className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-600">Party Size: {reservation.partySize} people</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Clock className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-600">Duration: {reservation.duration} minutes</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <MapPin className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-600">Table: {reservation.tableNumber}</span>
-                    </div>
-                  </div>
+            <div 
+              className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
+              style={{ 
+                animationDelay: '0.3s',
+                background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
+                borderColor: colors.mediumBlue
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-semibold mb-2" style={{ color: colors.darkNavy, opacity: 0.8 }}>Pending</p>
+                  <p className="text-3xl font-bold" style={{ color: colors.darkNavy }}>
+                    {reservations.filter(r => r.status === 'pending').length}
+                  </p>
                 </div>
+                <div className="p-4 rounded-full shadow-lg" style={{ backgroundColor: colors.cream }}>
+                  <Clock className="h-8 w-8" style={{ color: colors.darkNavy }} />
+                </div>
+              </div>
+            </div>
 
-                <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Contact & Notes</h4>
-                  <div className="space-y-1 text-sm">
-                    <div className="text-gray-600">
-                      <span className="font-medium">Phone:</span> {reservation.contactPhone}
-                    </div>
-                    {reservation.notes && (
-                      <div className="text-gray-600">
-                        <span className="font-medium">Notes:</span> {reservation.notes}
+            <div 
+              className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
+              style={{ 
+                animationDelay: '0.4s',
+                background: `linear-gradient(135deg, ${colors.lightBlue} 0%, ${colors.cream} 100%)`,
+                borderColor: colors.red
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-semibold mb-2" style={{ color: colors.darkNavy, opacity: 0.8 }}>Avg Party Size</p>
+                  <p className="text-3xl font-bold" style={{ color: colors.red }}>
+                    {reservations.length > 0 
+                      ? (reservations.reduce((sum, r) => sum + (r.party_size || 0), 0) / reservations.length).toFixed(1)
+                      : '0'
+                    }
+                  </p>
+                </div>
+                <div className="p-4 rounded-full shadow-lg" style={{ backgroundColor: colors.cream }}>
+                  <Users className="h-8 w-8" style={{ color: colors.red }} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div 
+            className="rounded-2xl shadow-xl border-2 p-6 mt-8"
+            style={{ 
+              background: `linear-gradient(135deg, #FFFFFF 0%, ${colors.cream} 100%)`,
+              borderColor: colors.lightBlue
+            }}
+          >
+            <div className="flex flex-col sm:flex-row gap-4 min-w-0">
+              <div className="flex-1 min-w-0">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5" style={{ color: colors.mediumBlue }} />
+                  <input
+                    type="text"
+                    placeholder="Search reservations by ID, table, name, or phone..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 rounded-lg border-2 focus:outline-none focus:ring-2 transition-all"
+                    style={{ 
+                      borderColor: colors.lightBlue,
+                      color: colors.darkNavy
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = colors.red;
+                      e.target.style.boxShadow = '0 0 0 3px rgba(230, 57, 70, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = colors.lightBlue;
+                      e.target.style.boxShadow = 'none';
+                    }}
+                  />
+                </div>
+              </div>
+              <div className="sm:w-48">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border-2 focus:outline-none focus:ring-2 transition-all"
+                  style={{ 
+                    borderColor: colors.lightBlue,
+                    color: colors.darkNavy,
+                    backgroundColor: '#FFFFFF'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = colors.red;
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = colors.lightBlue;
+                  }}
+                >
+                  <option value="all">All Status</option>
+                  <option value="confirmed">Confirmed</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="pending">Pending</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Reservations List */}
+          {isLoading ? (
+            <div className="text-center py-12 mt-8">
+              <div 
+                className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
+                style={{ borderColor: colors.red }}
+              ></div>
+              <p className="font-semibold" style={{ color: colors.darkNavy }}>Loading reservations...</p>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-4 mt-6 min-w-0">
+                {filteredReservations.map((reservation) => {
+                  const statusColors = getStatusColor(reservation.status);
+                  return (
+                    <div 
+                      key={reservation.id} 
+                      className="rounded-2xl shadow-xl border-2 p-6 hover:shadow-2xl transition-all duration-300 hover:scale-[1.01] min-w-0 overflow-hidden"
+                      style={{ 
+                        background: `linear-gradient(135deg, #FFFFFF 0%, ${colors.cream} 100%)`,
+                        borderColor: colors.lightBlue
+                      }}
+                    >
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1">
+                          <div className="flex items-center space-x-2 flex-shrink-0">
+                            <Calendar className="h-5 w-5" style={{ color: colors.mediumBlue }} />
+                            <h3 className="text-lg font-semibold" style={{ color: colors.darkNavy }}>
+                              {reservation.id || `RES-${reservation._id?.slice(-6) || 'N/A'}`}
+                            </h3>
+                          </div>
+                          <span 
+                            className="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full flex-shrink-0"
+                            style={{ backgroundColor: statusColors.bg, color: statusColors.text }}
+                          >
+                            {getStatusIcon(reservation.status)}
+                            <span className="ml-1 capitalize">{reservation.status}</span>
+                          </span>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-sm font-bold" style={{ color: colors.darkNavy }}>
+                            {reservation.date} at {reservation.time}
+                          </p>
+                          {reservation.table_number && (
+                            <p className="text-xs" style={{ color: colors.mediumBlue }}>Table {reservation.table_number}</p>
+                          )}
+                        </div>
                       </div>
-                    )}
-                  </div>
-                </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <h4 className="text-sm font-medium mb-2" style={{ color: colors.darkNavy }}>Reservation Details</h4>
+                          <div className="space-y-1 text-sm">
+                            <div className="flex items-center space-x-2">
+                              <Users className="h-4 w-4" style={{ color: colors.mediumBlue }} />
+                              <span style={{ color: colors.mediumBlue }}>Party Size: {reservation.party_size} people</span>
+                            </div>
+                            {reservation.table_number && (
+                              <div className="flex items-center space-x-2">
+                                <MapPin className="h-4 w-4" style={{ color: colors.mediumBlue }} />
+                                <span style={{ color: colors.mediumBlue }}>Table: {reservation.table_number}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="text-sm font-medium mb-2" style={{ color: colors.darkNavy }}>Contact Information</h4>
+                          <div className="space-y-1 text-sm">
+                            {reservation.customer_name && (
+                              <div style={{ color: colors.mediumBlue }}>
+                                <span className="font-medium">Name:</span> {reservation.customer_name}
+                              </div>
+                            )}
+                            <div style={{ color: colors.mediumBlue }}>
+                              <span className="font-medium">Phone:</span> {reservation.contact_phone}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {reservation.special_requests && (
+                        <div 
+                          className="mb-4 p-3 rounded border-l-4"
+                          style={{ 
+                            backgroundColor: 'rgba(168, 218, 220, 0.2)',
+                            borderColor: colors.mediumBlue
+                          }}
+                        >
+                          <p className="text-sm" style={{ color: colors.darkNavy }}>
+                            <span className="font-medium">Special Requests:</span> {reservation.special_requests}
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between">
+                        {reservation.created_at && (
+                          <span className="text-xs" style={{ color: colors.mediumBlue }}>
+                            Booked on {new Date(reservation.created_at).toLocaleDateString()}
+                          </span>
+                        )}
+                        <div className="flex space-x-2">
+                          {(reservation.status === 'confirmed' || reservation.status === 'pending') && (
+                            <button 
+                              onClick={() => handleDeleteReservation(reservation.id)}
+                              className="text-xs px-3 py-1 rounded transition-all duration-200 hover:scale-105"
+                              style={{ 
+                                backgroundColor: 'rgba(230, 57, 70, 0.1)',
+                                color: colors.red
+                              }}
+                              onMouseEnter={(e) => {
+                                e.target.style.backgroundColor = 'rgba(230, 57, 70, 0.2)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.target.style.backgroundColor = 'rgba(230, 57, 70, 0.1)';
+                              }}
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
-              {reservation.specialRequests && (
-                <div className="mb-4 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
-                  <p className="text-sm text-blue-800">
-                    <span className="font-medium">Special Requests:</span> {reservation.specialRequests}
+              {filteredReservations.length === 0 && (
+                <div 
+                  className="text-center py-12 rounded-2xl shadow-xl border-2 mt-8"
+                  style={{ 
+                    background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
+                    borderColor: colors.lightBlue
+                  }}
+                >
+                  <div className="p-4 rounded-full inline-block mb-4" style={{ backgroundColor: colors.lightBlue }}>
+                    <Calendar className="h-16 w-16" style={{ color: colors.mediumBlue }} />
+                  </div>
+                  <h3 className="text-lg font-medium mb-2" style={{ color: colors.darkNavy }}>No reservations found</h3>
+                  <p style={{ color: colors.mediumBlue }}>
+                    {searchTerm || statusFilter !== 'all' 
+                      ? 'Try adjusting your search or filter criteria.' 
+                      : 'Create your first reservation to get started.'}
                   </p>
                 </div>
               )}
+            </>
+          )}
 
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">
-                  Booked on {new Date(reservation.createdAt).toLocaleDateString()}
-                </span>
-                <div className="flex space-x-2">
-                  {reservation.status === 'confirmed' && (
-                    <>
-                      <button className="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded hover:bg-blue-200 transition-colors">
-                        Modify
-                      </button>
-                      <button className="text-xs bg-red-100 text-red-600 px-3 py-1 rounded hover:bg-red-200 transition-colors">
-                        Cancel
-                      </button>
-                    </>
-                  )}
-                  <button className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded hover:bg-gray-200 transition-colors">
-                    View Details
+          {/* New Reservation Modal */}
+          {showNewReservationModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div 
+                className="rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border-2"
+                style={{ 
+                  background: `linear-gradient(135deg, #FFFFFF 0%, ${colors.cream} 100%)`,
+                  borderColor: colors.lightBlue
+                }}
+              >
+                <div className="flex items-center justify-between p-6 border-b-2" style={{ borderColor: colors.lightBlue }}>
+                  <h3 className="text-xl font-semibold" style={{ color: colors.darkNavy }}>New Table Reservation</h3>
+                  <button
+                    onClick={() => setShowNewReservationModal(false)}
+                    className="transition-colors duration-200 hover:scale-110"
+                    style={{ color: colors.mediumBlue }}
+                    onMouseEnter={(e) => e.target.style.color = colors.red}
+                    onMouseLeave={(e) => e.target.style.color = colors.mediumBlue}
+                  >
+                    <X className="h-6 w-6" />
                   </button>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {filteredReservations.length === 0 && (
-          <div className="text-center py-12">
-            <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No reservations found</h3>
-            <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
-          </div>
-        )}
-
-        {/* New Reservation Modal */}
-        {showNewReservationModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                <h3 className="text-xl font-semibold text-gray-900">New Table Reservation</h3>
-                <button
-                  onClick={() => setShowNewReservationModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X className="h-6 w-6" />
-                </button>
-              </div>
 
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium mb-1" style={{ color: colors.darkNavy }}>
                       Date *
                     </label>
                     <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5" style={{ color: colors.mediumBlue }} />
                       <input
                         type="date"
                         name="date"
                         value={formData.date}
                         onChange={(e) => {
                           const newDate = e.target.value;
-                          // Reset time when date changes if current time is invalid for new date
                           if (formData.time && newDate) {
-                            const minTime = (() => {
-                              if (!newDate) return '11:30';
-                              const today = new Date();
-                              const todayStr = today.toISOString().split('T')[0];
-                              if (newDate === todayStr) {
-                                const now = new Date();
-                                const currentHour = now.getHours();
-                                const currentMinute = now.getMinutes();
-                                if (currentHour > 11 || (currentHour === 11 && currentMinute >= 30)) {
-                                  const minTime = new Date(now.getTime() + 30 * 60 * 1000);
-                                  const hours = String(minTime.getHours()).padStart(2, '0');
-                                  const minutes = String(minTime.getMinutes()).padStart(2, '0');
-                                  return `${hours}:${minutes}`;
-                                }
-                              }
-                              return '11:30';
-                            })();
+                            const minTime = getMinTime();
                             if (formData.time < minTime) {
                               setFormData(prev => ({ ...prev, date: newDate, time: '' }));
                             } else {
@@ -555,48 +781,175 @@ const CustomerReservations = () => {
                         required
                         min={getMinDate()}
                         max={getMaxDate()}
-                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        className="w-full pl-10 pr-3 py-2 rounded-lg border-2 focus:outline-none focus:ring-2 transition-all"
+                        style={{ 
+                          borderColor: colors.lightBlue,
+                          color: colors.darkNavy
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = colors.red;
+                          e.target.style.boxShadow = '0 0 0 3px rgba(230, 57, 70, 0.1)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.lightBlue;
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs mt-1" style={{ color: colors.mediumBlue }}>
                       Select a date within the next 7 days
                     </p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium mb-2" style={{ color: colors.darkNavy }}>
                       Time *
                     </label>
-                    <div className="relative">
-                      <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      <input
-                        type="time"
-                        name="time"
-                        value={formData.time}
-                        onChange={handleInputChange}
-                        required
-                        min={getMinTime()}
-                        max={getMaxTime()}
-                        step="1800"
-                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                      />
+                    
+                    {/* AM/PM Tabs */}
+                    <div className="flex gap-2 mb-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTimePeriod('AM');
+                          setFormData(prev => ({ ...prev, time: '' }));
+                        }}
+                        className="flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200"
+                        style={timePeriod === 'AM'
+                          ? { backgroundColor: colors.red, color: '#FFFFFF', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }
+                          : { backgroundColor: colors.darkNavy, color: colors.lightBlue }
+                        }
+                        onMouseEnter={(e) => {
+                          if (timePeriod !== 'AM') e.target.style.backgroundColor = colors.mediumBlue;
+                        }}
+                        onMouseLeave={(e) => {
+                          if (timePeriod !== 'AM') e.target.style.backgroundColor = colors.darkNavy;
+                        }}
+                      >
+                        AM
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTimePeriod('PM');
+                          setFormData(prev => ({ ...prev, time: '' }));
+                        }}
+                        className="flex-1 px-4 py-2 rounded-lg font-semibold transition-all duration-200"
+                        style={timePeriod === 'PM'
+                          ? { backgroundColor: colors.red, color: '#FFFFFF', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }
+                          : { backgroundColor: colors.darkNavy, color: colors.lightBlue }
+                        }
+                        onMouseEnter={(e) => {
+                          if (timePeriod !== 'PM') e.target.style.backgroundColor = colors.mediumBlue;
+                        }}
+                        onMouseLeave={(e) => {
+                          if (timePeriod !== 'PM') e.target.style.backgroundColor = colors.darkNavy;
+                        }}
+                      >
+                        PM
+                      </button>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Available time: 11:30 AM - 10:00 PM
-                      {formData.date && formData.date === new Date().toISOString().split('T')[0] && (
-                        <span className="block mt-0.5 text-orange-600 font-semibold">
-                          (Today: minimum time is {getMinTime()})
-                        </span>
-                      )}
+                    
+                    <div 
+                      className="rounded-lg p-3 max-h-64 overflow-y-auto border-2"
+                      style={{ 
+                        borderColor: colors.lightBlue,
+                        backgroundColor: colors.cream
+                      }}
+                    >
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                        {(() => {
+                          const minTime = getMinTime();
+                          const maxTime = getMaxTime();
+                          const [minHour, minMinute] = minTime.split(':').map(Number);
+                          const [maxHour, maxMinute] = maxTime.split(':').map(Number);
+                          const minTimeInMinutes = minHour * 60 + minMinute;
+                          const maxTimeInMinutes = maxHour * 60 + maxMinute;
+                          
+                          const allSlots = [];
+                          
+                          // Generate slots directly in chronological order (1-hour intervals only)
+                          for (let hour = 11; hour <= 22; hour++) {
+                            const minute = 0; // Only :00 minutes, no :30
+                            
+                            const timeInMinutes = hour * 60 + minute;
+                            if (timeInMinutes >= minTimeInMinutes && timeInMinutes <= maxTimeInMinutes) {
+                              const time24 = `${String(hour).padStart(2, '0')}:00`;
+                              
+                              let hour12 = hour;
+                              let ampm = 'AM';
+                              if (hour === 0) {
+                                hour12 = 12;
+                              } else if (hour === 12) {
+                                ampm = 'PM';
+                              } else if (hour > 12) {
+                                hour12 = hour - 12;
+                                ampm = 'PM';
+                              }
+                              
+                              allSlots.push({
+                                value: time24,
+                                label: `${hour12}:00`,
+                                period: ampm
+                              });
+                            }
+                          }
+                          
+                          // Filter slots by selected period
+                          const filteredSlots = allSlots.filter(slot => slot.period === timePeriod);
+                          
+                          return filteredSlots.map((slot) => (
+                            <button
+                              key={slot.value}
+                              type="button"
+                              onClick={() => setFormData(prev => ({ ...prev, time: slot.value }))}
+                              className="px-3 py-2 text-sm rounded-lg font-medium transition-all duration-200 text-center whitespace-nowrap flex items-center justify-center border-2"
+                              style={formData.time === slot.value
+                                ? { 
+                                    backgroundColor: colors.red, 
+                                    color: '#FFFFFF', 
+                                    borderColor: colors.red,
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                  }
+                                : { 
+                                    backgroundColor: '#FFFFFF', 
+                                    color: colors.darkNavy, 
+                                    borderColor: colors.lightBlue
+                                  }
+                              }
+                              onMouseEnter={(e) => {
+                                if (formData.time !== slot.value) {
+                                  e.target.style.backgroundColor = colors.lightBlue;
+                                  e.target.style.borderColor = colors.mediumBlue;
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                if (formData.time !== slot.value) {
+                                  e.target.style.backgroundColor = '#FFFFFF';
+                                  e.target.style.borderColor = colors.lightBlue;
+                                }
+                              }}
+                            >
+                              {slot.label}
+                            </button>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+                    {!formData.time && (
+                      <p className="text-xs mt-1" style={{ color: colors.red }}>Please select a time</p>
+                    )}
+                    <p className="text-xs mt-1" style={{ color: colors.mediumBlue }}>
+                      Available: 11:00 AM - 10:00 PM (1-hour intervals)
                     </p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium mb-1" style={{ color: colors.darkNavy }}>
                       Party Size *
                     </label>
                     <div className="relative">
-                      <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5" style={{ color: colors.mediumBlue }} />
                       <input
                         type="number"
                         name="partySize"
@@ -606,13 +959,25 @@ const CustomerReservations = () => {
                         min="1"
                         max="20"
                         placeholder="Number of guests"
-                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        className="w-full pl-10 pr-3 py-2 rounded-lg border-2 focus:outline-none focus:ring-2 transition-all"
+                        style={{ 
+                          borderColor: colors.lightBlue,
+                          color: colors.darkNavy
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = colors.red;
+                          e.target.style.boxShadow = '0 0 0 3px rgba(230, 57, 70, 0.1)';
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.lightBlue;
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium mb-1" style={{ color: colors.darkNavy }}>
                       Your Name
                     </label>
                     <input
@@ -621,12 +986,24 @@ const CustomerReservations = () => {
                       value={formData.customerName}
                       onChange={handleInputChange}
                       placeholder="Enter your name"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-3 py-2 rounded-lg border-2 focus:outline-none focus:ring-2 transition-all"
+                      style={{ 
+                        borderColor: colors.lightBlue,
+                        color: colors.darkNavy
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = colors.red;
+                        e.target.style.boxShadow = '0 0 0 3px rgba(230, 57, 70, 0.1)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = colors.lightBlue;
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium mb-1" style={{ color: colors.darkNavy }}>
                       Contact Phone *
                     </label>
                     <input
@@ -636,13 +1013,165 @@ const CustomerReservations = () => {
                       onChange={handleInputChange}
                       required
                       placeholder="+91 98765 43210"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      className="w-full px-3 py-2 rounded-lg border-2 focus:outline-none focus:ring-2 transition-all"
+                      style={{ 
+                        borderColor: colors.lightBlue,
+                        color: colors.darkNavy
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = colors.red;
+                        e.target.style.boxShadow = '0 0 0 3px rgba(230, 57, 70, 0.1)';
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = colors.lightBlue;
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                   </div>
                 </div>
 
+                {/* Table Selection */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium mb-2" style={{ color: colors.darkNavy }}>
+                    Table Selection
+                  </label>
+                  <div className="flex items-center space-x-4 mb-3">
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="tableMode"
+                        value="auto"
+                        checked={tableSelectionMode === 'auto'}
+                        onChange={(e) => {
+                          setTableSelectionMode(e.target.value);
+                          setFormData(prev => ({ ...prev, tableNumber: '' }));
+                        }}
+                        className="mr-2"
+                        style={{ accentColor: colors.red }}
+                      />
+                      <span className="text-sm" style={{ color: colors.darkNavy }}>Automatic Assignment</span>
+                    </label>
+                    <label className="flex items-center cursor-pointer">
+                      <input
+                        type="radio"
+                        name="tableMode"
+                        value="manual"
+                        checked={tableSelectionMode === 'manual'}
+                        onChange={(e) => {
+                          setTableSelectionMode(e.target.value);
+                          setFormData(prev => ({ ...prev, tableNumber: '' }));
+                        }}
+                        className="mr-2"
+                        style={{ accentColor: colors.red }}
+                      />
+                      <span className="text-sm" style={{ color: colors.darkNavy }}>Choose Table</span>
+                    </label>
+                  </div>
+
+                  {tableSelectionMode === 'manual' && (
+                    <div>
+                      {isCheckingAvailability ? (
+                        <div className="flex items-center space-x-2 text-sm" style={{ color: colors.mediumBlue }}>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Checking availability...</span>
+                        </div>
+                      ) : availableTables.length > 0 ? (
+                        <div>
+                          <select
+                            name="tableNumber"
+                            value={formData.tableNumber}
+                            onChange={handleInputChange}
+                            className="w-full px-3 py-2 rounded-lg border-2 focus:outline-none focus:ring-2 transition-all"
+                            style={{ 
+                              borderColor: colors.lightBlue,
+                              color: colors.darkNavy,
+                              backgroundColor: '#FFFFFF'
+                            }}
+                            onFocus={(e) => {
+                              e.target.style.borderColor = colors.red;
+                            }}
+                            onBlur={(e) => {
+                              e.target.style.borderColor = colors.lightBlue;
+                            }}
+                          >
+                            <option value="">Select a table...</option>
+                            {availableTables.map((table) => (
+                              <option key={table.number} value={table.number}>
+                                {table.number} - {table.capacity} seats ({table.location}, {table.type})
+                              </option>
+                            ))}
+                          </select>
+                          <p className="text-xs mt-1" style={{ color: colors.mediumBlue }}>
+                            {availableTables.length} table(s) available
+                          </p>
+                        </div>
+                      ) : formData.date && formData.time && formData.partySize ? (
+                        <div 
+                          className="p-3 rounded border-2"
+                          style={{ 
+                            backgroundColor: 'rgba(230, 57, 70, 0.1)',
+                            borderColor: colors.red
+                          }}
+                        >
+                          <p className="text-sm" style={{ color: colors.red }}>
+                            No tables available for {formData.partySize} guests at {formData.date} {formData.time}
+                          </p>
+                        </div>
+                      ) : (
+                        <div 
+                          className="p-3 rounded border-2"
+                          style={{ 
+                            backgroundColor: colors.cream,
+                            borderColor: colors.lightBlue
+                          }}
+                        >
+                          <p className="text-sm" style={{ color: colors.mediumBlue }}>
+                            Please select date, time, and party size to see available tables
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {tableSelectionMode === 'auto' && formData.date && formData.time && formData.partySize && (
+                    <div>
+                      {isCheckingAvailability ? (
+                        <div className="flex items-center space-x-2 text-sm" style={{ color: colors.mediumBlue }}>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Finding best table...</span>
+                        </div>
+                      ) : availableTables.length > 0 ? (
+                        <div 
+                          className="p-3 rounded border-2"
+                          style={{ 
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            borderColor: '#16a34a'
+                          }}
+                        >
+                          <p className="text-sm" style={{ color: '#16a34a' }}>
+                            ✓ Best available table: <strong>{formData.tableNumber || availableTables[0]?.number}</strong> 
+                            {' '}({availableTables[0]?.capacity} seats)
+                          </p>
+                        </div>
+                      ) : (
+                        <div 
+                          className="p-3 rounded border-2"
+                          style={{ 
+                            backgroundColor: 'rgba(230, 57, 70, 0.1)',
+                            borderColor: colors.red
+                          }}
+                        >
+                          <p className="text-sm" style={{ color: colors.red }}>
+                            No tables available. Please try a different date or time.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1" style={{ color: colors.darkNavy }}>
                     Special Requests
                   </label>
                   <textarea
@@ -651,7 +1180,19 @@ const CustomerReservations = () => {
                     onChange={handleInputChange}
                     rows="3"
                     placeholder="Any special requests or dietary requirements..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    className="w-full px-3 py-2 rounded-lg border-2 focus:outline-none focus:ring-2 transition-all"
+                    style={{ 
+                      borderColor: colors.lightBlue,
+                      color: colors.darkNavy
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = colors.red;
+                      e.target.style.boxShadow = '0 0 0 3px rgba(230, 57, 70, 0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = colors.lightBlue;
+                      e.target.style.boxShadow = 'none';
+                    }}
                   />
                 </div>
 
@@ -659,14 +1200,32 @@ const CustomerReservations = () => {
                   <button
                     type="button"
                     onClick={() => setShowNewReservationModal(false)}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg"
+                    className="px-6 py-2 text-sm font-medium rounded-lg transition-all duration-200"
+                    style={{ 
+                      backgroundColor: colors.cream,
+                      color: colors.darkNavy,
+                      border: `2px solid ${colors.lightBlue}`
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = colors.lightBlue;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = colors.cream;
+                    }}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    disabled={isSubmitting}
-                    className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isSubmitting || (tableSelectionMode === 'manual' && !formData.tableNumber)}
+                    className="px-6 py-2 text-sm font-bold text-white rounded-xl transition-all duration-300 hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ backgroundColor: colors.red }}
+                    onMouseEnter={(e) => {
+                      if (!e.target.disabled) e.target.style.backgroundColor = '#d32f3e';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!e.target.disabled) e.target.style.backgroundColor = colors.red;
+                    }}
                   >
                     {isSubmitting ? 'Submitting...' : 'Submit Reservation'}
                   </button>
@@ -675,8 +1234,9 @@ const CustomerReservations = () => {
             </div>
           </div>
         )}
+        </div>
       </div>
-    </DashboardLayout>
+    </CustomerLayout>
   );
 };
 

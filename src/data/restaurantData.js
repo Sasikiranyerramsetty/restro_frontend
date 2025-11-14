@@ -1,6 +1,6 @@
 // Auto-generated seed derived from database/restaurant_inventory.menu.json (ids removed)
 export const sections = [
-  { "category": "Veg", "subcategory": "Starters", "items": [
+  { "category": "Meals", "subcategory": "Starters", "items": [
     { "name": "Kaju Fry", "price": 200 },
     { "name": "Kaju Paneer", "price": 250 },
     { "name": "Paneer Manchuria", "price": 200 },
@@ -51,7 +51,7 @@ export const sections = [
     { "name": "Omelet (2p)", "price": 50 },
     { "name": "Boiled Egg (3p)", "price": 50 }
   ]},
-  { "category": "Veg", "subcategory": "Curries", "items": [
+  { "category": "Meals", "subcategory": "Curries", "items": [
     { "name": "Kaju Tomato", "price": 220 },
     { "name": "Kaju Curry", "price": 250 },
     { "name": "Kaju Paneer", "price": 250 },
@@ -86,7 +86,7 @@ export const sections = [
     { "name": "Prawn Masala", "price": 280 },
     { "name": "Prawn Curry", "price": 280 }
   ]},
-  { "category": "Veg", "subcategory": "Biryani", "items": [
+  { "category": "Meals", "subcategory": "Biryani", "items": [
     { "name": "Mix Veg Biryani", "price": 150 },
     { "name": "Mushroom Biryani", "price": 180 },
     { "name": "Paneer Biryani", "price": 200 },
@@ -111,7 +111,7 @@ export const sections = [
     { "name": "Kamju Pitta Fry Biryani", "price": 300 },
     { "name": "Kamju Pitta Biryani", "price": 300 }
   ]},
-  { "category": "Veg", "subcategory": "Family Pack Biryanis", "items": [
+  { "category": "Meals", "subcategory": "Family Pack Biryanis", "items": [
     { "name": "Veg Biryani", "price": 420 },
     { "name": "Paneer Biryani", "price": 600 },
     { "name": "Kaju Paneer Biryani", "price": 650 },
@@ -133,7 +133,7 @@ export const sections = [
     { "name": "Butter Naan", "price": 30 },
     { "name": "Jonna Roti", "price": 25 }
   ]},
-  { "category": "Meals", "subcategory": "Veg", "items": [
+  { "category": "Meals", "items": [
     { "name": "Veg Full Meals", "price": 120 },
     { "name": "Curd Rice", "price": 100 },
     { "name": "White Rice", "price": 50 }
@@ -180,8 +180,9 @@ export function buildMenuFromSections() {
 
   sections.forEach(section => {
     const main = section.category;
-    const sub = section.subcategory || section.category;
-    const categoryKey = normalize(sub);
+    const sub = section.subcategory;
+    // Use subcategory if it exists, otherwise use null for items without subcategory
+    const categoryKey = sub ? normalize(sub) : normalize(main);
 
     (section.items || []).forEach(item => {
       const price = Number(item.price) || 0;
@@ -190,7 +191,7 @@ export function buildMenuFromSections() {
         name: item.name,
         price,
         category: normalize(main),
-        subcategory: categoryKey,
+        subcategory: sub ? normalize(sub) : null, // Set to null if no subcategory exists
         available: true,
         preparationTime: 0,
         popularity: 4.6,

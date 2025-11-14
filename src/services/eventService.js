@@ -11,7 +11,7 @@ const mockEvents = [
     guests: 10,
     status: 'confirmed',
     customer: 'John Doe',
-    contact: 'john.doe@example.com',
+    contact: '+1 (555) 123-4567',
     package: 'Premium',
     cost: 5000,
     specialRequests: 'Vegetarian options, no nuts'
@@ -25,7 +25,7 @@ const mockEvents = [
     guests: 25,
     status: 'pending',
     customer: 'Jane Smith',
-    contact: 'jane.smith@example.com',
+    contact: '+1 (555) 234-5678',
     package: 'Standard',
     cost: 10000,
     specialRequests: 'Projector needed'
@@ -39,7 +39,7 @@ const mockEvents = [
     guests: 4,
     status: 'confirmed',
     customer: 'David Brown',
-    contact: 'david.brown@example.com',
+    contact: '+1 (555) 345-6789',
     package: 'Romantic',
     cost: 3000,
     specialRequests: 'Window seat'
@@ -53,7 +53,7 @@ const mockEvents = [
     guests: 8,
     status: 'confirmed',
     customer: 'Sarah Wilson',
-    contact: 'sarah.wilson@example.com',
+    contact: '+1 (555) 456-7890',
     package: 'Standard',
     cost: 2500,
     specialRequests: 'Quiet area preferred'
@@ -67,7 +67,7 @@ const mockEvents = [
     guests: 6,
     status: 'pending',
     customer: 'Mike Johnson',
-    contact: 'mike.johnson@example.com',
+    contact: '+1 (555) 567-8901',
     package: 'Family',
     cost: 1800,
     specialRequests: 'High chair needed'

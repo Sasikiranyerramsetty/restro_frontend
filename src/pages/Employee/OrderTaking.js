@@ -77,7 +77,8 @@ const OrderTaking = () => {
   const filteredMenuItems = menuItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (item.description || '').toLowerCase().includes(searchTerm.toLowerCase());
-    const isVeg = (item.category === 'veg') || (item.subcategory === 'veg');
+    // Veg items are now in meals category, veg subcategory is removed
+    const isVeg = (item.category === 'meals' || item.category === 'veg') && (item.subcategory !== 'non-veg');
     const isNonVeg = (item.category === 'non-veg') || (item.subcategory === 'non-veg');
     const matchesDiet = dietFilter === 'all' || (dietFilter === 'veg' && isVeg) || (dietFilter === 'non-veg' && isNonVeg);
     const matchesSub = subcategoryFilter === 'all' || (item.subcategory || '') === subcategoryFilter;

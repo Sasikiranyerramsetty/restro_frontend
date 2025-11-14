@@ -269,7 +269,12 @@
   .restro-brand {
     font-family: 'BBH Sans Bartle', sans-serif;
     font-weight: 700;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.15em;
+    font-size: 2rem;
+    font-feature-settings: '"liga" off';
+    font-variant-ligatures: none;
+    text-rendering: geometricPrecision;
+    font-kerning: none;
   }
   
   .btn-secondary {
@@ -845,8 +850,21 @@
   }
 
   .animate-bounce-zoom {
-    opacity: 1;
-    transform: scale(1);
+    animation: bounceZoom 0.5s ease-out;
+  }
+
+  @keyframes bounceZoom {
+    0% {
+      opacity: 0;
+      transform: scale(0.8) translateY(20px);
+    }
+    50% {
+      transform: scale(1.05) translateY(-5px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
   }
 
   /* Stagger animation delays - DISABLED FOR PERFORMANCE */

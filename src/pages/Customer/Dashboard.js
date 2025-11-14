@@ -12,11 +12,20 @@ import {
   Users
 } from 'lucide-react';
 import { ROUTES } from '../../constants';
-import DashboardLayout from '../../components/Common/DashboardLayout';
+import CustomerLayout from '../../components/Customer/CustomerLayout';
 import orderService from '../../services/orderService';
 import { formatCurrency } from '../../utils';
 
 const CustomerDashboard = () => {
+  // Custom color palette (matching admin)
+  const colors = {
+    red: '#E63946',
+    cream: '#F1FAEE',
+    lightBlue: '#A8DADC',
+    mediumBlue: '#457B9D',
+    darkNavy: '#1D3557'
+  };
+
   const [recentOrders, setRecentOrders] = useState([]);
   const [stats, setStats] = useState({
     totalOrders: 0,
@@ -62,231 +71,311 @@ const CustomerDashboard = () => {
     {
       title: 'Browse Menu',
       description: 'Explore our delicious offerings',
-      icon: <ChefHat className="h-6 w-6 text-rose-600" />,
+      icon: <ChefHat className="h-6 w-6" style={{ color: colors.red }} />,
       link: ROUTES.CUSTOMER_MENU,
-      color: 'bg-gradient-to-br from-rose-100 to-pink-200 border-rose-400 hover:from-rose-200 hover:to-pink-300'
+      bgGradient: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
+      borderColor: colors.red
     },
     {
       title: 'Make Reservation',
       description: 'Book a table for your visit',
-      icon: <Calendar className="h-6 w-6 text-cyan-600" />,
+      icon: <Calendar className="h-6 w-6" style={{ color: colors.mediumBlue }} />,
       link: ROUTES.CUSTOMER_RESERVATIONS,
-      color: 'bg-gradient-to-br from-cyan-100 to-blue-200 border-cyan-400 hover:from-cyan-200 hover:to-blue-300'
+      bgGradient: `linear-gradient(135deg, ${colors.lightBlue} 0%, ${colors.mediumBlue} 100%)`,
+      borderColor: colors.mediumBlue
     },
     {
       title: 'View Orders',
       description: 'Track your order history',
-      icon: <Package className="h-6 w-6 text-purple-600" />,
+      icon: <Package className="h-6 w-6" style={{ color: colors.darkNavy }} />,
       link: ROUTES.CUSTOMER_ORDERS,
-      color: 'bg-gradient-to-br from-purple-100 to-violet-200 border-purple-400 hover:from-purple-200 hover:to-violet-300'
+      bgGradient: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
+      borderColor: colors.darkNavy
     },
     {
       title: 'Events',
       description: 'Discover upcoming events',
-      icon: <Users className="h-6 w-6 text-amber-600" />,
+      icon: <Users className="h-6 w-6" style={{ color: colors.red }} />,
       link: ROUTES.CUSTOMER_EVENTS,
-      color: 'bg-gradient-to-br from-amber-100 to-yellow-200 border-amber-400 hover:from-amber-200 hover:to-yellow-300'
+      bgGradient: `linear-gradient(135deg, ${colors.lightBlue} 0%, ${colors.cream} 100%)`,
+      borderColor: colors.red
     }
   ];
 
   const getStatusColor = (status) => {
     switch (status) {
       case 'completed':
-        return 'bg-green-100 text-green-800';
+        return { bg: 'rgba(34, 197, 94, 0.1)', text: '#16a34a' };
       case 'preparing':
-        return 'bg-blue-100 text-blue-800';
+        return { bg: 'rgba(59, 130, 246, 0.1)', text: colors.mediumBlue };
       case 'ready':
-        return 'bg-yellow-100 text-yellow-800';
+        return { bg: 'rgba(234, 179, 8, 0.1)', text: '#ca8a04' };
       case 'pending':
-        return 'bg-gray-100 text-gray-800';
+        return { bg: 'rgba(107, 114, 128, 0.1)', text: '#6b7280' };
       default:
-        return 'bg-gray-100 text-gray-800';
+        return { bg: 'rgba(107, 114, 128, 0.1)', text: '#6b7280' };
     }
   };
 
   if (isLoading) {
     return (
-      <DashboardLayout>
-        <div className="space-y-6">
-          <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-200 rounded-lg animate-pulse"></div>
-            ))}
+      <CustomerLayout>
+        <div className="space-y-6 animate-fade-in" style={{ backgroundColor: colors.cream, minHeight: '100vh', width: '100%', padding: '1.5rem 2rem' }}>
+          <div className="w-full max-w-full">
+            <div className="h-8 rounded animate-pulse" style={{ backgroundColor: colors.lightBlue }}></div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-32 rounded-lg animate-pulse" style={{ backgroundColor: colors.lightBlue }}></div>
+              ))}
+            </div>
           </div>
         </div>
-      </DashboardLayout>
+      </CustomerLayout>
     );
   }
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6 animate-fade-in">
-        {/* Header */}
-        <div className="animate-slide-up">
-          <h1 className="text-4xl font-bold gradient-text restro-brand">Dashboard</h1>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="card animate-slide-up animate-delay-100 hover:scale-105 transition-transform duration-300">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-50 rounded-lg animate-float">
-                <ShoppingBag className="h-6 w-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                <p className="text-2xl font-bold text-gray-900 animate-count-up">{stats.totalOrders}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="card animate-slide-up animate-delay-200 hover:scale-105 transition-transform duration-300">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-50 rounded-lg animate-float animate-delay-100">
-                <TrendingUp className="h-6 w-6 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Spent</p>
-                <p className="text-2xl font-bold text-gray-900 animate-count-up">{formatCurrency(stats.totalSpent)}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="card animate-slide-up animate-delay-300 hover:scale-105 transition-transform duration-300">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-50 rounded-lg animate-float animate-delay-200">
-                <Star className="h-6 w-6 text-purple-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Average Rating</p>
-                <p className="text-2xl font-bold text-gray-900 animate-count-up">{stats.averageRating || 'N/A'}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="card animate-slide-up animate-delay-400 hover:scale-105 transition-transform duration-300">
-            <div className="flex items-center">
-              <div className="p-2 bg-orange-50 rounded-lg animate-float animate-delay-300">
-                <Clock className="h-6 w-6 text-orange-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Favorite Items</p>
-                <p className="text-2xl font-bold text-gray-900 animate-count-up">{stats.favoriteItems}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="animate-slide-up animate-delay-500">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {quickActions.map((action, index) => (
-              <Link
-                key={index}
-                to={action.link}
-                className={`p-6 rounded-lg border-2 ${action.color} hover:shadow-lg transition-all duration-300 group hover:scale-105 animate-slide-up`}
-                style={{ animationDelay: `${0.6 + index * 0.1}s` }}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-bold text-black group-hover:text-gray-900 transition-colors duration-300">
-                      {action.title}
-                    </h3>
-                    <p className="text-sm text-black mt-1 group-hover:text-gray-800 transition-colors duration-300">{action.description}</p>
-                  </div>
-                  <div className="flex items-center">
-                    <div className="group-hover:rotate-12 transition-transform duration-300">
-                      {action.icon}
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-black ml-2 group-hover:text-gray-800 group-hover:translate-x-1 transition-all duration-300" />
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Recent Orders */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">Recent Orders</h2>
-            <Link
-              to={ROUTES.CUSTOMER_ORDERS}
-              className="text-primary-600 hover:text-primary-700 font-medium flex items-center"
+    <CustomerLayout>
+      <div className="space-y-6 animate-fade-in" style={{ backgroundColor: colors.cream, minHeight: '100vh', width: '100%', padding: '1.5rem 2rem' }}>
+        <div className="w-full max-w-full">
+          {/* Header */}
+          <div className="mb-6 animate-slide-up">
+            <h1 
+              className="text-3xl font-bold drop-shadow-lg mb-2" 
+              style={{ 
+                fontFamily: "'BBH Sans Bartle', sans-serif", 
+                letterSpacing: '0.05em',
+                color: colors.darkNavy,
+                fontFeatureSettings: '"liga" off',
+                fontVariantLigatures: 'none',
+                textRendering: 'geometricPrecision',
+                fontKerning: 'none'
+              }}
             >
-              View All
-              <ArrowRight className="h-4 w-4 ml-1" />
-            </Link>
+              Dashboard
+            </h1>
+            <div style={{ height: '4px', background: `linear-gradient(90deg, ${colors.red} 0%, ${colors.mediumBlue} 100%)`, borderRadius: '2px', width: '150px' }}></div>
           </div>
 
-          {recentOrders.length > 0 ? (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Order ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Date
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Items
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Total
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {recentOrders.map((order) => (
-                      <tr key={order.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          #{order.id}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(order.createdAt).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {order.items?.length || 0} items
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatCurrency(order.total)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
-                            {order.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div 
+              className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
+              style={{ 
+                animationDelay: '0.1s',
+                background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
+                borderColor: colors.mediumBlue
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-semibold mb-2" style={{ color: colors.darkNavy, opacity: 0.8 }}>Total Orders</p>
+                  <p className="text-3xl font-bold" style={{ color: colors.mediumBlue }}>{stats.totalOrders}</p>
+                </div>
+                <div className="p-4 rounded-full shadow-lg" style={{ backgroundColor: colors.cream }}>
+                  <ShoppingBag className="h-8 w-8" style={{ color: colors.mediumBlue }} />
+                </div>
               </div>
             </div>
-          ) : (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-              <ShoppingBag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No orders yet</h3>
-              <p className="text-gray-600 mb-4">Start exploring our menu and place your first order!</p>
+
+            <div 
+              className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
+              style={{ 
+                animationDelay: '0.2s',
+                background: `linear-gradient(135deg, ${colors.lightBlue} 0%, ${colors.mediumBlue} 100%)`,
+                borderColor: colors.red
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-semibold mb-2" style={{ color: colors.darkNavy, opacity: 0.8 }}>Total Spent</p>
+                  <p className="text-3xl font-bold" style={{ color: colors.red }}>{formatCurrency(stats.totalSpent)}</p>
+                </div>
+                <div className="p-4 rounded-full shadow-lg" style={{ backgroundColor: colors.cream }}>
+                  <TrendingUp className="h-8 w-8" style={{ color: colors.red }} />
+                </div>
+              </div>
+            </div>
+
+            <div 
+              className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
+              style={{ 
+                animationDelay: '0.3s',
+                background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
+                borderColor: colors.mediumBlue
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-semibold mb-2" style={{ color: colors.darkNavy, opacity: 0.8 }}>Average Rating</p>
+                  <p className="text-3xl font-bold" style={{ color: colors.darkNavy }}>{stats.averageRating || 'N/A'}</p>
+                </div>
+                <div className="p-4 rounded-full shadow-lg" style={{ backgroundColor: colors.cream }}>
+                  <Star className="h-8 w-8" style={{ color: colors.darkNavy }} />
+                </div>
+              </div>
+            </div>
+
+            <div 
+              className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
+              style={{ 
+                animationDelay: '0.4s',
+                background: `linear-gradient(135deg, ${colors.lightBlue} 0%, ${colors.cream} 100%)`,
+                borderColor: colors.red
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-semibold mb-2" style={{ color: colors.darkNavy, opacity: 0.8 }}>Favorite Items</p>
+                  <p className="text-3xl font-bold" style={{ color: colors.red }}>{stats.favoriteItems}</p>
+                </div>
+                <div className="p-4 rounded-full shadow-lg" style={{ backgroundColor: colors.cream }}>
+                  <Clock className="h-8 w-8" style={{ color: colors.red }} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="animate-slide-up" style={{ animationDelay: '0.5s' }}>
+            <h2 className="text-xl font-semibold mb-4" style={{ color: colors.darkNavy }}>Quick Actions</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {quickActions.map((action, index) => (
+                <Link
+                  key={index}
+                  to={action.link}
+                  className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 group hover:scale-105 animate-slide-up border-2"
+                  style={{ 
+                    animationDelay: `${0.6 + index * 0.1}s`,
+                    background: action.bgGradient,
+                    borderColor: action.borderColor
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold transition-colors duration-300" style={{ color: colors.darkNavy }}>
+                        {action.title}
+                      </h3>
+                      <p className="text-sm mt-1 transition-colors duration-300" style={{ color: colors.mediumBlue }}>{action.description}</p>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="group-hover:rotate-12 transition-transform duration-300">
+                        {action.icon}
+                      </div>
+                      <ArrowRight className="h-4 w-4 ml-2 transition-all duration-300" style={{ color: colors.darkNavy }} />
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          {/* Recent Orders */}
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold" style={{ color: colors.darkNavy }}>Recent Orders</h2>
               <Link
-                to={ROUTES.CUSTOMER_MENU}
-                className="btn-primary inline-flex items-center"
+                to={ROUTES.CUSTOMER_ORDERS}
+                className="font-medium flex items-center transition-colors duration-200"
+                style={{ color: colors.mediumBlue }}
+                onMouseEnter={(e) => e.target.style.color = colors.red}
+                onMouseLeave={(e) => e.target.style.color = colors.mediumBlue}
               >
-                Browse Menu
-                <ArrowRight className="h-4 w-4 ml-2" />
+                View All
+                <ArrowRight className="h-4 w-4 ml-1" />
               </Link>
             </div>
-          )}
+
+            {recentOrders.length > 0 ? (
+              <div 
+                className="rounded-2xl shadow-xl border-2 overflow-hidden"
+                style={{ 
+                  background: `linear-gradient(135deg, #FFFFFF 0%, ${colors.cream} 100%)`,
+                  borderColor: colors.lightBlue
+                }}
+              >
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y-2" style={{ borderColor: colors.lightBlue }}>
+                    <thead style={{ backgroundColor: colors.lightBlue }}>
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: colors.darkNavy }}>
+                          Order ID
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: colors.darkNavy }}>
+                          Date
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: colors.darkNavy }}>
+                          Items
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: colors.darkNavy }}>
+                          Total
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: colors.darkNavy }}>
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y-2" style={{ borderColor: colors.lightBlue }}>
+                      {recentOrders.map((order) => {
+                        const statusColors = getStatusColor(order.status);
+                        return (
+                          <tr key={order.id} className="hover:opacity-80 transition-opacity duration-200" style={{ backgroundColor: colors.cream }}>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium" style={{ color: colors.darkNavy }}>
+                              #{order.id}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ color: colors.mediumBlue }}>
+                              {new Date(order.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ color: colors.mediumBlue }}>
+                              {order.items?.length || 0} items
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold" style={{ color: colors.red }}>
+                              {formatCurrency(order.total)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span 
+                                className="inline-flex px-3 py-1 text-xs font-semibold rounded-full"
+                                style={{ backgroundColor: statusColors.bg, color: statusColors.text }}
+                              >
+                                {order.status}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              <div 
+                className="rounded-2xl shadow-xl border-2 p-8 text-center"
+                style={{ 
+                  background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
+                  borderColor: colors.lightBlue
+                }}
+              >
+                <div className="p-4 rounded-full inline-block mb-4" style={{ backgroundColor: colors.lightBlue }}>
+                  <ShoppingBag className="h-12 w-12" style={{ color: colors.mediumBlue }} />
+                </div>
+                <h3 className="text-lg font-medium mb-2" style={{ color: colors.darkNavy }}>No orders yet</h3>
+                <p className="mb-4" style={{ color: colors.mediumBlue }}>Start exploring our menu and place your first order!</p>
+                <Link
+                  to={ROUTES.CUSTOMER_MENU}
+                  className="px-8 py-3 text-white rounded-xl font-bold transition-all duration-300 hover:scale-105 shadow-lg inline-flex items-center"
+                  style={{ backgroundColor: colors.red }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#d32f3e'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = colors.red}
+                >
+                  Browse Menu
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </DashboardLayout>
+    </CustomerLayout>
   );
 };
 

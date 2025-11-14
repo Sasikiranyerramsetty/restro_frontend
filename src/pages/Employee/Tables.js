@@ -151,9 +151,9 @@ const EmployeeTables = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               >
                 <option value="all">All Locations</option>
-                <option value="Main Dining">Main Dining</option>
-                <option value="Private Room">Private Room</option>
-                <option value="Patio">Patio</option>
+                {tables.length > 0 && [...new Set(tables.map(t => t.location).filter(Boolean))].map(location => (
+                  <option key={location} value={location}>{location}</option>
+                ))}
               </select>
             </div>
           </div>

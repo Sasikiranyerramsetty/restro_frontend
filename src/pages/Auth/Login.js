@@ -256,26 +256,6 @@ const Login = () => {
                         </Link>
                       </p>
                     </form>
-
-                    {/* Demo Accounts */}
-                    <div className="mt-8 p-4 bg-white rounded-xl border-2 border-brand-teal/20">
-                      <p className="text-xs font-bold text-brand-navy mb-3 text-center">Quick Demo Login</p>
-                      <div className="grid grid-cols-3 gap-2 text-xs">
-                        <div className="text-center p-2 bg-brand-cream rounded">
-                          <p className="font-bold text-brand-red">Admin</p>
-                          <p className="text-brand-navy mt-1">1234567890</p>
-                        </div>
-                        <div className="text-center p-2 bg-brand-cream rounded">
-                          <p className="font-bold text-brand-red">Employee</p>
-                          <p className="text-brand-navy mt-1">1234567891</p>
-                        </div>
-                        <div className="text-center p-2 bg-brand-cream rounded">
-                          <p className="font-bold text-brand-red">Customer</p>
-                          <p className="text-brand-navy mt-1">1234567892</p>
-                        </div>
-                      </div>
-                      <p className="text-xs text-center text-brand-blue mt-2">Password: admin123 / employee123 / customer123</p>
-                    </div>
                   </motion.div>
             </div>
           </div>

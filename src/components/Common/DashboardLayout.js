@@ -49,8 +49,8 @@ const DashboardLayout = ({ children, backgroundImage }) => {
 
       {/* Main Content */}
       <div className={`transition-all duration-300 ease-in-out relative z-10 ${
-        sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-64'
-      }`}>
+        sidebarCollapsed ? 'lg:ml-16' : 'lg:ml-80'
+      }`} style={{ minHeight: '100vh' }}>
         {/* Page Content */}
         <main className="px-4 py-6 lg:px-8 lg:py-10">
           {children}

@@ -20,15 +20,15 @@ const AdminMenu = () => {
   };
 
   const [menuItems, setMenuItems] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedSubcategory, setSelectedSubcategory] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [togglingItemId, setTogglingItemId] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     price: '',
@@ -51,7 +51,7 @@ const AdminMenu = () => {
         menuManagementService.getMenuStats()
       ]);
       setMenuItems(items);
-      setCategories(cats);
+      setSubcategories(cats);
       setStats(menuStats);
     } catch (error) {
       toast.error('Failed to fetch menu data');
@@ -142,23 +142,44 @@ const AdminMenu = () => {
   };
 
   const handleToggleAvailability = async (itemId) => {
+    // Prevent multiple toggles on the same item
+    if (togglingItemId === itemId) {
+      return;
+    }
+    
     try {
-      await menuManagementService.toggleAvailability(itemId);
-      toast.success('Availability updated');
-      fetchData();
+      setTogglingItemId(itemId);
+      const result = await menuManagementService.toggleAvailability(itemId);
+      
+      if (result.success !== false) {
+        toast.success('Availability updated');
+        // Refresh data to get updated state
+        await fetchData();
+      } else {
+        toast.error(result.error || 'Failed to update availability');
+      }
     } catch (error) {
+      console.error('Toggle availability error:', error);
       toast.error('Failed to update availability');
+    } finally {
+      setTogglingItemId(null);
     }
   };
 
   const filteredItems = menuItems.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.description.toLowerCase().includes(searchTerm.toLowerCase());
-    // Category filters on item.category (veg, non-veg, meals, etc.)
-    // Subcategory filters on item.subcategory (starters, curries, biryani, etc.)
-    const matchesCategory = selectedCategory === 'all' || (item.category || '') === selectedCategory;
-    const matchesSubcategory = selectedSubcategory === 'all' || (item.subcategory || '') === selectedSubcategory;
-    return matchesSearch && matchesCategory && matchesSubcategory;
+                         (item.description || '').toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Filter by subcategory only (use subcategory if exists, otherwise use category as fallback)
+    let matchesSubcategory = true;
+    
+    if (selectedSubcategory !== 'all') {
+      const itemSubcategory = (item.subcategory || item.category || '').toLowerCase();
+      const selected = selectedSubcategory.toLowerCase();
+      matchesSubcategory = itemSubcategory === selected;
+    }
+    
+    return matchesSearch && matchesSubcategory;
   });
 
   const getStatusBadge = (available) => {
@@ -180,18 +201,31 @@ const AdminMenu = () => {
   };
 
   const getCategoryBadge = (category) => {
+    if (!category) {
+      return {
+        backgroundColor: colors.cream,
+        color: colors.darkNavy,
+        borderColor: colors.lightBlue,
+        borderWidth: '2px'
+      };
+    }
+    
+    const normalized = category.toLowerCase();
     const categoryColors = {
       starters: { bg: colors.red, text: colors.cream, border: colors.red },
       rotis: { bg: colors.lightBlue, text: colors.darkNavy, border: colors.mediumBlue },
       curries: { bg: colors.mediumBlue, text: colors.cream, border: colors.mediumBlue },
+      biryani: { bg: colors.darkNavy, text: colors.cream, border: colors.darkNavy },
       biryanis: { bg: colors.darkNavy, text: colors.cream, border: colors.darkNavy },
       'restro-specials': { bg: colors.red, text: colors.cream, border: colors.red },
+      'dharani-s-specials': { bg: colors.red, text: colors.cream, border: colors.red },
       meals: { bg: colors.lightBlue, text: colors.darkNavy, border: colors.darkNavy },
       beverages: { bg: colors.mediumBlue, text: colors.cream, border: colors.mediumBlue },
+      'ice-creams': { bg: colors.lightBlue, text: colors.darkNavy, border: colors.lightBlue },
       icecreams: { bg: colors.lightBlue, text: colors.darkNavy, border: colors.lightBlue },
       'family-pack-biryanis': { bg: colors.red, text: colors.cream, border: colors.red }
     };
-    const color = categoryColors[category] || { bg: colors.cream, text: colors.darkNavy, border: colors.lightBlue };
+    const color = categoryColors[normalized] || { bg: colors.cream, text: colors.darkNavy, border: colors.lightBlue };
     return {
       backgroundColor: color.bg,
       color: color.text,
@@ -201,18 +235,29 @@ const AdminMenu = () => {
   };
 
   const getCategoryDisplayName = (category) => {
+    if (!category) return 'Uncategorized';
+    
+    // Handle normalized IDs (lowercase with hyphens)
+    const normalized = category.toLowerCase();
     const displayNames = {
       starters: 'Starters',
       rotis: 'Rotis',
       curries: 'Curries',
+      biryani: 'Biryani',
       biryanis: 'Biryanis',
       'restro-specials': 'Restro Specials',
+      'dharani-s-specials': "Dharani's Specials",
       meals: 'Meals',
       beverages: 'Beverages',
+      'ice-creams': 'Ice Creams',
       icecreams: 'Ice Creams',
       'family-pack-biryanis': 'Family Pack Biryanis'
     };
-    return displayNames[category] || category;
+    
+    // Check normalized first, then return formatted name if not found
+    return displayNames[normalized] || category.split('-').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
   };
 
   if (loading) {
@@ -334,25 +379,6 @@ const AdminMenu = () => {
             </div>
             <div className="sm:w-56">
               <select
-                aria-label="Category"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all"
-                style={{ 
-                  borderColor: colors.lightBlue,
-                  backgroundColor: 'white',
-                  color: colors.darkNavy
-                }}
-                onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
-                onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
-              >
-                <option value="all">Category</option>
-                <option value="veg">Veg</option>
-                <option value="non-veg">Non-Veg</option>
-              </select>
-            </div>
-            <div className="sm:w-56">
-              <select
                 aria-label="Subcategory"
                 value={selectedSubcategory}
                 onChange={(e) => setSelectedSubcategory(e.target.value)}
@@ -365,16 +391,12 @@ const AdminMenu = () => {
                 onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
                 onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
               >
-                <option value="all">Subcategory</option>
-                <option value="starters">Starters</option>
-                <option value="curries">Curries</option>
-                <option value="biryani">Biryani</option>
-                <option value="family-pack-biryanis">Family Pack Biryanis</option>
-                <option value="rotis">Rotis</option>
-                <option value="meals">Meals</option>
-                <option value="beverages">Beverages</option>
-                <option value="ice-creams">Ice Creams</option>
-                <option value="dharani-s-specials">Dharani's Specials</option>
+                <option value="all">All Subcategories</option>
+                {subcategories.map((subcat) => (
+                  <option key={subcat.id} value={subcat.id}>
+                    {subcat.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -403,7 +425,7 @@ const AdminMenu = () => {
                     className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
                     style={{ color: colors.darkNavy }}
                   >
-                    Category
+                    Subcategory
                   </th>
                   <th 
                     className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider"
@@ -459,9 +481,9 @@ const AdminMenu = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span 
                         className="inline-flex px-3 py-1 text-xs font-bold rounded-full border-2"
-                        style={getCategoryBadge(item.subcategory)}
+                        style={getCategoryBadge(item.subcategory || item.category)}
                       >
-                        {getCategoryDisplayName(item.subcategory)}
+                        {getCategoryDisplayName(item.subcategory || item.category)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold" style={{ color: colors.darkNavy }}>
@@ -470,10 +492,11 @@ const AdminMenu = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <button
                         onClick={() => handleToggleAvailability(item.id)}
-                        className="inline-flex px-3 py-1 text-xs font-bold rounded-full transition-colors border-2"
+                        disabled={togglingItemId === item.id}
+                        className="inline-flex px-3 py-1 text-xs font-bold rounded-full transition-colors border-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         style={getStatusBadge(item.available)}
                       >
-                        {item.available ? 'Available' : 'Unavailable'}
+                        {togglingItemId === item.id ? 'Updating...' : (item.available ? 'Available' : 'Unavailable')}
                       </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -593,15 +616,12 @@ const AdminMenu = () => {
 
                   <div>
                     <label className="block text-sm font-bold mb-2" style={{ color: colors.darkNavy }}>
-                      Category *
+                      Subcategory *
                     </label>
                     <select
-                      name="category"
-                      value={formData.category}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setFormData(prev => ({ ...prev, category: value }));
-                      }}
+                      name="subcategory"
+                      value={formData.subcategory}
+                      onChange={handleInputChange}
                       required
                       className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all"
                       style={{ 
@@ -612,39 +632,12 @@ const AdminMenu = () => {
                       onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
                       onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
                     >
-                      <option value="">Select Category</option>
-                      <option value="veg">Veg</option>
-                      <option value="non-veg">Non-Veg</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold mb-2" style={{ color: colors.darkNavy }}>
-                      Subcategory
-                    </label>
-                    <select
-                      name="subcategory"
-                      value={formData.subcategory}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all"
-                      style={{ 
-                        borderColor: colors.lightBlue,
-                        backgroundColor: 'white',
-                        color: colors.darkNavy
-                      }}
-                      onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
-                      onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
-                    >
                       <option value="">Select Subcategory</option>
-                      <option value="starters">Starters</option>
-                      <option value="curries">Curries</option>
-                      <option value="biryani">Biryani</option>
-                      <option value="family-pack-biryanis">Family Pack Biryanis</option>
-                      <option value="rotis">Rotis</option>
-                      <option value="meals">Meals</option>
-                      <option value="beverages">Beverages</option>
-                      <option value="ice-creams">Ice Creams</option>
-                      <option value="dharani-s-specials">Dharani's Specials</option>
+                      {subcategories.map((subcat) => (
+                        <option key={subcat.id} value={subcat.id}>
+                          {subcat.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
 

@@ -15,10 +15,19 @@ import {
   Utensils,
   Truck
 } from 'lucide-react';
-import DashboardLayout from '../../components/Common/DashboardLayout';
+import CustomerLayout from '../../components/Customer/CustomerLayout';
 import { formatCurrency } from '../../utils';
 
 const CustomerEvents = () => {
+  // Custom color palette (matching admin)
+  const colors = {
+    red: '#E63946',
+    cream: '#F1FAEE',
+    lightBlue: '#A8DADC',
+    mediumBlue: '#457B9D',
+    darkNavy: '#1D3557'
+  };
+
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showNewEventModal, setShowNewEventModal] = useState(false);
@@ -152,15 +161,15 @@ const CustomerEvents = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'confirmed':
-        return 'bg-green-100 text-green-800';
+        return { bg: colors.lightBlue, text: colors.darkNavy, border: colors.mediumBlue };
       case 'completed':
-        return 'bg-blue-100 text-blue-800';
+        return { bg: colors.cream, text: colors.darkNavy, border: colors.mediumBlue };
       case 'cancelled':
-        return 'bg-red-100 text-red-800';
+        return { bg: '#FEE2E2', text: colors.red, border: colors.red };
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return { bg: '#FEF3C7', text: '#92400E', border: '#F59E0B' };
       default:
-        return 'bg-gray-100 text-gray-800';
+        return { bg: colors.cream, text: colors.darkNavy, border: colors.mediumBlue };
     }
   };
 
@@ -182,19 +191,19 @@ const CustomerEvents = () => {
   const getTypeColor = (type) => {
     switch (type) {
       case 'wedding':
-        return 'bg-pink-100 text-pink-800';
+        return { bg: '#FCE7F3', text: '#9F1239', border: '#EC4899' };
       case 'corporate':
-        return 'bg-blue-100 text-blue-800';
+        return { bg: colors.lightBlue, text: colors.darkNavy, border: colors.mediumBlue };
       case 'birthday':
-        return 'bg-purple-100 text-purple-800';
+        return { bg: '#F3E8FF', text: '#6B21A8', border: '#9333EA' };
       case 'anniversary':
-        return 'bg-red-100 text-red-800';
+        return { bg: '#FEE2E2', text: colors.red, border: colors.red };
       case 'graduation':
-        return 'bg-green-100 text-green-800';
+        return { bg: colors.cream, text: colors.darkNavy, border: colors.mediumBlue };
       case 'baby-shower':
-        return 'bg-yellow-100 text-yellow-800';
+        return { bg: '#FEF3C7', text: '#92400E', border: '#F59E0B' };
       default:
-        return 'bg-gray-100 text-gray-800';
+        return { bg: colors.cream, text: colors.darkNavy, border: colors.mediumBlue };
     }
   };
 
@@ -245,16 +254,56 @@ const CustomerEvents = () => {
   });
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
+    <CustomerLayout>
+      <div className="space-y-6" style={{ backgroundColor: colors.cream, minHeight: '100vh', padding: '2rem' }}>
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-4xl font-bold gradient-text restro-brand">Event Booking</h1>
+            <h1 
+              className="text-3xl font-bold restro-brand"
+              style={{
+                fontFamily: "'BBH Sans Bartle', sans-serif",
+                background: `linear-gradient(135deg, ${colors.red} 0%, ${colors.darkNavy} 100%)`,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                marginBottom: '0.5rem'
+              }}
+            >
+              Event Booking
+            </h1>
+            <div 
+              style={{
+                height: '3px',
+                width: '150px',
+                background: `linear-gradient(90deg, ${colors.red} 0%, ${colors.darkNavy} 100%)`,
+                borderRadius: '2px'
+              }}
+            />
           </div>
           <button 
             onClick={() => setShowNewEventModal(true)}
-            className="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-colors"
+            style={{
+              background: `linear-gradient(135deg, ${colors.red} 0%, ${colors.darkNavy} 100%)`,
+              color: 'white',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '0.5rem',
+              fontWeight: '500',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              transition: 'all 0.3s ease',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = 'scale(1.05)';
+              e.target.style.boxShadow = `0 4px 12px rgba(29, 53, 87, 0.3)`;
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'scale(1)';
+              e.target.style.boxShadow = 'none';
+            }}
           >
             <Plus className="h-5 w-5" />
             <span>Book New Event</span>
@@ -263,50 +312,118 @@ const CustomerEvents = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div 
+            style={{
+              background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
+              padding: '1.5rem',
+              borderRadius: '0.5rem',
+              border: `2px solid ${colors.mediumBlue}`,
+              boxShadow: '0 2px 8px rgba(29, 53, 87, 0.1)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(29, 53, 87, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(29, 53, 87, 0.1)';
+            }}
+          >
             <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Calendar className="h-6 w-6 text-blue-600" />
+              <div style={{ padding: '0.5rem', background: colors.mediumBlue, borderRadius: '0.5rem' }}>
+                <Calendar className="h-6 w-6" style={{ color: 'white' }} />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Events</p>
-                <p className="text-2xl font-bold text-gray-900">{events.length}</p>
+                <p style={{ fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy }}>Total Events</p>
+                <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: colors.darkNavy }}>{events.length}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div 
+            style={{
+              background: `linear-gradient(135deg, ${colors.lightBlue} 0%, ${colors.mediumBlue} 100%)`,
+              padding: '1.5rem',
+              borderRadius: '0.5rem',
+              border: `2px solid ${colors.darkNavy}`,
+              boxShadow: '0 2px 8px rgba(29, 53, 87, 0.1)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(29, 53, 87, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(29, 53, 87, 0.1)';
+            }}
+          >
             <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-green-600" />
+              <div style={{ padding: '0.5rem', background: colors.darkNavy, borderRadius: '0.5rem' }}>
+                <CheckCircle className="h-6 w-6" style={{ color: 'white' }} />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Confirmed</p>
-                <p className="text-2xl font-bold text-gray-900">{events.filter(e => e.status === 'confirmed').length}</p>
+                <p style={{ fontSize: '0.875rem', fontWeight: '500', color: 'white' }}>Confirmed</p>
+                <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'white' }}>{events.filter(e => e.status === 'confirmed').length}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div 
+            style={{
+              background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
+              padding: '1.5rem',
+              borderRadius: '0.5rem',
+              border: `2px solid ${colors.red}`,
+              boxShadow: '0 2px 8px rgba(29, 53, 87, 0.1)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(29, 53, 87, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(29, 53, 87, 0.1)';
+            }}
+          >
             <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Users className="h-6 w-6 text-purple-600" />
+              <div style={{ padding: '0.5rem', background: colors.red, borderRadius: '0.5rem' }}>
+                <Users className="h-6 w-6" style={{ color: 'white' }} />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Guests</p>
-                <p className="text-2xl font-bold text-gray-900">{events.reduce((sum, e) => sum + e.guestCount, 0)}</p>
+                <p style={{ fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy }}>Total Guests</p>
+                <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: colors.darkNavy }}>{events.reduce((sum, e) => sum + e.guestCount, 0)}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div 
+            style={{
+              background: `linear-gradient(135deg, ${colors.lightBlue} 0%, ${colors.cream} 100%)`,
+              padding: '1.5rem',
+              borderRadius: '0.5rem',
+              border: `2px solid ${colors.mediumBlue}`,
+              boxShadow: '0 2px 8px rgba(29, 53, 87, 0.1)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'translateY(-4px)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(29, 53, 87, 0.2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 2px 8px rgba(29, 53, 87, 0.1)';
+            }}
+          >
             <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <Gift className="h-6 w-6 text-yellow-600" />
+              <div style={{ padding: '0.5rem', background: colors.mediumBlue, borderRadius: '0.5rem' }}>
+                <Gift className="h-6 w-6" style={{ color: 'white' }} />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Budget</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p style={{ fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy }}>Total Budget</p>
+                <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: colors.darkNavy }}>
                   ₹{events.reduce((sum, e) => sum + e.budget, 0).toLocaleString()}
                 </p>
               </div>
@@ -315,17 +432,43 @@ const CustomerEvents = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div 
+          style={{
+            background: `linear-gradient(135deg, ${colors.cream} 0%, white 100%)`,
+            padding: '1.5rem',
+            borderRadius: '0.5rem',
+            border: `2px solid ${colors.lightBlue}`,
+            boxShadow: '0 2px 8px rgba(29, 53, 87, 0.1)'
+          }}
+        >
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5" style={{ color: colors.mediumBlue }} />
                 <input
                   type="text"
                   placeholder="Search events by name, type, or contact person..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  style={{
+                    width: '100%',
+                    paddingLeft: '2.5rem',
+                    paddingRight: '1rem',
+                    paddingTop: '0.5rem',
+                    paddingBottom: '0.5rem',
+                    border: `2px solid ${colors.lightBlue}`,
+                    borderRadius: '0.5rem',
+                    outline: 'none',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = colors.mediumBlue;
+                    e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = colors.lightBlue;
+                    e.target.style.boxShadow = 'none';
+                  }}
                 />
               </div>
             </div>
@@ -333,7 +476,24 @@ const CustomerEvents = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                style={{
+                  width: '100%',
+                  padding: '0.5rem 0.75rem',
+                  border: `2px solid ${colors.lightBlue}`,
+                  borderRadius: '0.5rem',
+                  outline: 'none',
+                  transition: 'all 0.3s ease',
+                  backgroundColor: 'white',
+                  color: colors.darkNavy
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = colors.mediumBlue;
+                  e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = colors.lightBlue;
+                  e.target.style.boxShadow = 'none';
+                }}
               >
                 <option value="all">All Status</option>
                 <option value="confirmed">Confirmed</option>
@@ -347,130 +507,295 @@ const CustomerEvents = () => {
 
         {/* Events List */}
         <div className="space-y-4">
-          {filteredEvents.map((event) => (
-            <div key={event.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+          {filteredEvents.map((event) => {
+            const statusColors = getStatusColor(event.status);
+            const typeColors = getTypeColor(event.type);
+            return (
+            <div 
+              key={event.id} 
+              style={{
+                background: `linear-gradient(135deg, ${colors.cream} 0%, white 100%)`,
+                borderRadius: '0.5rem',
+                border: `2px solid ${colors.lightBlue}`,
+                padding: '1.5rem',
+                boxShadow: '0 2px 8px rgba(29, 53, 87, 0.1)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(29, 53, 87, 0.2)';
+                e.currentTarget.style.borderColor = colors.mediumBlue;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(29, 53, 87, 0.1)';
+                e.currentTarget.style.borderColor = colors.lightBlue;
+              }}
+            >
               <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-3 flex-wrap">
                   <div className="flex items-center space-x-2">
-                    <Gift className="h-5 w-5 text-gray-400" />
-                    <h3 className="text-lg font-semibold text-gray-900">{event.name}</h3>
+                    <Gift className="h-5 w-5" style={{ color: colors.mediumBlue }} />
+                    <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: colors.darkNavy }}>{event.name}</h3>
                   </div>
-                  <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(event.status)}`}>
+                  <span 
+                    className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full"
+                    style={{
+                      backgroundColor: statusColors.bg,
+                      color: statusColors.text,
+                      border: `1px solid ${statusColors.border}`
+                    }}
+                  >
                     {getStatusIcon(event.status)}
                     <span className="ml-1 capitalize">{event.status}</span>
                   </span>
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(event.type)}`}>
+                  <span 
+                    className="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                    style={{
+                      backgroundColor: typeColors.bg,
+                      color: typeColors.text,
+                      border: `1px solid ${typeColors.border}`
+                    }}
+                  >
                     {event.type.replace('-', ' ')}
                   </span>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">
+                  <p style={{ fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy }}>
                     {formatCurrency(event.budget)}
                   </p>
-                  <p className="text-xs text-gray-500">{event.date} at {event.time}</p>
+                  <p style={{ fontSize: '0.75rem', color: colors.mediumBlue }}>{event.date} at {event.time}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Event Details</h4>
+                  <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.5rem' }}>Event Details</h4>
                   <div className="space-y-1 text-sm">
                     <div className="flex items-center space-x-2">
-                      <Users className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-600">Guests: {event.guestCount} people</span>
+                      <Users className="h-4 w-4" style={{ color: colors.mediumBlue }} />
+                      <span style={{ color: colors.darkNavy }}>Guests: {event.guestCount} people</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Clock className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-600">Duration: {event.duration} minutes</span>
+                      <Clock className="h-4 w-4" style={{ color: colors.mediumBlue }} />
+                      <span style={{ color: colors.darkNavy }}>Duration: {event.duration} minutes</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <MapPin className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-600">{event.location}</span>
+                      <MapPin className="h-4 w-4" style={{ color: colors.mediumBlue }} />
+                      <span style={{ color: colors.darkNavy }}>{event.location}</span>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Contact Information</h4>
+                  <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.5rem' }}>Contact Information</h4>
                   <div className="space-y-1 text-sm">
                     <div className="flex items-center space-x-2">
-                      <Users className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-600">{event.contactPerson}</span>
+                      <Users className="h-4 w-4" style={{ color: colors.mediumBlue }} />
+                      <span style={{ color: colors.darkNavy }}>{event.contactPerson}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Phone className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-600">{event.contactPhone}</span>
+                      <Phone className="h-4 w-4" style={{ color: colors.mediumBlue }} />
+                      <span style={{ color: colors.darkNavy }}>{event.contactPhone}</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Mail className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-600">{event.contactEmail}</span>
+                      <Mail className="h-4 w-4" style={{ color: colors.mediumBlue }} />
+                      <span style={{ color: colors.darkNavy }}>{event.contactEmail}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {event.specialRequests && (
-                <div className="mb-4 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
-                  <p className="text-sm text-blue-800">
-                    <span className="font-medium">Special Requests:</span> {event.specialRequests}
+                <div 
+                  className="mb-4 p-3 rounded"
+                  style={{
+                    background: colors.lightBlue,
+                    borderLeft: `4px solid ${colors.mediumBlue}`
+                  }}
+                >
+                  <p style={{ fontSize: '0.875rem', color: colors.darkNavy }}>
+                    <span style={{ fontWeight: '500' }}>Special Requests:</span> {event.specialRequests}
                   </p>
                 </div>
               )}
 
               {event.notes && (
-                <div className="mb-4 p-3 bg-gray-50 rounded border-l-4 border-gray-400">
-                  <p className="text-sm text-gray-800">
-                    <span className="font-medium">Notes:</span> {event.notes}
+                <div 
+                  className="mb-4 p-3 rounded"
+                  style={{
+                    background: colors.cream,
+                    borderLeft: `4px solid ${colors.mediumBlue}`
+                  }}
+                >
+                  <p style={{ fontSize: '0.875rem', color: colors.darkNavy }}>
+                    <span style={{ fontWeight: '500' }}>Notes:</span> {event.notes}
                   </p>
                 </div>
               )}
 
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">
+                <span style={{ fontSize: '0.75rem', color: colors.mediumBlue }}>
                   Booked on {new Date(event.createdAt).toLocaleDateString()}
                 </span>
                 <div className="flex space-x-2">
                   {event.status === 'confirmed' && (
                     <>
-                      <button className="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded hover:bg-blue-200 transition-colors">
+                      <button 
+                        style={{
+                          fontSize: '0.75rem',
+                          background: colors.lightBlue,
+                          color: colors.darkNavy,
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '0.25rem',
+                          border: `1px solid ${colors.mediumBlue}`,
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.background = colors.mediumBlue;
+                          e.target.style.color = 'white';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = colors.lightBlue;
+                          e.target.style.color = colors.darkNavy;
+                        }}
+                      >
                         Modify
                       </button>
-                      <button className="text-xs bg-red-100 text-red-600 px-3 py-1 rounded hover:bg-red-200 transition-colors">
+                      <button 
+                        style={{
+                          fontSize: '0.75rem',
+                          background: '#FEE2E2',
+                          color: colors.red,
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '0.25rem',
+                          border: `1px solid ${colors.red}`,
+                          cursor: 'pointer',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.target.style.background = colors.red;
+                          e.target.style.color = 'white';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = '#FEE2E2';
+                          e.target.style.color = colors.red;
+                        }}
+                      >
                         Cancel
                       </button>
                     </>
                   )}
                   {event.status === 'completed' && (
-                    <button className="text-xs bg-green-100 text-green-600 px-3 py-1 rounded hover:bg-green-200 transition-colors">
+                    <button 
+                      style={{
+                        fontSize: '0.75rem',
+                        background: colors.cream,
+                        color: colors.darkNavy,
+                        padding: '0.25rem 0.75rem',
+                        borderRadius: '0.25rem',
+                        border: `1px solid ${colors.mediumBlue}`,
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.background = colors.mediumBlue;
+                        e.target.style.color = 'white';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.background = colors.cream;
+                        e.target.style.color = colors.darkNavy;
+                      }}
+                    >
                       Rate Event
                     </button>
                   )}
-                  <button className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded hover:bg-gray-200 transition-colors">
+                  <button 
+                    style={{
+                      fontSize: '0.75rem',
+                      background: colors.cream,
+                      color: colors.darkNavy,
+                      padding: '0.25rem 0.75rem',
+                      borderRadius: '0.25rem',
+                      border: `1px solid ${colors.mediumBlue}`,
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = colors.mediumBlue;
+                      e.target.style.color = 'white';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = colors.cream;
+                      e.target.style.color = colors.darkNavy;
+                    }}
+                  >
                     View Details
                   </button>
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {filteredEvents.length === 0 && (
           <div className="text-center py-12">
-            <Gift className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No events found</h3>
-            <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
+            <Gift className="h-16 w-16 mx-auto mb-4" style={{ color: colors.mediumBlue }} />
+            <h3 style={{ fontSize: '1.125rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.5rem' }}>No events found</h3>
+            <p style={{ color: colors.mediumBlue }}>Try adjusting your search or filter criteria.</p>
           </div>
         )}
 
         {/* New Event Modal */}
         {showNewEventModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                <h3 className="text-xl font-semibold text-gray-900">Book New Event</h3>
+            <div 
+              style={{
+                background: `linear-gradient(135deg, ${colors.cream} 0%, white 100%)`,
+                borderRadius: '0.5rem',
+                boxShadow: '0 10px 40px rgba(29, 53, 87, 0.3)',
+                maxWidth: '48rem',
+                width: '100%',
+                maxHeight: '90vh',
+                overflowY: 'auto',
+                border: `2px solid ${colors.lightBlue}`
+              }}
+            >
+              <div 
+                className="flex items-center justify-between p-6"
+                style={{
+                  borderBottom: `2px solid ${colors.lightBlue}`
+                }}
+              >
+                <h3 
+                  style={{
+                    fontSize: '1.25rem',
+                    fontWeight: '600',
+                    color: colors.darkNavy,
+                    fontFamily: "'Rockybilly', 'Pacifico', 'Dancing Script', cursive, sans-serif"
+                  }}
+                >
+                  Book New Event
+                </h3>
                 <button
                   onClick={() => setShowNewEventModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  style={{
+                    color: colors.mediumBlue,
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.color = colors.red;
+                    e.target.style.transform = 'rotate(90deg)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.color = colors.mediumBlue;
+                    e.target.style.transform = 'rotate(0deg)';
+                  }}
                 >
                   <X className="h-6 w-6" />
                 </button>
@@ -479,61 +804,81 @@ const CustomerEvents = () => {
               <form onSubmit={handleSubmit} className="p-6 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.5rem' }}>
                       Booking Type *
                     </label>
                     <div className="grid grid-cols-2 gap-4">
                       <button
                         type="button"
                         onClick={() => setFormData(prev => ({ ...prev, bookingType: 'dinein' }))}
-                        className={`p-4 border-2 rounded-lg text-left transition-all ${
-                          formData.bookingType === 'dinein'
-                            ? 'border-primary-500 bg-primary-50'
-                            : 'border-gray-300 hover:border-gray-400'
-                        }`}
+                        style={{
+                          padding: '1rem',
+                          border: `2px solid ${formData.bookingType === 'dinein' ? colors.mediumBlue : colors.lightBlue}`,
+                          borderRadius: '0.5rem',
+                          textAlign: 'left',
+                          transition: 'all 0.3s ease',
+                          background: formData.bookingType === 'dinein' ? colors.cream : 'white',
+                          cursor: 'pointer'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (formData.bookingType !== 'dinein') {
+                            e.target.style.borderColor = colors.mediumBlue;
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (formData.bookingType !== 'dinein') {
+                            e.target.style.borderColor = colors.lightBlue;
+                          }
+                        }}
                       >
                         <div className="flex items-center space-x-3">
-                          <div className={`p-2 rounded-lg ${
-                            formData.bookingType === 'dinein'
-                              ? 'bg-primary-500'
-                              : 'bg-gray-200'
-                          }`}>
-                            <Utensils className={`h-6 w-6 ${
-                              formData.bookingType === 'dinein'
-                                ? 'text-white'
-                                : 'text-gray-600'
-                            }`} />
+                          <div style={{
+                            padding: '0.5rem',
+                            borderRadius: '0.5rem',
+                            background: formData.bookingType === 'dinein' ? colors.mediumBlue : colors.lightBlue
+                          }}>
+                            <Utensils className="h-6 w-6" style={{ color: formData.bookingType === 'dinein' ? 'white' : colors.darkNavy }} />
                           </div>
                           <div>
-                            <h4 className="font-semibold text-gray-900">Dine-In Event</h4>
-                            <p className="text-sm text-gray-600">Host at our restaurant</p>
+                            <h4 style={{ fontWeight: '600', color: colors.darkNavy }}>Dine-In Event</h4>
+                            <p style={{ fontSize: '0.875rem', color: colors.mediumBlue }}>Host at our restaurant</p>
                           </div>
                         </div>
                       </button>
                       <button
                         type="button"
                         onClick={() => setFormData(prev => ({ ...prev, bookingType: 'catering' }))}
-                        className={`p-4 border-2 rounded-lg text-left transition-all ${
-                          formData.bookingType === 'catering'
-                            ? 'border-primary-500 bg-primary-50'
-                            : 'border-gray-300 hover:border-gray-400'
-                        }`}
+                        style={{
+                          padding: '1rem',
+                          border: `2px solid ${formData.bookingType === 'catering' ? colors.mediumBlue : colors.lightBlue}`,
+                          borderRadius: '0.5rem',
+                          textAlign: 'left',
+                          transition: 'all 0.3s ease',
+                          background: formData.bookingType === 'catering' ? colors.cream : 'white',
+                          cursor: 'pointer'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (formData.bookingType !== 'catering') {
+                            e.target.style.borderColor = colors.mediumBlue;
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (formData.bookingType !== 'catering') {
+                            e.target.style.borderColor = colors.lightBlue;
+                          }
+                        }}
                       >
                         <div className="flex items-center space-x-3">
-                          <div className={`p-2 rounded-lg ${
-                            formData.bookingType === 'catering'
-                              ? 'bg-primary-500'
-                              : 'bg-gray-200'
-                          }`}>
-                            <Truck className={`h-6 w-6 ${
-                              formData.bookingType === 'catering'
-                                ? 'text-white'
-                                : 'text-gray-600'
-                            }`} />
+                          <div style={{
+                            padding: '0.5rem',
+                            borderRadius: '0.5rem',
+                            background: formData.bookingType === 'catering' ? colors.mediumBlue : colors.lightBlue
+                          }}>
+                            <Truck className="h-6 w-6" style={{ color: formData.bookingType === 'catering' ? 'white' : colors.darkNavy }} />
                           </div>
                           <div>
-                            <h4 className="font-semibold text-gray-900">Catering Service</h4>
-                            <p className="text-sm text-gray-600">We cater at your location</p>
+                            <h4 style={{ fontWeight: '600', color: colors.darkNavy }}>Catering Service</h4>
+                            <p style={{ fontSize: '0.875rem', color: colors.mediumBlue }}>We cater at your location</p>
                           </div>
                         </div>
                       </button>
@@ -541,7 +886,7 @@ const CustomerEvents = () => {
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.25rem' }}>
                       Event Name *
                     </label>
                     <input
@@ -551,12 +896,27 @@ const CustomerEvents = () => {
                       onChange={handleInputChange}
                       required
                       placeholder="e.g., Wedding Reception, Birthday Party, Corporate Event"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      style={{
+                        width: '100%',
+                        padding: '0.5rem 0.75rem',
+                        border: `2px solid ${colors.lightBlue}`,
+                        borderRadius: '0.5rem',
+                        outline: 'none',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = colors.mediumBlue;
+                        e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = colors.lightBlue;
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.25rem' }}>
                       Event Type *
                     </label>
                     <select
@@ -564,7 +924,24 @@ const CustomerEvents = () => {
                       value={formData.eventType}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      style={{
+                        width: '100%',
+                        padding: '0.5rem 0.75rem',
+                        border: `2px solid ${colors.lightBlue}`,
+                        borderRadius: '0.5rem',
+                        outline: 'none',
+                        transition: 'all 0.3s ease',
+                        backgroundColor: 'white',
+                        color: colors.darkNavy
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = colors.mediumBlue;
+                        e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = colors.lightBlue;
+                        e.target.style.boxShadow = 'none';
+                      }}
                     >
                       <option value="">Select Type</option>
                       <option value="wedding">Wedding</option>
@@ -578,11 +955,11 @@ const CustomerEvents = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.25rem' }}>
                       Number of Guests *
                     </label>
                     <div className="relative">
-                      <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5" style={{ color: colors.mediumBlue }} />
                       <input
                         type="number"
                         name="guestCount"
@@ -591,17 +968,35 @@ const CustomerEvents = () => {
                         required
                         min="10"
                         placeholder="Number of guests"
-                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        style={{
+                          width: '100%',
+                          paddingLeft: '2.5rem',
+                          paddingRight: '0.75rem',
+                          paddingTop: '0.5rem',
+                          paddingBottom: '0.5rem',
+                          border: `2px solid ${colors.lightBlue}`,
+                          borderRadius: '0.5rem',
+                          outline: 'none',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = colors.mediumBlue;
+                          e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.lightBlue;
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.25rem' }}>
                       Date *
                     </label>
                     <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5" style={{ color: colors.mediumBlue }} />
                       <input
                         type="date"
                         name="date"
@@ -609,51 +1004,97 @@ const CustomerEvents = () => {
                         onChange={handleInputChange}
                         required
                         min={new Date().toISOString().split('T')[0]}
-                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        style={{
+                          width: '100%',
+                          paddingLeft: '2.5rem',
+                          paddingRight: '0.75rem',
+                          paddingTop: '0.5rem',
+                          paddingBottom: '0.5rem',
+                          border: `2px solid ${colors.lightBlue}`,
+                          borderRadius: '0.5rem',
+                          outline: 'none',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = colors.mediumBlue;
+                          e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.lightBlue;
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.25rem' }}>
                       Time *
                     </label>
                     <div className="relative">
-                      <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5" style={{ color: colors.mediumBlue }} />
                       <input
                         type="time"
                         name="time"
                         value={formData.time}
                         onChange={handleInputChange}
                         required
-                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        style={{
+                          width: '100%',
+                          paddingLeft: '2.5rem',
+                          paddingRight: '0.75rem',
+                          paddingTop: '0.5rem',
+                          paddingBottom: '0.5rem',
+                          border: `2px solid ${colors.lightBlue}`,
+                          borderRadius: '0.5rem',
+                          outline: 'none',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = colors.mediumBlue;
+                          e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.lightBlue;
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                     </div>
                   </div>
 
                   {formData.bookingType === 'dinein' ? (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.25rem' }}>
                         Location
                       </label>
                       <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5" style={{ color: colors.mediumBlue }} />
                         <input
                           type="text"
                           value="RESTRO Restaurant"
                           disabled
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600"
+                          style={{
+                            width: '100%',
+                            paddingLeft: '2.5rem',
+                            paddingRight: '0.75rem',
+                            paddingTop: '0.5rem',
+                            paddingBottom: '0.5rem',
+                            border: `2px solid ${colors.lightBlue}`,
+                            borderRadius: '0.5rem',
+                            background: colors.cream,
+                            color: colors.mediumBlue
+                          }}
                         />
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">Event will be hosted at our restaurant</p>
+                      <p style={{ fontSize: '0.75rem', color: colors.mediumBlue, marginTop: '0.25rem' }}>Event will be hosted at our restaurant</p>
                     </div>
                   ) : formData.bookingType === 'catering' ? (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.25rem' }}>
                         Event Location *
                       </label>
                       <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5" style={{ color: colors.mediumBlue }} />
                         <input
                           type="text"
                           name="location"
@@ -661,30 +1102,58 @@ const CustomerEvents = () => {
                           onChange={handleInputChange}
                           required
                           placeholder="Enter your event location address"
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                          style={{
+                            width: '100%',
+                            paddingLeft: '2.5rem',
+                            paddingRight: '0.75rem',
+                            paddingTop: '0.5rem',
+                            paddingBottom: '0.5rem',
+                            border: `2px solid ${colors.lightBlue}`,
+                            borderRadius: '0.5rem',
+                            outline: 'none',
+                            transition: 'all 0.3s ease'
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = colors.mediumBlue;
+                            e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = colors.lightBlue;
+                            e.target.style.boxShadow = 'none';
+                          }}
                         />
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">We will cater at your specified location</p>
+                      <p style={{ fontSize: '0.75rem', color: colors.mediumBlue, marginTop: '0.25rem' }}>We will cater at your specified location</p>
                     </div>
                   ) : (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.25rem' }}>
                         Location
                       </label>
                       <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5" style={{ color: colors.lightBlue }} />
                         <input
                           type="text"
                           disabled
                           placeholder="Select booking type first"
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-400"
+                          style={{
+                            width: '100%',
+                            paddingLeft: '2.5rem',
+                            paddingRight: '0.75rem',
+                            paddingTop: '0.5rem',
+                            paddingBottom: '0.5rem',
+                            border: `2px solid ${colors.lightBlue}`,
+                            borderRadius: '0.5rem',
+                            background: colors.cream,
+                            color: colors.lightBlue
+                          }}
                         />
                       </div>
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.25rem' }}>
                       Budget (₹)
                     </label>
                     <input
@@ -693,12 +1162,27 @@ const CustomerEvents = () => {
                       value={formData.budget}
                       onChange={handleInputChange}
                       placeholder="Estimated budget"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      style={{
+                        width: '100%',
+                        padding: '0.5rem 0.75rem',
+                        border: `2px solid ${colors.lightBlue}`,
+                        borderRadius: '0.5rem',
+                        outline: 'none',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = colors.mediumBlue;
+                        e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = colors.lightBlue;
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.25rem' }}>
                       Contact Person *
                     </label>
                     <input
@@ -708,16 +1192,31 @@ const CustomerEvents = () => {
                       onChange={handleInputChange}
                       required
                       placeholder="Full name"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      style={{
+                        width: '100%',
+                        padding: '0.5rem 0.75rem',
+                        border: `2px solid ${colors.lightBlue}`,
+                        borderRadius: '0.5rem',
+                        outline: 'none',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = colors.mediumBlue;
+                        e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = colors.lightBlue;
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.25rem' }}>
                       Contact Phone *
                     </label>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5" style={{ color: colors.mediumBlue }} />
                       <input
                         type="tel"
                         name="contactPhone"
@@ -725,17 +1224,35 @@ const CustomerEvents = () => {
                         onChange={handleInputChange}
                         required
                         placeholder="+91 98765 43210"
-                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        style={{
+                          width: '100%',
+                          paddingLeft: '2.5rem',
+                          paddingRight: '0.75rem',
+                          paddingTop: '0.5rem',
+                          paddingBottom: '0.5rem',
+                          border: `2px solid ${colors.lightBlue}`,
+                          borderRadius: '0.5rem',
+                          outline: 'none',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = colors.mediumBlue;
+                          e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.lightBlue;
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.25rem' }}>
                       Contact Email *
                     </label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5" style={{ color: colors.mediumBlue }} />
                       <input
                         type="email"
                         name="contactEmail"
@@ -743,13 +1260,31 @@ const CustomerEvents = () => {
                         onChange={handleInputChange}
                         required
                         placeholder="email@example.com"
-                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                        style={{
+                          width: '100%',
+                          paddingLeft: '2.5rem',
+                          paddingRight: '0.75rem',
+                          paddingTop: '0.5rem',
+                          paddingBottom: '0.5rem',
+                          border: `2px solid ${colors.lightBlue}`,
+                          borderRadius: '0.5rem',
+                          outline: 'none',
+                          transition: 'all 0.3s ease'
+                        }}
+                        onFocus={(e) => {
+                          e.target.style.borderColor = colors.mediumBlue;
+                          e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                        }}
+                        onBlur={(e) => {
+                          e.target.style.borderColor = colors.lightBlue;
+                          e.target.style.boxShadow = 'none';
+                        }}
                       />
                     </div>
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: colors.darkNavy, marginBottom: '0.25rem' }}>
                       Special Requests
                     </label>
                     <textarea
@@ -758,7 +1293,23 @@ const CustomerEvents = () => {
                       onChange={handleInputChange}
                       rows="3"
                       placeholder="Any special requirements, dietary restrictions, decoration preferences, etc."
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                      style={{
+                        width: '100%',
+                        padding: '0.5rem 0.75rem',
+                        border: `2px solid ${colors.lightBlue}`,
+                        borderRadius: '0.5rem',
+                        outline: 'none',
+                        transition: 'all 0.3s ease',
+                        resize: 'vertical'
+                      }}
+                      onFocus={(e) => {
+                        e.target.style.borderColor = colors.mediumBlue;
+                        e.target.style.boxShadow = `0 0 0 3px rgba(69, 123, 157, 0.1)`;
+                      }}
+                      onBlur={(e) => {
+                        e.target.style.borderColor = colors.lightBlue;
+                        e.target.style.boxShadow = 'none';
+                      }}
                     />
                   </div>
                 </div>
@@ -767,13 +1318,49 @@ const CustomerEvents = () => {
                   <button
                     type="button"
                     onClick={() => setShowNewEventModal(false)}
-                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg"
+                    style={{
+                      padding: '0.5rem 1rem',
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
+                      color: colors.darkNavy,
+                      background: colors.cream,
+                      border: `2px solid ${colors.lightBlue}`,
+                      borderRadius: '0.5rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = colors.lightBlue;
+                      e.target.style.borderColor = colors.mediumBlue;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = colors.cream;
+                      e.target.style.borderColor = colors.lightBlue;
+                    }}
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg"
+                    style={{
+                      padding: '0.5rem 1rem',
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
+                      color: 'white',
+                      background: `linear-gradient(135deg, ${colors.red} 0%, ${colors.darkNavy} 100%)`,
+                      border: 'none',
+                      borderRadius: '0.5rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.transform = 'scale(1.05)';
+                      e.target.style.boxShadow = `0 4px 12px rgba(29, 53, 87, 0.3)`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.transform = 'scale(1)';
+                      e.target.style.boxShadow = 'none';
+                    }}
                   >
                     Submit Event Booking
                   </button>
@@ -783,7 +1370,7 @@ const CustomerEvents = () => {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </CustomerLayout>
   );
 };
 
