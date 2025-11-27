@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, memo } from 'react';
+import React, { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   LogOut, 
@@ -20,14 +20,27 @@ import {
   UserCheck
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
+import ThemeToggle from '../UI/ThemeToggle';
 import { ROUTES, USER_ROLES } from '../../constants';
 import toast from 'react-hot-toast';
 
 const Navbar = memo(() => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { user, logout, getUserRole } = useAuth();
+  const { isDark } = useTheme();
   const navigate = useNavigate();
+
+  // Handle scroll for glassmorphism effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleLogout = useCallback(async () => {
     try {
@@ -77,7 +90,14 @@ const Navbar = memo(() => {
   }, [getUserRole]);
 
   return (
-    <nav className="bg-gradient-to-r from-blue-600 via-blue-800 to-gray-900 shadow-lg">
+    <nav className={`
+      fixed top-0 left-0 right-0 z-50
+      ${isScrolled 
+        ? 'glass backdrop-blur-md bg-white/80 dark:bg-gray-900/80 shadow-lg' 
+        : 'bg-gradient-to-r from-blue-600 via-blue-800 to-gray-900 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900'
+      }
+      transition-all duration-300
+    `}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center h-20">
           {/* Logo */}
@@ -99,7 +119,15 @@ const Navbar = memo(() => {
               <Link
                 key={item.name}
                 to={item.path}
-                className="flex items-center space-x-2 text-white hover:bg-white/10 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 hover:shadow-lg backdrop-blur-sm"
+                className={`
+                  flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-semibold
+                  transition-all duration-200
+                  ${isScrolled
+                    ? 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    : 'text-white hover:bg-white/10'
+                  }
+                  hover:scale-105 active:scale-95
+                `}
               >
                 {item.icon}
                 <span>{item.name}</span>
@@ -107,12 +135,29 @@ const Navbar = memo(() => {
             ))}
           </div>
 
+          {/* Who am I (Employee identity) */}
+          {getUserRole() === USER_ROLES.EMPLOYEE && (
+            <div className="hidden md:flex items-center ml-4 mr-2">
+              <span className="text-xs font-semibold text-white/90 bg-white/10 px-3 py-1 rounded-full">
+                Logged in as: {user?.name || 'Employee'} {user?.tag ? `• ${String(user.tag).toUpperCase()}` : ''}
+              </span>
+            </div>
+          )}
+
           {/* User Menu */}
           <div className="hidden md:flex items-center space-x-4 ml-auto">
+            <ThemeToggle />
             <div className="relative">
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex items-center space-x-2 text-white hover:bg-white/10 px-3 py-2 rounded-lg transition-all duration-300"
+                className={`
+                  flex items-center space-x-2 px-3 py-2 rounded-lg
+                  transition-all duration-200
+                  ${isScrolled
+                    ? 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                    : 'text-white hover:bg-white/10'
+                  }
+                `}
               >
                 <div className="h-9 w-9 bg-white rounded-full flex items-center justify-center">
                   <User className="h-5 w-5 text-blue-600" />
@@ -122,16 +167,18 @@ const Navbar = memo(() => {
 
               {/* Profile Dropdown */}
               {isProfileOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 animate-slide-down">
                   <div className="py-1">
-                    <div className="px-4 py-3 text-sm text-gray-700 border-b border-gray-200">
-                      <p className="font-semibold text-gray-900">{user?.name}</p>
-                      <p className="text-gray-500 text-xs mt-1">{user?.email}</p>
-                      <p className="text-xs text-blue-600 capitalize mt-1 font-medium">{user?.role}</p>
+                    <div className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
+                      <p className="font-semibold text-gray-900 dark:text-white">{user?.name}</p>
+                      <p className="text-gray-500 dark:text-gray-400 text-xs mt-1">{user?.email}</p>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 capitalize mt-1 font-medium">
+                      {user?.role}{user?.tag ? ` • ${user.tag}` : ''}
+                    </p>
                     </div>
                     <button
                       onClick={handleLogout}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                     >
                       <LogOut className="h-4 w-4 mr-2" />
                       Logout
@@ -143,10 +190,17 @@ const Navbar = memo(() => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden ml-auto">
+          <div className="md:hidden ml-auto flex items-center space-x-2">
+            <ThemeToggle />
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-white hover:bg-white/10 p-2 rounded-lg transition-all duration-300"
+              className={`
+                p-2 rounded-lg transition-all duration-200
+                ${isScrolled
+                  ? 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  : 'text-white hover:bg-white/10'
+                }
+              `}
             >
               {isMenuOpen ? (
                 <X className="h-7 w-7" />
@@ -159,13 +213,20 @@ const Navbar = memo(() => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 border-t border-white/10">
+          <div className="md:hidden animate-slide-down">
+            <div className={`px-2 pt-2 pb-3 space-y-1 border-t ${isScrolled ? 'border-gray-200 dark:border-gray-700' : 'border-white/10'}`}>
               {navigationItems.map((item) => (
                 <Link
                   key={item.name}
                   to={item.path}
-                  className="flex items-center space-x-3 px-3 py-2 text-white hover:bg-white/10 rounded-lg text-sm font-semibold transition-all duration-300"
+                  className={`
+                    flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-semibold
+                    transition-all duration-200
+                    ${isScrolled
+                      ? 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      : 'text-white hover:bg-white/10'
+                    }
+                  `}
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.icon}
@@ -174,19 +235,31 @@ const Navbar = memo(() => {
               ))}
               
               {/* Mobile User Info */}
-              <div className="px-3 py-2 border-t border-white/10 mt-2">
+              <div className={`px-3 py-2 border-t ${isScrolled ? 'border-gray-200 dark:border-gray-700' : 'border-white/10'} mt-2`}>
                 <div className="flex items-center space-x-3">
                   <div className="h-9 w-9 bg-white rounded-full flex items-center justify-center">
                     <User className="h-5 w-5 text-blue-600" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-white">{user?.name}</p>
-                    <p className="text-xs text-white/70">{user?.email}</p>
+                    <p className={`text-sm font-semibold ${isScrolled ? 'text-gray-900 dark:text-white' : 'text-white'}`}>{user?.name}</p>
+                    <p className={`text-xs ${isScrolled ? 'text-gray-600 dark:text-gray-400' : 'text-white/70'}`}>{user?.email}</p>
+                    {getUserRole() === USER_ROLES.EMPLOYEE && (
+                      <p className={`text-[11px] mt-0.5 ${isScrolled ? 'text-gray-600 dark:text-gray-400' : 'text-white/80'}`}>
+                        {user?.tag ? `Station: ${String(user.tag).toUpperCase()}` : 'Employee'}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center w-full mt-3 px-3 py-2 text-sm text-white hover:bg-white/10 rounded-lg transition-all duration-300"
+                  className={`
+                    flex items-center w-full mt-3 px-3 py-2 text-sm rounded-lg
+                    transition-all duration-200
+                    ${isScrolled
+                      ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      : 'text-white hover:bg-white/10'
+                    }
+                  `}
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   Logout

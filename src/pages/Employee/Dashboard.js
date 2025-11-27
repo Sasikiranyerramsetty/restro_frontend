@@ -21,13 +21,11 @@ const EmployeeDashboard = () => {
   });
 
   const [recentOrders, setRecentOrders] = useState([]);
-  const [todayTasks, setTodayTasks] = useState([]);
 
   useEffect(() => {
     // Static mock data removed. Integrate with real services here when available.
     setStats({ assignedOrders: 0, completedTasks: 0, todayShifts: 0, pendingTasks: 0 });
     setRecentOrders([]);
-    setTodayTasks([]);
   }, []);
 
   const statCards = [
@@ -72,22 +70,17 @@ const EmployeeDashboard = () => {
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
 
-  const getPriorityColor = (priority) => {
-    const colors = {
-      high: 'bg-red-100 text-red-800',
-      medium: 'bg-yellow-100 text-yellow-800',
-      low: 'bg-green-100 text-green-800'
-    };
-    return colors[priority] || 'bg-gray-100 text-gray-800';
-  };
-
   return (
     <EmployeeLayout>
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-4xl font-bold gradient-text restro-brand">Employee Dashboard</h1>
-          <p className="text-gray-600 mt-2 text-lg">Welcome back! Here's your work overview.</p>
+          <h1 
+            className="text-4xl font-bold gradient-text restro-brand"
+            style={{ fontSize: '1.6875rem' }}
+          >
+            Employee Dashboard
+          </h1>
         </div>
 
         {/* Stats Cards */}
@@ -203,45 +196,6 @@ const EmployeeDashboard = () => {
             </div>
           </div>
 
-          {/* Today's Tasks */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Today's Tasks</h3>
-              <button className="text-primary-600 hover:text-primary-700 font-medium">
-                View All
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              {todayTasks.map((task) => (
-                <div key={task.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-gray-900">{task.title}</h4>
-                    <div className="flex items-center space-x-2">
-                      <span className={`status-badge ${getPriorityColor(task.priority)}`}>
-                        {task.priority}
-                      </span>
-                      <span className={`status-badge ${getStatusColor(task.status)}`}>
-                        {task.status}
-                      </span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">{task.description}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-500 flex items-center">
-                      <Clock className="h-3 w-3 mr-1" />
-                      Due: {task.dueTime}
-                    </span>
-                    {task.status === 'pending' && (
-                      <button className="text-xs bg-primary-100 text-primary-600 px-2 py-1 rounded">
-                        Start
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* Quick Actions */}

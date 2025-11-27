@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, memo } from 'react';
+import React, { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   LogOut, 
@@ -10,14 +10,27 @@ import {
   UserPlus
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
+import ThemeToggle from '../UI/ThemeToggle';
 import { ROUTES } from '../../constants';
 import toast from 'react-hot-toast';
 
 const CustomerNavbar = memo(() => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { user, logout } = useAuth();
+  const { isDark } = useTheme();
   const navigate = useNavigate();
+
+  // Handle scroll for glassmorphism effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleLogout = useCallback(async () => {
     try {
@@ -46,7 +59,15 @@ const CustomerNavbar = memo(() => {
   }, [user]);
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200">
+    <nav className={`
+      fixed top-0 left-0 right-0 z-50
+      ${isScrolled 
+        ? 'glass backdrop-blur-md bg-white/80 dark:bg-gray-900/80 shadow-lg' 
+        : 'bg-white dark:bg-gray-900 shadow-sm'
+      }
+      border-b border-gray-200 dark:border-gray-700
+      transition-all duration-300
+    `}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center h-20">
           {/* Logo */}
@@ -77,6 +98,7 @@ const CustomerNavbar = memo(() => {
 
           {/* User Menu / Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4 ml-auto">
+            <ThemeToggle />
             {user ? (
               <div className="relative">
                 <button
@@ -91,16 +113,16 @@ const CustomerNavbar = memo(() => {
 
                 {/* Profile Dropdown */}
                 {isProfileOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50 animate-slide-down">
                     <div className="py-1">
-                      <div className="px-4 py-2 text-base text-gray-700 border-b border-gray-200">
-                        <p className="font-medium">{user?.name}</p>
-                        <p className="text-gray-500">{user?.email}</p>
-                        <p className="text-sm text-primary-600 capitalize">{user?.role}</p>
+                      <div className="px-4 py-2 text-base text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
+                        <p className="font-medium text-gray-900 dark:text-white">{user?.name}</p>
+                        <p className="text-gray-500 dark:text-gray-400">{user?.email}</p>
+                        <p className="text-sm text-primary-600 dark:text-primary-400 capitalize">{user?.role}</p>
                       </div>
                       <button
                         onClick={handleLogout}
-                        className="flex items-center w-full px-4 py-2 text-base text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                        className="flex items-center w-full px-4 py-2 text-base text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                       >
                         <LogOut className="h-4 w-4 mr-2" />
                         Logout
@@ -130,10 +152,11 @@ const CustomerNavbar = memo(() => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden ml-auto">
+          <div className="md:hidden ml-auto flex items-center space-x-2">
+            <ThemeToggle />
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-700 hover:text-primary-600 transition-colors duration-200"
+              className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-200"
             >
               {isMenuOpen ? (
                 <X className="h-7 w-7" />
@@ -146,13 +169,13 @@ const CustomerNavbar = memo(() => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 border-t border-gray-200">
+          <div className="md:hidden animate-slide-down">
+            <div className="px-2 pt-2 pb-3 space-y-1 border-t border-gray-200 dark:border-gray-700">
               {navigationItems.map((item) => (
                 <Link
                   key={item.name}
                   to={item.path}
-                  className="block px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md text-base font-medium transition-colors duration-200"
+                  className="block px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md text-base font-medium transition-colors duration-200"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item.name}
@@ -160,7 +183,7 @@ const CustomerNavbar = memo(() => {
               ))}
               
               {/* Mobile User Info / Auth Buttons */}
-              <div className="px-3 py-2 border-t border-gray-200">
+              <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-700">
                 {user ? (
                   <>
                     <div className="flex items-center space-x-3">
@@ -168,13 +191,13 @@ const CustomerNavbar = memo(() => {
                         <User className="h-5 w-5 text-primary-600" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-base font-medium text-gray-900">{user?.name}</p>
-                        <p className="text-sm text-gray-500">{user?.email}</p>
+                        <p className="text-base font-medium text-gray-900 dark:text-white">{user?.name}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{user?.email}</p>
                       </div>
                     </div>
                     <button
                       onClick={handleLogout}
-                      className="flex items-center w-full mt-3 px-3 py-2 text-base text-gray-700 hover:bg-gray-100 rounded-md transition-colors duration-200"
+                      className="flex items-center w-full mt-3 px-3 py-2 text-base text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors duration-200"
                     >
                       <LogOut className="h-4 w-4 mr-2" />
                       Logout

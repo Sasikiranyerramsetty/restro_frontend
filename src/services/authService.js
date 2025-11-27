@@ -145,18 +145,33 @@ class AuthService {
     return !!(token && user);
   }
 
-  // Update profile (not implemented in backend yet)
   async updateProfile(profileData) {
+    const user = getFromStorage(STORAGE_KEYS.USER_DATA);
+    if (!user) {
+      return { success: false, error: 'User not found in storage' };
+    }
+
+    if (user.role !== 'employee') {
+      return { success: false, error: 'Profile update not supported for this role yet' };
+    }
+
     try {
-      // You'll need to implement this endpoint in backend
-      const response = await api.put('/users/profile', profileData);
-      const { user } = response.data;
-      setToStorage(STORAGE_KEYS.USER_DATA, user);
-      return { success: true, data: response.data };
+      const response = await api.put(`/users/employees/${user.id}`, profileData);
+      const updatedUser = {
+        ...user,
+        name: response.data?.name ?? user.name,
+        phone: response.data?.phone_number ?? user.phone,
+        email: response.data?.email ?? user.email,
+        address: response.data?.address ?? user.address,
+        tag: response.data?.tag ?? user.tag,
+        updated_at: response.data?.updated_at ?? user.updated_at,
+      };
+      setToStorage(STORAGE_KEYS.USER_DATA, updatedUser);
+      return { success: true, data: { user: updatedUser } };
     } catch (error) {
       return { 
         success: false, 
-        error: error.response?.data?.message || 'Profile update failed' 
+        error: error.response?.data?.detail || error.message || 'Profile update failed' 
       };
     }
   }

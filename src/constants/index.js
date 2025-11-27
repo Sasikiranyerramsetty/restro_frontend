@@ -110,7 +110,11 @@ export const ROUTES = {
   EMPLOYEE_ORDER_TAKING: '/employee/order-taking',
   EMPLOYEE_TABLES: '/employee/tables',
   EMPLOYEE_TASKS: '/employee/tasks',
-  EMPLOYEE_SHIFTS: '/employee/shifts'
+  EMPLOYEE_SHIFTS: '/employee/shifts',
+  EMPLOYEE_PROFILE: '/employee/profile',
+  EMPLOYEE_CHEF: '/employee/chef',
+  EMPLOYEE_WAITER: '/employee/waiter',
+  EMPLOYEE_DELIVERY: '/employee/delivery'
 };
 
 // Local Storage Keys

@@ -55,8 +55,12 @@ const EmployeeOrders = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold gradient-text restro-brand">My Orders</h1>
-            <p className="text-gray-600 mt-2 text-lg">Manage your assigned orders</p>
+            <h1 
+              className="text-4xl font-bold gradient-text restro-brand"
+              style={{ fontSize: '1.6875rem' }}
+            >
+              My Orders
+            </h1>
           </div>
         </div>
 

@@ -146,6 +146,30 @@ class EmployeeService {
       };
     }
   }
+
+  async getProfile(employeeId) {
+    try {
+      const response = await api.get(`/users/employees/${employeeId}`);
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.detail || 'Failed to fetch profile'
+      };
+    }
+  }
+
+  async updateProfile(employeeId, profileData) {
+    try {
+      const response = await api.put(`/users/employees/${employeeId}`, profileData);
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.detail || 'Failed to update profile'
+      };
+    }
+  }
 }
 
 const employeeService = new EmployeeService();

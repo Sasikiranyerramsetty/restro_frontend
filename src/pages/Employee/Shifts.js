@@ -163,8 +163,19 @@ const EmployeeShifts = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold gradient-text restro-brand">Shift Management</h1>
-            <p className="text-gray-600 mt-2 text-lg">View your shifts and check-in/out</p>
+            <h1
+              className="text-4xl font-bold drop-shadow-lg mb-2"
+              style={{
+                fontFamily: 'Rockybilly, sans-serif',
+                letterSpacing: '0.05em',
+                color: '#1D3557',
+                fontSize: '1.6875rem',
+                lineHeight: 1.2,
+                display: 'inline-block'
+              }}
+            >
+              Shift Management
+            </h1>
           </div>
           {currentShift && currentShift.status === 'active' ? (
             <button 

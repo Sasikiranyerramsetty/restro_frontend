@@ -115,9 +115,9 @@ const Login = () => {
           transition={{ duration: 0.5 }}
           className="w-full max-w-md"
         >
-          <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden animate-scale-in">
             {/* Login Form */}
-            <div className="p-12 bg-brand-cream">
+            <div className="p-12 bg-brand-cream dark:bg-gray-800">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -132,22 +132,22 @@ const Login = () => {
                       />
                     </div>
                     
-                    <h2 className="text-3xl font-bold text-brand-red mb-2 text-center" style={{ fontFamily: 'Rockybilly, sans-serif' }}>
+                    <h2 className="text-3xl font-bold text-brand-red dark:text-primary-400 mb-2 text-center" style={{ fontFamily: 'Rockybilly, sans-serif' }}>
                       Welcome Back!
                     </h2>
-                    <p className="text-brand-navy mb-8 text-center">
+                    <p className="text-brand-navy dark:text-gray-300 mb-8 text-center">
                       Please login to your account
                     </p>
 
                     <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
                       {/* Phone Field */}
                       <div>
-                        <label className="block text-sm font-semibold text-brand-navy mb-2">
+                        <label className="block text-sm font-semibold text-brand-navy dark:text-gray-300 mb-2">
                           Phone Number
                         </label>
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <Phone className="h-5 w-5 text-brand-blue" />
+                            <Phone className="h-5 w-5 text-brand-blue dark:text-primary-400" />
                           </div>
                           <input
                             {...register('phone', {
@@ -158,7 +158,7 @@ const Login = () => {
                               }
                             })}
                             type="tel"
-                            className="w-full pl-12 pr-4 py-3 bg-white border-2 border-brand-teal/40 focus:border-brand-red focus:outline-none rounded-lg text-brand-navy placeholder-brand-blue/50 transition-all"
+                            className="input-field w-full pl-12 pr-4 py-3"
                             placeholder="Enter phone number"
                           />
                         </div>
@@ -169,12 +169,12 @@ const Login = () => {
 
                       {/* Password Field */}
                       <div>
-                        <label className="block text-sm font-semibold text-brand-navy mb-2">
+                        <label className="block text-sm font-semibold text-brand-navy dark:text-gray-300 mb-2">
                           Password
                         </label>
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <Lock className="h-5 w-5 text-brand-blue" />
+                            <Lock className="h-5 w-5 text-brand-blue dark:text-primary-400" />
                           </div>
                           <input
                             {...register('password', {
@@ -185,7 +185,7 @@ const Login = () => {
                               }
                             })}
                             type={showPassword ? 'text' : 'password'}
-                            className="w-full pl-12 pr-12 py-3 bg-white border-2 border-brand-teal/40 focus:border-brand-red focus:outline-none rounded-lg text-brand-navy placeholder-brand-blue/50 transition-all"
+                            className="input-field w-full pl-12 pr-12 py-3"
                             placeholder="Enter password"
                           />
                           <button
@@ -212,11 +212,11 @@ const Login = () => {
                             type="checkbox"
                             className="w-4 h-4 text-brand-red border-brand-teal rounded focus:ring-brand-red"
                           />
-                          <span className="ml-2 text-brand-navy font-medium">Remember me</span>
+                          <span className="ml-2 text-brand-navy dark:text-gray-300 font-medium">Remember me</span>
                         </label>
                         <Link
                           to={ROUTES.FORGOT_PASSWORD}
-                          className="font-semibold text-brand-red hover:text-brand-navy transition-colors"
+                          className="font-semibold text-brand-red dark:text-primary-400 hover:text-brand-navy dark:hover:text-primary-300 transition-colors"
                         >
                           Forgot Password?
                         </Link>
@@ -233,7 +233,7 @@ const Login = () => {
                       <button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full bg-brand-red hover:bg-brand-navy text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                        className="w-full bg-brand-red dark:bg-primary-600 hover:bg-brand-navy dark:hover:bg-primary-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                       >
                         {isLoading ? (
                           <div className="flex items-center justify-center">
@@ -246,11 +246,11 @@ const Login = () => {
                       </button>
 
                       {/* Register Link */}
-                      <p className="text-center text-brand-blue">
+                      <p className="text-center text-brand-blue dark:text-gray-400">
                         Don't have an account?{' '}
                         <Link
                           to={ROUTES.REGISTER}
-                          className="font-bold text-brand-red hover:text-brand-navy transition-colors"
+                          className="font-bold text-brand-red dark:text-primary-400 hover:text-brand-navy dark:hover:text-primary-300 transition-colors"
                         >
                           Create Account
                         </Link>

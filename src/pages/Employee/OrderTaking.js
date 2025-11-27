@@ -237,8 +237,19 @@ const OrderTaking = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold gradient-text restro-brand">Order Taking</h1>
-            <p className="text-gray-600 mt-2 text-lg">Take new orders from customers</p>
+            <h1
+              className="text-4xl font-bold drop-shadow-lg mb-2"
+              style={{
+                fontFamily: 'Rockybilly, sans-serif',
+                letterSpacing: '0.05em',
+                color: '#1D3557',
+                fontSize: '1.6875rem',
+                lineHeight: 1.2,
+                display: 'inline-block'
+              }}
+            >
+              Order Taking
+            </h1>
           </div>
           <div className="flex items-center space-x-4">
             <div className="glass bg-primary-100/80 text-primary-800 px-6 py-3 rounded-xl">

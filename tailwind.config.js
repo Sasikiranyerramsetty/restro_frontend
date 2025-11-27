@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class', // Enable class-based dark mode
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
     "./public/index.html",
@@ -9,6 +10,7 @@ module.exports = {
     // Add any dynamic classes that should never be purged
     'animate-spin',
     'animate-pulse',
+    'dark',
   ],
   theme: {
     extend: {
@@ -78,28 +80,28 @@ module.exports = {
         body: ['Open Sans', 'system-ui', 'sans-serif'],
       },
       animation: {
-        'fade-in': 'none',
-        'slide-up': 'none',
-        'slide-down': 'none',
-        'bounce-in': 'none',
-        'scale-in': 'none',
-        'float': 'none',
-        'pulse-slow': 'none',
-        'shimmer': 'none',
-        'slide-in-left': 'none',
-        'slide-in-right': 'none',
-        'rotate-in': 'none',
-        'zoom-in': 'none',
-        'wiggle': 'none',
-        'heartbeat': 'none',
-        'glow': 'none',
-        'slide-right': 'none',
-        'scale-up': 'none',
-        'image-zoom': 'none',
-        'spin': 'none',
-        'ping': 'none',
-        'pulse': 'none',
-        'bounce': 'none',
+        'fade-in': 'fadeIn 0.4s ease-out',
+        'slide-up': 'slideUp 0.4s ease-out',
+        'slide-down': 'slideDown 0.4s ease-out',
+        'bounce-in': 'bounceIn 0.5s ease-out',
+        'scale-in': 'scaleIn 0.3s ease-out',
+        'float': 'float 3s ease-in-out infinite',
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'shimmer': 'shimmer 2s linear infinite',
+        'slide-in-left': 'slideInLeft 0.4s ease-out',
+        'slide-in-right': 'slideInRight 0.4s ease-out',
+        'rotate-in': 'rotateIn 0.5s ease-out',
+        'zoom-in': 'zoomIn 0.3s ease-out',
+        'wiggle': 'wiggle 0.5s ease-in-out',
+        'heartbeat': 'heartbeat 1.5s ease-in-out infinite',
+        'glow': 'glow 2s ease-in-out infinite',
+        'slide-right': 'slideRight 0.3s ease-out',
+        'scale-up': 'scaleUp 0.2s ease-out',
+        'image-zoom': 'imageZoom 0.3s ease-out',
+        'spin': 'spin 1s linear infinite',
+        'ping': 'ping 1s cubic-bezier(0, 0, 0.2, 1) infinite',
+        'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'bounce': 'bounce 1s infinite',
       },
       keyframes: {
         fadeIn: {

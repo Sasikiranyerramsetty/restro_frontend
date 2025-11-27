@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { USER_ROLES, ROUTES } from '../constants';
+import { USER_ROLES, ROUTES, STORAGE_KEYS } from '../constants';
 import authService from '../services/authService';
-import { getFromStorage } from '../utils';
+import { getFromStorage, setToStorage } from '../utils';
 
 // Initial state
 const initialState = {
@@ -177,16 +177,18 @@ export const AuthProvider = ({ children }) => {
       const result = await authService.updateProfile(userData);
       
       if (result.success) {
+        const updatedUser = result.data?.user || { ...state.user, ...userData };
         dispatch({
           type: AUTH_ACTIONS.UPDATE_USER,
-          payload: result.data.user,
+          payload: updatedUser,
         });
-        return { success: true };
-      } else {
-        return { success: false, error: result.error };
+        setToStorage(STORAGE_KEYS.USER_DATA, updatedUser);
+        return { success: true, data: updatedUser };
       }
+
+      return { success: false, error: result.error || 'Profile update failed' };
     } catch (error) {
-      return { success: false, error: 'Profile update failed' };
+      return { success: false, error: error.message || 'Profile update failed' };
     }
   };
 
@@ -227,8 +229,15 @@ export const AuthProvider = ({ children }) => {
     switch (state.user.role) {
       case USER_ROLES.ADMIN:
         return ROUTES.ADMIN_DASHBOARD;
-      case USER_ROLES.EMPLOYEE:
+      case USER_ROLES.EMPLOYEE: {
+        const normalizedTag = typeof state.user?.tag === 'string'
+          ? state.user.tag.trim().toLowerCase()
+          : '';
+        if (normalizedTag === 'chef') return ROUTES.EMPLOYEE_CHEF;
+        if (normalizedTag === 'waiter') return ROUTES.EMPLOYEE_WAITER;
+        if (normalizedTag === 'delivery') return ROUTES.EMPLOYEE_DELIVERY;
         return ROUTES.EMPLOYEE_DASHBOARD;
+      }
       case USER_ROLES.CUSTOMER:
         return ROUTES.CUSTOMER_HOME;
       default:

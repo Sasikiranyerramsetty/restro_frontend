@@ -2,12 +2,15 @@ import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { USER_ROLES, ROUTES } from './constants';
 
 // Common components (loaded eagerly as they're used everywhere)
 import LoadingSpinner from './components/Common/LoadingSpinner';
 import ProtectedRoute from './components/Common/ProtectedRoute';
 import HybridRoute from './components/Common/HybridRoute';
+import EmployeeTagRoute from './components/Common/EmployeeTagRoute';
+import EmployeeExcludeTagsRoute from './components/Common/EmployeeExcludeTagsRoute';
 
 // Lazy load Auth pages (only when needed)
 const Login = lazy(() => import('./pages/Auth/Login'));
@@ -42,6 +45,7 @@ const EmployeeOrderTaking = lazy(() => import('./pages/Employee/OrderTaking'));
 const EmployeeTables = lazy(() => import('./pages/Employee/Tables'));
 const EmployeeTasks = lazy(() => import('./pages/Employee/Tasks'));
 const EmployeeShifts = lazy(() => import('./pages/Employee/Shifts'));
+const EmployeeProfile = lazy(() => import('./pages/Employee/Profile'));
 
 // Main App component
 function AppContent() {
@@ -91,11 +95,28 @@ function AppContent() {
             <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYEE]}>
               <Routes>
                 <Route path="dashboard" element={<EmployeeDashboard />} />
-                <Route path="order-taking" element={<EmployeeOrderTaking />} />
+                <Route
+                  path="order-taking"
+                  element={
+                    <EmployeeTagRoute tag="waiter">
+                      <EmployeeExcludeTagsRoute tags={['chef']}>
+                        <EmployeeOrderTaking />
+                      </EmployeeExcludeTagsRoute>
+                    </EmployeeTagRoute>
+                  }
+                />
                 <Route path="orders" element={<EmployeeOrders />} />
-                <Route path="tables" element={<EmployeeTables />} />
+                <Route
+                  path="tables"
+                  element={
+                    <EmployeeTagRoute tag="waiter">
+                      <EmployeeTables />
+                    </EmployeeTagRoute>
+                  }
+                />
                 <Route path="tasks" element={<EmployeeTasks />} />
                 <Route path="shifts" element={<EmployeeShifts />} />
+                <Route path="profile" element={<EmployeeProfile />} />
                 <Route path="*" element={<Navigate to={ROUTES.EMPLOYEE_DASHBOARD} />} />
               </Routes>
             </ProtectedRoute>
@@ -179,9 +200,11 @@ function AppContent() {
 // Root App component with providers
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

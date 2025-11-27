@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useCallback, memo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { 
-  Home,
+import {
   ShoppingBag,
   Users,
   BarChart3,
@@ -16,9 +15,14 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  LogOut
+  LogOut,
+  Home,
+  ChefHat,
+  Truck
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
+import ThemeToggle from '../UI/ThemeToggle';
 import { ROUTES, USER_ROLES } from '../../constants';
 import toast from 'react-hot-toast';
 
@@ -48,7 +52,8 @@ const Sidebar = memo(({ isOpen, onToggle, onCollapseChange }) => {
 
   const navigationItems = useMemo(() => {
     const role = getUserRole();
-    
+    const tagLower = (user?.tag || '').toLowerCase();
+
     switch (role) {
       case USER_ROLES.ADMIN:
         return [
@@ -61,14 +66,48 @@ const Sidebar = memo(({ isOpen, onToggle, onCollapseChange }) => {
           { name: 'Tables', path: ROUTES.ADMIN_TABLES, icon: <MapPin className="h-5 w-5" /> },
           { name: 'Events', path: ROUTES.ADMIN_EVENTS, icon: <Calendar className="h-5 w-5" /> }
         ];
-      case USER_ROLES.EMPLOYEE:
-        return [
+      case USER_ROLES.EMPLOYEE: {
+        const stationPath = tagLower ? `/employee/${tagLower}` : ROUTES.EMPLOYEE_DASHBOARD;
+        const stationIcon = tagLower === 'chef'
+          ? <ChefHat className="h-5 w-5" />
+          : tagLower === 'delivery'
+            ? <Truck className="h-5 w-5" />
+            : <Home className="h-5 w-5" />;
+
+        const items = [
+          { name: 'My Station', path: stationPath, icon: stationIcon },
           { name: 'Dashboard', path: ROUTES.EMPLOYEE_DASHBOARD, icon: <BarChart3 className="h-5 w-5" /> },
-          { name: 'Order Taking', path: ROUTES.EMPLOYEE_ORDER_TAKING, icon: <ShoppingBag className="h-5 w-5" /> },
-          { name: 'Orders', path: ROUTES.EMPLOYEE_ORDERS, icon: <Package className="h-5 w-5" /> },
-          { name: 'Tables', path: ROUTES.EMPLOYEE_TABLES, icon: <MapPin className="h-5 w-5" /> },
-          { name: 'Shifts', path: ROUTES.EMPLOYEE_SHIFTS, icon: <Clock className="h-5 w-5" /> }
         ];
+
+        if (tagLower === 'waiter') {
+          items.push(
+            { name: 'Order Taking', path: ROUTES.EMPLOYEE_ORDER_TAKING, icon: <ShoppingBag className="h-5 w-5" /> },
+            { name: 'Tables', path: ROUTES.EMPLOYEE_TABLES, icon: <MapPin className="h-5 w-5" /> },
+            { name: 'Orders', path: ROUTES.EMPLOYEE_ORDERS, icon: <Package className="h-5 w-5" /> }
+          );
+        } else if (tagLower === 'chef') {
+          items.push(
+            { name: 'Kitchen Queue', path: ROUTES.EMPLOYEE_CHEF, icon: <ChefHat className="h-5 w-5" /> },
+            { name: 'Orders', path: ROUTES.EMPLOYEE_ORDERS, icon: <Package className="h-5 w-5" /> }
+          );
+        } else if (tagLower === 'delivery') {
+          items.push(
+            { name: 'Active Deliveries', path: ROUTES.EMPLOYEE_DELIVERY, icon: <Truck className="h-5 w-5" /> },
+            { name: 'Orders', path: ROUTES.EMPLOYEE_ORDERS, icon: <Package className="h-5 w-5" /> }
+          );
+        } else {
+          items.push(
+            { name: 'Orders', path: ROUTES.EMPLOYEE_ORDERS, icon: <Package className="h-5 w-5" /> },
+            { name: 'Tables', path: ROUTES.EMPLOYEE_TABLES, icon: <MapPin className="h-5 w-5" /> }
+          );
+        }
+
+        items.push(
+          { name: 'Shifts', path: ROUTES.EMPLOYEE_SHIFTS, icon: <Clock className="h-5 w-5" /> },
+          { name: 'Profile', path: ROUTES.EMPLOYEE_PROFILE, icon: <User className="h-5 w-5" /> }
+        );
+        return items;
+      }
       case USER_ROLES.CUSTOMER:
         return [
           { name: 'Dashboard', path: ROUTES.CUSTOMER_DASHBOARD, icon: <BarChart3 className="h-5 w-5" /> },
@@ -81,7 +120,7 @@ const Sidebar = memo(({ isOpen, onToggle, onCollapseChange }) => {
       default:
         return [];
     }
-  }, [getUserRole]);
+  }, [getUserRole, user]);
 
   const isActive = useCallback((path) => {
     return location.pathname === path;
@@ -99,14 +138,17 @@ const Sidebar = memo(({ isOpen, onToggle, onCollapseChange }) => {
 
       {/* Sidebar */}
       <div className={`
-        fixed top-0 left-0 h-full bg-brand-navy shadow-2xl border-r border-brand-blue/30 z-50
+        fixed top-0 left-0 h-full 
+        bg-gray-900 dark:bg-gray-900 
+        shadow-2xl border-r border-gray-700 dark:border-gray-700 z-50
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         ${isCollapsed ? 'w-16' : 'w-80'}
         lg:translate-x-0
         transition-all duration-300
       `}>
         {/* Header */}
-        <div className="flex items-center justify-between px-4 pt-6 pb-4 border-b border-brand-blue/30">
+        <div className="flex items-center justify-between px-4 pt-6 pb-4 border-b border-gray-700 dark:border-gray-700">
+          <ThemeToggle className="mr-2" />
           {!isCollapsed && (
             <Link 
               to={user ? (getUserRole() === USER_ROLES.ADMIN ? ROUTES.ADMIN_DASHBOARD : 
@@ -120,6 +162,11 @@ const Sidebar = memo(({ isOpen, onToggle, onCollapseChange }) => {
               />
               <span className="text-xl font-bold text-white" style={{ fontFamily: "'BBH Sans Bartle', sans-serif", letterSpacing: '0.1em' }}>Restro</span>
             </Link>
+          )}
+          {!isCollapsed && user && getUserRole() === USER_ROLES.EMPLOYEE && (
+            <span className="text-[10px] font-semibold text-white/90 bg-white/10 px-2 py-1 rounded-full">
+              {user?.name || 'Employee'}{user?.tag ? ` • ${String(user.tag).toUpperCase()}` : ''}
+            </span>
           )}
           
           {isCollapsed && (
@@ -167,10 +214,11 @@ const Sidebar = memo(({ isOpen, onToggle, onCollapseChange }) => {
                   }
                 }}
                 className={`
-                  flex items-center space-x-3 px-3 py-3 rounded-lg text-sm font-semibold transition-all
+                  flex items-center space-x-3 px-3 py-3 rounded-lg text-sm font-semibold 
+                  transition-all duration-200
                   ${isActive(item.path) 
-                    ? 'bg-brand-red text-white shadow-lg' 
-                    : 'text-brand-teal hover:bg-brand-blue/20 hover:text-white'
+                    ? 'bg-[#E63946] text-white shadow-lg' 
+                    : 'text-gray-300 dark:text-gray-400 hover:bg-gray-800 dark:hover:bg-gray-700 hover:text-white'
                   }
                   ${isCollapsed ? 'justify-center' : ''}
                 `}
@@ -181,13 +229,39 @@ const Sidebar = memo(({ isOpen, onToggle, onCollapseChange }) => {
             ))}
           </div>
 
+          {/* Profile Summary */}
+          {user && (
+            <div className={`mt-6 mb-4 px-3 py-4 rounded-lg border border-gray-700/60 ${isCollapsed ? 'text-center' : ''}`}>
+              <div className={`flex ${isCollapsed ? 'flex-col items-center space-y-2' : 'items-center space-x-3'}`}>
+                <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white">
+                  <User className="h-6 w-6" />
+                </div>
+                {!isCollapsed && (
+                  <div className="text-white/90">
+                    <p className="text-sm font-semibold">{user?.name || 'Employee'}</p>
+                    <p className="text-xs text-gray-400 truncate">{user?.email || 'No email'}</p>
+                    <p className="text-[11px] uppercase tracking-wide text-gray-300 mt-1">
+                      {getUserRole() || 'Role'}{user?.tag ? ` • ${String(user.tag).toUpperCase()}` : ''}
+                    </p>
+                  </div>
+                )}
+              </div>
+              {isCollapsed && (
+                <p className="text-[10px] text-gray-300 mt-2 uppercase tracking-wide">
+                  {user?.tag ? String(user.tag).toUpperCase() : getUserRole()}
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Logout Button */}
-          <div className="mt-auto pt-4 border-t border-brand-blue/30">
+          <div className="mt-auto pt-4 border-t border-gray-700 dark:border-gray-700">
             <button
               onClick={handleLogout}
               className={`
-                w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-sm font-semibold transition-all
-                text-brand-teal hover:bg-brand-red hover:text-white
+                w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-sm font-semibold 
+                transition-all duration-200
+                text-gray-300 dark:text-gray-400 hover:bg-[#E63946] hover:text-white
                 ${isCollapsed ? 'justify-center' : ''}
               `}
             >

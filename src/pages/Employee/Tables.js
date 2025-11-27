@@ -55,8 +55,12 @@ const EmployeeTables = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold gradient-text restro-brand">Table Management</h1>
-            <p className="text-gray-600 mt-2 text-lg">Manage table status and assignments</p>
+            <h1 
+              className="text-4xl font-bold gradient-text restro-brand"
+              style={{ fontSize: '1.6875rem' }}
+            >
+              Table Management
+            </h1>
           </div>
           <button className="btn-outline flex items-center">
             <MapPin className="h-5 w-5 mr-2" />
