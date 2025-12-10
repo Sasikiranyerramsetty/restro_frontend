@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" fill="none">
+  <defs>
+    <linearGradient id="bigDiamond" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFE47A"/>
+      <stop offset="1" stop-color="#F9C73C"/>
+    </linearGradient>
+    <linearGradient id="smallDiamond" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFF6B8"/>
+      <stop offset="1" stop-color="#FFE06B"/>
+    </linearGradient>
+  </defs>
+  <!-- stacked diamonds mimicking the classic badge -->
+  <g transform="translate(12 4) rotate(45 24 24)">
+    <rect x="4" y="4" width="40" height="40" rx="12" fill="url(#bigDiamond)"/>
+    <rect x="0" y="28" width="18" height="18" rx="6" fill="url(#smallDiamond)"/>
+    <rect x="28" y="0" width="18" height="18" rx="6" fill="#FFD958"/>
+  </g>
+
+  <!-- spoon -->
+  <path d="M32 30c-2.8 0-5 2.2-5 5 0 2 1.1 3.8 2.8 4.6V52c0 1.1.9 2 2 2h2c1.1 0 2-.9 2-2V39.6c1.7-.8 2.8-2.6 2.8-4.6 0-2.8-2.2-5-5-5H32z" fill="#FFF8DC" stroke="#F4BE2A" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M26.5 20c-6 0-10.8 4.8-10.8 10.8 0 7.3 6.3 9.2 6.3 16.6V56c0 1.2 1 2.2 2.2 2.2h3.4c1.2 0 2.2-1 2.2-2.2V47.4c0-7.4 6.3-9.2 6.3-16.6 0-6-4.8-10.8-10.8-10.8h-1z" fill="#FFF8DC" stroke="#F4BE2A" stroke-width="1.5"/>
+
+  <!-- swirl bowl -->
+  <g transform="translate(40 36)">
+    <circle cx="10" cy="10" r="10" fill="#FFE9BC" stroke="#FBD48E" stroke-width="1.5"/>
+    <path d="M3.5 10.5c2.6 0 3.5-2 5.7-2 2.6 0 3.5 2 5.7 2 1.6 0 2.4-.4 3.2-.8-.7 3.4-3.9 6-7.9 6s-7.2-2.6-7.9-6c.5.3 1.3.8 3.2.8z" fill="#FCE05C" stroke="#F6C343" stroke-width="1.2"/>
+    <path d="M7.5 6.5c2-2 5.3-2 7.3 0s2 5.3 0 7.3" stroke="#E11D48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
+
