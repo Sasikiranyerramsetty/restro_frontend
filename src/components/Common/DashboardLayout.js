@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 
-const DashboardLayout = ({ children, backgroundImage }) => {
+const DashboardLayout = ({ children, backgroundImage, backgroundStyle, backgroundClassName }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -13,7 +13,7 @@ const DashboardLayout = ({ children, backgroundImage }) => {
     setSidebarCollapsed(isCollapsed);
   };
 
-  const rootClass = backgroundImage ? 'min-h-screen relative' : 'min-h-screen';
+  const rootClass = `min-h-screen relative ${backgroundClassName || ''}`.trim();
 
   // Helper to get the image URL
   const getImageUrl = (img) => {
@@ -25,10 +25,12 @@ const DashboardLayout = ({ children, backgroundImage }) => {
 
   const imageUrl = getImageUrl(backgroundImage);
 
+  const fallbackStyle = backgroundImage ? undefined : backgroundStyle || { backgroundColor: '#F1FAEE' };
+
   return (
     <div 
       className={rootClass}
-      style={!backgroundImage ? { backgroundColor: '#F1FAEE' } : undefined}
+      style={fallbackStyle}
     >
       {/* Background Image */}
       {imageUrl && (

@@ -35,6 +35,20 @@ const AdminEmployees = () => {
     darkNavy: '#1D3557'
   };
 
+  const darkTable = {
+    surface: 'rgba(15, 23, 42, 0.85)',
+    header: 'rgba(17, 24, 39, 0.95)',
+    headerBorder: 'rgba(148, 163, 184, 0.25)',
+    rowEven: 'rgba(255, 255, 255, 0.03)',
+    rowOdd: 'rgba(255, 255, 255, 0.06)',
+    rowHover: 'rgba(148, 163, 184, 0.12)',
+    text: '#e2e8f0',
+    muted: '#cbd5e1',
+    border: 'rgba(148, 163, 184, 0.18)',
+    chipBg: 'rgba(31, 41, 55, 0.9)',
+    chipBorder: 'rgba(148, 163, 184, 0.35)'
+  };
+
   const [employees, setEmployees] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -203,11 +217,11 @@ const AdminEmployees = () => {
 
   const getStatusColor = (status) => {
     const statusColors = {
-      active: { bg: colors.lightBlue, text: colors.darkNavy, border: colors.mediumBlue },
-      inactive: { bg: colors.red, text: colors.cream, border: colors.red },
-      'on-leave': { bg: colors.mediumBlue, text: colors.cream, border: colors.mediumBlue }
+      active: { bg: 'rgba(34, 197, 94, 0.15)', text: '#bbf7d0', border: 'rgba(34, 197, 94, 0.45)' },
+      inactive: { bg: 'rgba(248, 113, 113, 0.18)', text: '#fecdd3', border: 'rgba(248, 113, 113, 0.5)' },
+      'on-leave': { bg: 'rgba(56, 189, 248, 0.18)', text: '#bae6fd', border: 'rgba(56, 189, 248, 0.45)' }
     };
-    const color = statusColors[status] || { bg: colors.cream, text: colors.darkNavy, border: colors.lightBlue };
+    const color = statusColors[status] || { bg: darkTable.rowOdd, text: darkTable.text, border: darkTable.border };
     return {
       backgroundColor: color.bg,
       color: color.text,
@@ -415,22 +429,26 @@ const AdminEmployees = () => {
         <div 
           className="rounded-2xl shadow-xl overflow-hidden border-2"
           style={{ 
-            backgroundColor: colors.cream,
-            borderColor: colors.mediumBlue,
-            borderWidth: '2px'
+            backgroundColor: darkTable.surface,
+            borderColor: darkTable.border,
+            borderWidth: '2px',
+            backdropFilter: 'blur(10px)'
           }}
         >
           <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead>
-                <tr style={{ backgroundColor: colors.lightBlue }}>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider rounded-l-lg" style={{ color: colors.darkNavy }}>Employee</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style={{ color: colors.darkNavy }}>Tag</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style={{ color: colors.darkNavy }}>Status</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style={{ color: colors.darkNavy }}>Shift</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style={{ color: colors.darkNavy }}>Hire Date</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style={{ color: colors.darkNavy }}>Salary</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider rounded-r-lg" style={{ color: colors.darkNavy }}>Actions</th>
+                <tr style={{ 
+                  background: 'linear-gradient(90deg, rgba(59,130,246,0.2) 0%, rgba(17,24,39,0.95) 55%, rgba(236,72,153,0.2) 100%)',
+                  borderBottom: `1px solid ${darkTable.headerBorder}`
+                }}>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider rounded-l-lg" style={{ color: darkTable.text }}>Employee</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style={{ color: darkTable.text }}>Tag</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style={{ color: darkTable.text }}>Status</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style={{ color: darkTable.text }}>Shift</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style={{ color: darkTable.text }}>Hire Date</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style={{ color: darkTable.text }}>Salary</th>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider rounded-r-lg" style={{ color: darkTable.text }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -439,29 +457,29 @@ const AdminEmployees = () => {
                     key={employee.id} 
                     className="transition-colors border-b"
                     style={{ 
-                      borderColor: colors.lightBlue,
-                      backgroundColor: index % 2 === 0 ? colors.cream : 'rgba(168, 218, 220, 0.2)'
+                      borderColor: darkTable.border,
+                      backgroundColor: index % 2 === 0 ? darkTable.rowEven : darkTable.rowOdd
                     }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.lightBlue}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = index % 2 === 0 ? colors.cream : 'rgba(168, 218, 220, 0.2)'}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = darkTable.rowHover}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = index % 2 === 0 ? darkTable.rowEven : darkTable.rowOdd}
                   >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div 
                           className="h-10 w-10 rounded-full flex items-center justify-center"
-                          style={{ backgroundColor: colors.lightBlue }}
+                          style={{ backgroundColor: 'rgba(59, 130, 246, 0.15)' }}
                         >
-                          <User className="h-5 w-5" style={{ color: colors.darkNavy }} />
+                          <User className="h-5 w-5" style={{ color: darkTable.text }} />
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-bold" style={{ color: colors.darkNavy }}>
+                          <div className="text-sm font-bold" style={{ color: darkTable.text }}>
                             {employee.name}
                           </div>
-                          <div className="text-sm flex items-center" style={{ color: colors.mediumBlue }}>
+                          <div className="text-sm flex items-center" style={{ color: darkTable.muted }}>
                             <Mail className="h-3 w-3 mr-1" />
                             {employee.email}
                           </div>
-                          <div className="text-sm flex items-center" style={{ color: colors.mediumBlue }}>
+                          <div className="text-sm flex items-center" style={{ color: darkTable.muted }}>
                             <Phone className="h-3 w-3 mr-1" />
                             {employee.phone}
                           </div>
@@ -472,9 +490,9 @@ const AdminEmployees = () => {
                       <span 
                         className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide border-2 capitalize"
                         style={{
-                          backgroundColor: colors.mediumBlue,
-                          color: colors.cream,
-                          borderColor: colors.mediumBlue
+                          backgroundColor: darkTable.chipBg,
+                          color: darkTable.text,
+                          borderColor: darkTable.chipBorder
                         }}
                       >
                         {employee.tag || 'N/A'}
@@ -489,18 +507,18 @@ const AdminEmployees = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-bold capitalize" style={{ color: colors.darkNavy }}>
+                      <span className="text-sm font-bold capitalize" style={{ color: darkTable.text }}>
                         {employee.shift}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-bold flex items-center" style={{ color: colors.darkNavy }}>
+                      <div className="text-sm font-bold flex items-center" style={{ color: darkTable.text }}>
                         <Calendar className="h-4 w-4 mr-1" />
                         {formatDate(employee.hireDate)}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-bold" style={{ color: colors.darkNavy }}>
+                      <span className="text-sm font-bold" style={{ color: darkTable.text }}>
                         ₹{employee.salary.toLocaleString()}
                       </span>
                     </td>
@@ -509,9 +527,9 @@ const AdminEmployees = () => {
                         <button
                           onClick={() => handleEditEmployee(employee)}
                           className="transition-colors duration-200 hover:scale-110 transform"
-                          style={{ color: colors.mediumBlue }}
-                          onMouseEnter={(e) => e.target.style.color = colors.darkNavy}
-                          onMouseLeave={(e) => e.target.style.color = colors.mediumBlue}
+                          style={{ color: darkTable.muted }}
+                          onMouseEnter={(e) => e.target.style.color = darkTable.text}
+                          onMouseLeave={(e) => e.target.style.color = darkTable.muted}
                         >
                           <Edit className="h-5 w-5" />
                         </button>
@@ -519,30 +537,30 @@ const AdminEmployees = () => {
                           onClick={() => handleToggleStatus(employee.id)}
                           className="text-sm px-3 py-1 rounded-lg font-bold border-2 transition-all duration-200"
                           style={employee.status === 'active' ? {
-                            color: colors.red,
-                            borderColor: colors.red,
-                            backgroundColor: 'transparent'
+                            color: '#fecdd3',
+                            borderColor: 'rgba(248, 113, 113, 0.5)',
+                            backgroundColor: 'rgba(248, 113, 113, 0.12)'
                           } : {
-                            color: colors.mediumBlue,
-                            borderColor: colors.mediumBlue,
-                            backgroundColor: 'transparent'
+                            color: '#bae6fd',
+                            borderColor: 'rgba(56, 189, 248, 0.5)',
+                            backgroundColor: 'rgba(56, 189, 248, 0.12)'
                           }}
                           onMouseEnter={(e) => {
                             if (employee.status === 'active') {
-                              e.target.style.backgroundColor = colors.red;
-                              e.target.style.color = colors.cream;
+                              e.target.style.backgroundColor = 'rgba(248, 113, 113, 0.25)';
+                              e.target.style.color = '#ffe4e6';
                             } else {
-                              e.target.style.backgroundColor = colors.mediumBlue;
-                              e.target.style.color = colors.cream;
+                              e.target.style.backgroundColor = 'rgba(56, 189, 248, 0.25)';
+                              e.target.style.color = '#e0f2fe';
                             }
                           }}
                           onMouseLeave={(e) => {
                             if (employee.status === 'active') {
-                              e.target.style.backgroundColor = 'transparent';
-                              e.target.style.color = colors.red;
+                              e.target.style.backgroundColor = 'rgba(248, 113, 113, 0.12)';
+                              e.target.style.color = '#fecdd3';
                             } else {
-                              e.target.style.backgroundColor = 'transparent';
-                              e.target.style.color = colors.mediumBlue;
+                              e.target.style.backgroundColor = 'rgba(56, 189, 248, 0.12)';
+                              e.target.style.color = '#bae6fd';
                             }
                           }}
                         >
@@ -551,9 +569,9 @@ const AdminEmployees = () => {
                         <button
                           onClick={() => handleDeleteEmployee(employee.id)}
                           className="transition-colors duration-200 hover:scale-110 transform"
-                          style={{ color: colors.red }}
-                          onMouseEnter={(e) => e.target.style.color = '#d32f3e'}
-                          onMouseLeave={(e) => e.target.style.color = colors.red}
+                          style={{ color: '#fca5a5' }}
+                          onMouseEnter={(e) => e.target.style.color = '#fecdd3'}
+                          onMouseLeave={(e) => e.target.style.color = '#fca5a5'}
                         >
                           <Trash2 className="h-5 w-5" />
                         </button>

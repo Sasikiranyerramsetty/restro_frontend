@@ -1,18 +1,69 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  CheckSquare, Plus, Search, Clock, AlertCircle, 
-  CheckCircle, X, User, Calendar, MapPin, Package, 
-  Utensils, Trash2, Edit, Eye
+import React, { useEffect, useState } from 'react';
+import {
+  AlertCircle,
+  Calendar,
+  CheckCircle,
+  CheckSquare,
+  Clock,
+  Edit,
+  Eye,
+  MapPin,
+  Package,
+  Plus,
+  Search,
+  Trash2,
+  User,
+  Utensils
 } from 'lucide-react';
 import EmployeeLayout from '../../components/Employee/EmployeeLayout';
 import AddTaskModal from '../../components/Employee/AddTaskModal';
 import taskService from '../../services/taskService';
 import { formatDate } from '../../utils';
 import toast from 'react-hot-toast';
+import { GlassCard, MetricTile, SectionHeading, StatChip, EmptyState } from '../../components/Employee/EmployeeUI';
+import { useNavigate } from 'react-router-dom';
+
+const statusMeta = {
+  pending: { tone: 'amber', icon: Clock, label: 'Pending' },
+  in_progress: { tone: 'sky', icon: AlertCircle, label: 'In progress' },
+  completed: { tone: 'emerald', icon: CheckCircle, label: 'Completed' }
+};
+
+const priorityMeta = {
+  high: { tone: 'rose', label: 'High priority' },
+  medium: { tone: 'amber', label: 'Medium priority' },
+  low: { tone: 'emerald', label: 'Low priority' }
+};
+
+const getCategoryIcon = (category) => {
+  switch (category) {
+    case 'cleaning':
+      return <Trash2 className="h-4 w-4" />;
+    case 'inventory':
+    case 'restocking':
+      return <Package className="h-4 w-4" />;
+    case 'order_preparation':
+      return <Utensils className="h-4 w-4" />;
+    case 'customer_service':
+      return <User className="h-4 w-4" />;
+    case 'maintenance':
+      return <Edit className="h-4 w-4" />;
+    case 'special_events':
+      return <Calendar className="h-4 w-4" />;
+    default:
+      return <CheckSquare className="h-4 w-4" />;
+  }
+};
 
 const EmployeeTasks = () => {
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
-  const [stats, setStats] = useState({});
+  const [stats, setStats] = useState({
+    totalTasks: 0,
+    pendingTasks: 0,
+    inProgressTasks: 0,
+    completedTasks: 0
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
@@ -26,10 +77,7 @@ const EmployeeTasks = () => {
   const loadTasks = async () => {
     setIsLoading(true);
     try {
-      const [tasksResult, statsResult] = await Promise.all([
-        taskService.getTasks(),
-        taskService.getTaskStats()
-      ]);
+      const [tasksResult, statsResult] = await Promise.all([taskService.getTasks(), taskService.getTaskStats()]);
 
       if (tasksResult.success) {
         setTasks(tasksResult.data);
@@ -45,12 +93,11 @@ const EmployeeTasks = () => {
   };
 
   const handleTaskAdded = (newTask) => {
-    setTasks(prev => [newTask, ...prev]);
-    // Update stats
-    setStats(prev => ({
+    setTasks((prev) => [newTask, ...prev]);
+    setStats((prev) => ({
       ...prev,
-      totalTasks: prev.totalTasks + 1,
-      pendingTasks: prev.pendingTasks + 1
+      totalTasks: (prev.totalTasks || 0) + 1,
+      pendingTasks: (prev.pendingTasks || 0) + 1
     }));
   };
 
@@ -58,24 +105,31 @@ const EmployeeTasks = () => {
     try {
       const result = await taskService.updateTaskStatus(taskId, newStatus);
       if (result.success) {
-        setTasks(prev => prev.map(task => 
-          task.id === taskId ? { ...task, status: newStatus, completedAt: newStatus === 'completed' ? new Date().toISOString() : task.completedAt } : task
-        ));
-        
-        // Update stats
-        setStats(prev => {
-          const newStats = { ...prev };
+        setTasks((prev) =>
+          prev.map((task) =>
+            task.id === taskId
+              ? {
+                  ...task,
+                  status: newStatus,
+                  completedAt: newStatus === 'completed' ? new Date().toISOString() : task.completedAt
+                }
+              : task
+          )
+        );
+
+        setStats((prev) => {
+          const next = { ...prev };
           if (newStatus === 'completed') {
-            newStats.completedTasks += 1;
-            if (prev.pendingTasks > 0) newStats.pendingTasks -= 1;
-            if (prev.inProgressTasks > 0) newStats.inProgressTasks -= 1;
+            next.completedTasks = (next.completedTasks || 0) + 1;
+            if (next.pendingTasks > 0) next.pendingTasks -= 1;
+            if (next.inProgressTasks > 0) next.inProgressTasks -= 1;
           } else if (newStatus === 'in_progress') {
-            newStats.inProgressTasks += 1;
-            if (prev.pendingTasks > 0) newStats.pendingTasks -= 1;
+            next.inProgressTasks = (next.inProgressTasks || 0) + 1;
+            if (next.pendingTasks > 0) next.pendingTasks -= 1;
           }
-          return newStats;
+          return next;
         });
-        
+
         toast.success(`Task marked as ${newStatus.replace('_', ' ')}`);
       } else {
         toast.error(result.error || 'Failed to update task status');
@@ -85,52 +139,19 @@ const EmployeeTasks = () => {
     }
   };
 
-  const filteredTasks = tasks.filter(task => {
-    const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         task.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         task.category.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredTasks = tasks.filter((task) => {
+    const haystack = `${task.title} ${task.description} ${task.category}`.toLowerCase();
+    const matchesSearch = haystack.includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
-    
     return matchesSearch && matchesStatus && matchesPriority;
   });
-
-  const getStatusBadge = (status) => {
-    const statusConfig = {
-      pending: { color: 'bg-yellow-100 text-yellow-800', icon: <Clock className="h-3 w-3" /> },
-      in_progress: { color: 'bg-blue-100 text-blue-800', icon: <AlertCircle className="h-3 w-3" /> },
-      completed: { color: 'bg-green-100 text-green-800', icon: <CheckCircle className="h-3 w-3" /> }
-    };
-    return statusConfig[status] || statusConfig.pending;
-  };
-
-  const getPriorityBadge = (priority) => {
-    const priorityConfig = {
-      high: { color: 'bg-red-100 text-red-800' },
-      medium: { color: 'bg-yellow-100 text-yellow-800' },
-      low: { color: 'bg-green-100 text-green-800' }
-    };
-    return priorityConfig[priority] || priorityConfig.medium;
-  };
-
-  const getCategoryIcon = (category) => {
-    switch (category) {
-      case 'cleaning': return <Trash2 className="h-4 w-4" />;
-      case 'inventory': return <Package className="h-4 w-4" />;
-      case 'order_preparation': return <Utensils className="h-4 w-4" />;
-      case 'restocking': return <Package className="h-4 w-4" />;
-      case 'customer_service': return <User className="h-4 w-4" />;
-      case 'maintenance': return <Edit className="h-4 w-4" />;
-      case 'special_events': return <Calendar className="h-4 w-4" />;
-      default: return <CheckSquare className="h-4 w-4" />;
-    }
-  };
 
   if (isLoading) {
     return (
       <EmployeeLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+        <div className="flex h-64 items-center justify-center">
+          <div className="spinner h-12 w-12" />
         </div>
       </EmployeeLayout>
     );
@@ -138,236 +159,205 @@ const EmployeeTasks = () => {
 
   return (
     <EmployeeLayout>
-      <div className="space-y-6 animate-fade-in">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">My Tasks</h1>
-            <p className="text-gray-600 mt-1">View and manage your assigned tasks</p>
-          </div>
-          <button 
-            onClick={() => setIsAddModalOpen(true)}
-            className="btn-primary flex items-center hover:scale-105 transition-transform duration-300"
+      <div className="space-y-8 pb-16 text-slate-900">
+        <div className="flex justify-start">
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-white/90"
           >
-            <Plus className="h-5 w-5 mr-2" />
-            Add Task
+            ← Back
           </button>
         </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <CheckSquare className="h-6 w-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Tasks</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalTasks}</p>
-              </div>
+        <section className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-50 via-slate-50 to-white opacity-80" />
+          <div className="relative flex flex-col gap-6 p-8 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Task board</p>
+              <h1 className="text-3xl font-semibold text-slate-900">Service tasks & follow-ups</h1>
+              <p className="text-sm text-slate-600">Focus on priority items and keep the floor moving smoothly.</p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => navigate(-1)}
+                className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
+              >
+                ← Back
+              </button>
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+              >
+                <Plus className="h-4 w-4" />
+                Add Task
+              </button>
             </div>
           </div>
+        </section>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <Clock className="h-6 w-6 text-yellow-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Pending</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.pendingTasks}</p>
-              </div>
-            </div>
-          </div>
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <MetricTile
+            label="Total tasks"
+            value={stats.totalTasks || 0}
+            tone="sky"
+            icon={CheckSquare}
+            delta={`${stats.completedTasks || 0} completed`}
+          />
+          <MetricTile label="Pending" value={stats.pendingTasks || 0} tone="amber" icon={Clock} delta="Awaiting pickup" />
+          <MetricTile label="In progress" value={stats.inProgressTasks || 0} tone="rose" icon={AlertCircle} delta="Live work" />
+          <MetricTile label="Completed" value={stats.completedTasks || 0} tone="emerald" icon={CheckCircle} delta="Shift total" />
+        </section>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <AlertCircle className="h-6 w-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">In Progress</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.inProgressTasks}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Completed</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.completedTasks}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex flex-col sm:flex-row gap-4">
+        <GlassCard>
+          <SectionHeading title="Filters" description="Search by context or state" />
+          <div className="mt-6 flex flex-col gap-4 lg:flex-row">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   placeholder="Search tasks by title, description, or category..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full rounded-2xl border border-slate-200 bg-white/60 py-3 pl-11 pr-4 text-sm text-slate-700 transition focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
                 />
               </div>
             </div>
-            <div className="sm:w-48">
+            <div className="grid gap-4 sm:grid-cols-2 lg:w-[28rem]">
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full rounded-2xl border border-slate-200 bg-white/60 px-3 py-3 text-sm text-slate-700 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
               >
-                <option value="all">All Status</option>
+                <option value="all">All statuses</option>
                 <option value="pending">Pending</option>
-                <option value="in_progress">In Progress</option>
+                <option value="in_progress">In progress</option>
                 <option value="completed">Completed</option>
               </select>
-            </div>
-            <div className="sm:w-48">
               <select
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full rounded-2xl border border-slate-200 bg-white/60 px-3 py-3 text-sm text-slate-700 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
               >
-                <option value="all">All Priority</option>
+                <option value="all">All priorities</option>
                 <option value="high">High</option>
                 <option value="medium">Medium</option>
                 <option value="low">Low</option>
               </select>
             </div>
           </div>
-        </div>
+        </GlassCard>
 
-        {/* Tasks List */}
-        <div className="space-y-4">
-          {filteredTasks.map((task) => {
-            const statusConfig = getStatusBadge(task.status);
-            const priorityConfig = getPriorityBadge(task.priority);
-            return (
-              <div key={task.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-start space-x-3">
-                    <div className="flex items-center space-x-2">
-                      {getCategoryIcon(task.category)}
-                      <h3 className="text-lg font-semibold text-gray-900">{task.title}</h3>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${statusConfig.color}`}>
-                        {statusConfig.icon}
-                        <span className="ml-1 capitalize">{task.status.replace('_', ' ')}</span>
-                      </span>
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${priorityConfig.color}`}>
-                        {task.priority} priority
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-gray-500">Due: {task.dueTime}</p>
-                    <p className="text-xs text-gray-400">{task.estimatedDuration}</p>
-                  </div>
-                </div>
-
-                <p className="text-gray-600 mb-4">{task.description}</p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <User className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm text-gray-600">Assigned by: {task.assignedBy}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <MapPin className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm text-gray-600">Location: {task.location}</span>
-                    </div>
-                    {task.tableNumber && (
-                      <div className="flex items-center space-x-2">
-                        <Utensils className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm text-gray-600">Table: {task.tableNumber}</span>
-                      </div>
-                    )}
-                    {task.orderNumber && (
-                      <div className="flex items-center space-x-2">
-                        <Package className="h-4 w-4 text-gray-400" />
-                        <span className="text-sm text-gray-600">Order: {task.orderNumber}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Calendar className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm text-gray-600">
-                        Assigned: {formatDate(task.assignedAt, 'MMM dd, HH:mm')}
-                      </span>
-                    </div>
-                    {task.completedAt && (
-                      <div className="flex items-center space-x-2">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span className="text-sm text-green-600">
-                          Completed: {formatDate(task.completedAt, 'MMM dd, HH:mm')}
+        {filteredTasks.length === 0 ? (
+          <EmptyState title="No tasks match the current filters" description="Adjust search or wait for new assignments." />
+        ) : (
+          <div className="space-y-4">
+            {filteredTasks.map((task) => {
+              const status = statusMeta[task.status] || statusMeta.pending;
+              const priority = priorityMeta[task.priority] || priorityMeta.medium;
+              return (
+                <GlassCard key={task.id} className="p-6">
+                  <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 pb-4">
+                    <div className="flex flex-1 flex-col gap-2">
+                      <div className="flex items-center gap-3">
+                        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
+                          {getCategoryIcon(task.category)}
                         </span>
+                        <div>
+                          <p className="text-xs uppercase tracking-wide text-slate-500">{task.category.replace('_', ' ')}</p>
+                          <h3 className="text-lg font-semibold text-slate-900">{task.title}</h3>
+                        </div>
                       </div>
-                    )}
+                      <p className="text-sm text-slate-600">{task.description}</p>
+                    </div>
+                    <div className="flex flex-shrink-0 flex-col items-end gap-2">
+                      <StatChip tone={status.tone}>
+                        <status.icon className="mr-1 h-3.5 w-3.5" />
+                        {status.label}
+                      </StatChip>
+                      <StatChip tone={priority.tone}>{priority.label}</StatChip>
+                      <p className="text-xs text-slate-500">Due {task.dueTime}</p>
+                      <p className="text-xs text-slate-400">{task.estimatedDuration}</p>
+                    </div>
                   </div>
-                </div>
 
-                {task.notes && (
-                  <div className="mb-4 p-3 bg-blue-50 rounded border-l-4 border-blue-400">
-                    <p className="text-sm text-blue-800">
-                      <span className="font-medium">Notes:</span> {task.notes}
-                    </p>
+                  <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                    <div className="space-y-2 text-sm text-slate-600">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-slate-400" />
+                        Assigned by {task.assignedBy}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-slate-400" />
+                        {task.location}
+                      </div>
+                      {task.tableNumber && (
+                        <div className="flex items-center gap-2">
+                          <Utensils className="h-4 w-4 text-slate-400" />
+                          Table {task.tableNumber}
+                        </div>
+                      )}
+                      {task.orderNumber && (
+                        <div className="flex items-center gap-2">
+                          <Package className="h-4 w-4 text-slate-400" />
+                          Order {task.orderNumber}
+                        </div>
+                      )}
+                    </div>
+                    <div className="space-y-2 text-sm text-slate-600">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-slate-400" />
+                        Assigned {formatDate(task.assignedAt, 'MMM dd, HH:mm')}
+                      </div>
+                      {task.completedAt && (
+                        <div className="flex items-center gap-2 text-emerald-600">
+                          <CheckCircle className="h-4 w-4" />
+                          Completed {formatDate(task.completedAt, 'MMM dd, HH:mm')}
+                        </div>
+                      )}
+                      {task.notes && (
+                        <div className="rounded-2xl bg-slate-50 p-3 text-xs text-slate-500">
+                          <span className="font-semibold text-slate-700">Notes:</span> {task.notes}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
 
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500 capitalize">
-                    Category: {task.category.replace('_', ' ')}
-                  </span>
-                  <div className="flex space-x-2">
-                    {task.status === 'pending' && (
-                      <button 
-                        onClick={() => handleTaskStatusUpdate(task.id, 'in_progress')}
-                        className="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded hover:bg-blue-200 transition-colors"
-                      >
-                        Start Task
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
+                    <span className="text-xs text-slate-500 capitalize">Category: {task.category.replace('_', ' ')}</span>
+                    <div className="flex flex-wrap gap-2">
+                      {task.status === 'pending' && (
+                        <button
+                          onClick={() => handleTaskStatusUpdate(task.id, 'in_progress')}
+                          className="rounded-2xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:border-slate-300"
+                        >
+                          Start task
+                        </button>
+                      )}
+                      {task.status === 'in_progress' && (
+                        <button
+                          onClick={() => handleTaskStatusUpdate(task.id, 'completed')}
+                          className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
+                        >
+                          Complete
+                        </button>
+                      )}
+                      <button className="rounded-2xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:border-slate-300">
+                        <Eye className="mr-1 h-3.5 w-3.5" />
+                        View details
                       </button>
-                    )}
-                    {task.status === 'in_progress' && (
-                      <button 
-                        onClick={() => handleTaskStatusUpdate(task.id, 'completed')}
-                        className="text-xs bg-green-100 text-green-600 px-3 py-1 rounded hover:bg-green-200 transition-colors"
-                      >
-                        Complete Task
-                      </button>
-                    )}
-                    <button className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded hover:bg-gray-200 transition-colors">
-                      <Eye className="h-3 w-3 mr-1" />
-                      View Details
-                    </button>
+                    </div>
                   </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                </GlassCard>
+              );
+            })}
+          </div>
+        )}
 
-        {/* Add Task Modal */}
-        <AddTaskModal
-          isOpen={isAddModalOpen}
-          onClose={() => setIsAddModalOpen(false)}
-          onTaskAdded={handleTaskAdded}
-        />
+        <AddTaskModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onTaskAdded={handleTaskAdded} />
       </div>
     </EmployeeLayout>
   );
 };
 
 export default EmployeeTasks;
+

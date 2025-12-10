@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, memo } from 'react';
+import React, { useState, useMemo, useCallback, memo, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ShoppingBag,
@@ -21,13 +21,16 @@ import {
   Truck
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
 import ThemeToggle from '../UI/ThemeToggle';
+import RestroLogo from '../UI/RestroLogo';
 import { ROUTES, USER_ROLES } from '../../constants';
 import toast from 'react-hot-toast';
 
 const Sidebar = memo(({ isOpen, onToggle, onCollapseChange }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [logoSpin, setLogoSpin] = useState(false);
+  const prevCollapsedRef = useRef(isCollapsed);
+  const prevOpenRef = useRef(isOpen);
   const { user, getUserRole, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -39,6 +42,21 @@ const Sidebar = memo(({ isOpen, onToggle, onCollapseChange }) => {
       onCollapseChange(newCollapsedState);
     }
   }, [isCollapsed, onCollapseChange]);
+
+  useEffect(() => {
+    const wasCollapsed = prevCollapsedRef.current;
+    const wasOpen = prevOpenRef.current;
+    const shouldSpin = (!isCollapsed && wasCollapsed) || (isOpen && !wasOpen);
+    prevCollapsedRef.current = isCollapsed;
+    prevOpenRef.current = isOpen;
+
+    if (shouldSpin) {
+      setLogoSpin(true);
+      const timer = setTimeout(() => setLogoSpin(false), 700);
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [isCollapsed, isOpen]);
 
   const handleLogout = useCallback(async () => {
     try {
@@ -138,139 +156,132 @@ const Sidebar = memo(({ isOpen, onToggle, onCollapseChange }) => {
 
       {/* Sidebar */}
       <div className={`
-        fixed top-0 left-0 h-full 
-        bg-gray-900 dark:bg-gray-900 
-        shadow-2xl border-r border-gray-700 dark:border-gray-700 z-50
+        fixed top-0 left-0 z-50 h-full
+        bg-white/95 dark:bg-slate-950
+        text-slate-900 dark:text-slate-100
+        border-r border-slate-200 dark:border-slate-800
+        shadow-2xl backdrop-blur-xl
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-        ${isCollapsed ? 'w-16' : 'w-80'}
+        ${isCollapsed ? 'w-20' : 'w-64'}
         lg:translate-x-0
         transition-all duration-300
       `}>
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 pt-6 pb-4 border-b border-gray-700 dark:border-gray-700">
-          <ThemeToggle className="mr-2" />
-          {!isCollapsed && (
-            <Link 
-              to={user ? (getUserRole() === USER_ROLES.ADMIN ? ROUTES.ADMIN_DASHBOARD : 
-                getUserRole() === USER_ROLES.EMPLOYEE ? ROUTES.EMPLOYEE_DASHBOARD : ROUTES.CUSTOMER_DASHBOARD) : ROUTES.CUSTOMER_HOME}
-              className="flex items-center space-x-3 mt-2"
-            >
-              <img 
-                src={require('../../assets/images/restrologo.png')} 
-                alt="Restro Logo" 
-                className="w-12 h-12 object-contain"
-              />
-              <span className="text-xl font-bold text-white" style={{ fontFamily: "'BBH Sans Bartle', sans-serif", letterSpacing: '0.1em' }}>Restro</span>
-            </Link>
-          )}
-          {!isCollapsed && user && getUserRole() === USER_ROLES.EMPLOYEE && (
-            <span className="text-[10px] font-semibold text-white/90 bg-white/10 px-2 py-1 rounded-full">
-              {user?.name || 'Employee'}{user?.tag ? ` • ${String(user.tag).toUpperCase()}` : ''}
-            </span>
-          )}
-          
-          {isCollapsed && (
-            <div className="mx-auto">
-              <img 
-                src={require('../../assets/images/restrologo.png')} 
-                alt="Restro Logo" 
-                className="w-12 h-12 object-contain"
-              />
+        <div className="flex h-full flex-col">
+          {/* Header */}
+          <div className="border-b border-slate-200 dark:border-slate-800 px-5 pt-6 pb-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className={`flex items-center ${isCollapsed ? 'w-full justify-center' : 'gap-3'}`}>
+                {!isCollapsed && (
+                  <Link
+                    to={user ? (getUserRole() === USER_ROLES.ADMIN ? ROUTES.ADMIN_DASHBOARD :
+                      getUserRole() === USER_ROLES.EMPLOYEE ? ROUTES.EMPLOYEE_DASHBOARD : ROUTES.CUSTOMER_DASHBOARD) : ROUTES.CUSTOMER_HOME}
+                    className="flex items-center gap-3"
+                  >
+                    <RestroLogo className="h-11 w-11" />
+                    <div>
+                      <p className="text-lg font-semibold tracking-[0.2em] text-slate-900 dark:text-white">RESTRO</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Employee console</p>
+                    </div>
+                  </Link>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleCollapseToggle}
+                  className="hidden lg:flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 text-slate-500 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                >
+                  {isCollapsed ? (
+                    <ChevronRight className="h-4 w-4" />
+                  ) : (
+                    <ChevronLeft className="h-4 w-4" />
+                  )}
+                </button>
+
+                <button
+                  onClick={onToggle}
+                  className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 text-slate-500 transition hover:bg-slate-50 lg:hidden dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
-          )}
-
-          {/* Toggle Button - Desktop Only */}
-          <button
-            onClick={handleCollapseToggle}
-            className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg hover:bg-brand-blue/20 transition-colors"
-          >
-            {isCollapsed ? (
-              <ChevronRight className="h-4 w-4 text-brand-teal" />
-            ) : (
-              <ChevronLeft className="h-4 w-4 text-brand-teal" />
-            )}
-          </button>
-
-          {/* Close Button - Mobile Only */}
-          <button
-            onClick={onToggle}
-            className="lg:hidden flex items-center justify-center w-8 h-8 rounded-lg hover:bg-brand-blue/20 transition-colors"
-          >
-            <X className="h-4 w-4 text-brand-teal" />
-          </button>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 space-y-2 flex flex-col overflow-y-auto" style={{ height: 'calc(100vh - 80px)' }}>
-          <div className="space-y-2">
-            {navigationItems.map((item, index) => (
-              <Link
-                key={item.name}
-                to={item.path}
-                onClick={() => {
-                  // Close mobile sidebar when navigating
-                  if (window.innerWidth < 1024) {
-                    onToggle();
-                  }
-                }}
-                className={`
-                  flex items-center space-x-3 px-3 py-3 rounded-lg text-sm font-semibold 
-                  transition-all duration-200
-                  ${isActive(item.path) 
-                    ? 'bg-[#E63946] text-white shadow-lg' 
-                    : 'text-gray-300 dark:text-gray-400 hover:bg-gray-800 dark:hover:bg-gray-700 hover:text-white'
-                  }
-                  ${isCollapsed ? 'justify-center' : ''}
-                `}
-              >
-                <span className="flex-shrink-0">{item.icon}</span>
-                {!isCollapsed && <span className="truncate">{item.name}</span>}
-              </Link>
-            ))}
           </div>
 
-          {/* Profile Summary */}
-          {user && (
-            <div className={`mt-6 mb-4 px-3 py-4 rounded-lg border border-gray-700/60 ${isCollapsed ? 'text-center' : ''}`}>
-              <div className={`flex ${isCollapsed ? 'flex-col items-center space-y-2' : 'items-center space-x-3'}`}>
-                <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white">
+          {/* Navigation */}
+          <nav className="flex-1 overflow-y-auto px-4 py-6 flex flex-col gap-6">
+            <div className="space-y-2">
+              {navigationItems.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.path}
+                  onClick={() => {
+                    if (window.innerWidth < 1024) {
+                      onToggle();
+                    }
+                  }}
+                  className={`
+                    group flex items-center gap-3 rounded-2xl border px-3 py-3 text-sm font-semibold transition-all
+                    ${isActive(item.path)
+                      ? 'border-slate-900 bg-slate-900 text-white shadow-lg dark:border-slate-700 dark:bg-slate-700'
+                      : 'border-transparent text-slate-500 hover:border-slate-200 hover:bg-slate-50 dark:text-slate-300 dark:hover:border-slate-700 dark:hover:bg-slate-800'}
+                    ${isCollapsed ? 'justify-center px-0' : ''}
+                  `}
+                >
+                  <span className={`flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-200 ${isActive(item.path) ? 'bg-white/10 text-white dark:bg-white/10' : ''}`}>
+                    {item.icon}
+                  </span>
+                  {!isCollapsed && <span className="truncate">{item.name}</span>}
+                </Link>
+              ))}
+            </div>
+
+            {/* Profile Summary */}
+            {user && (
+              <div className={`rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 dark:border-slate-800 dark:bg-slate-900/40 ${isCollapsed ? 'text-center' : 'flex items-center gap-3'}`}>
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-slate-900 dark:bg-slate-800 dark:text-white">
                   <User className="h-6 w-6" />
                 </div>
                 {!isCollapsed && (
-                  <div className="text-white/90">
-                    <p className="text-sm font-semibold">{user?.name || 'Employee'}</p>
-                    <p className="text-xs text-gray-400 truncate">{user?.email || 'No email'}</p>
-                    <p className="text-[11px] uppercase tracking-wide text-gray-300 mt-1">
+                  <div className="text-sm text-slate-600 dark:text-slate-300">
+                    <p className="font-semibold text-slate-900 dark:text-white">{user?.name || 'Employee'}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user?.email || 'No email'}</p>
+                    <p className="text-[11px] uppercase tracking-wide text-slate-400 mt-1">
                       {getUserRole() || 'Role'}{user?.tag ? ` • ${String(user.tag).toUpperCase()}` : ''}
                     </p>
                   </div>
                 )}
+                {isCollapsed && (
+                  <p className="mt-2 text-[10px] uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                    {user?.tag ? String(user.tag).toUpperCase() : getUserRole()}
+                  </p>
+                )}
               </div>
-              {isCollapsed && (
-                <p className="text-[10px] text-gray-300 mt-2 uppercase tracking-wide">
-                  {user?.tag ? String(user.tag).toUpperCase() : getUserRole()}
-                </p>
-              )}
+            )}
+
+            {/* Support Card */}
+            <div className={`rounded-2xl border border-slate-200 p-4 text-sm text-slate-500 dark:border-slate-800 dark:text-slate-300 ${isCollapsed ? 'hidden lg:block' : ''}`}>
+              <p className="text-xs uppercase tracking-wide text-slate-400 dark:text-slate-500">Need backup?</p>
+              <p className="mt-2 font-semibold text-slate-900 dark:text-white">Ops lead: Ravi · Ext 202</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Ping #floor-support or call if service spikes.</p>
             </div>
-          )}
 
-          {/* Logout Button */}
-          <div className="mt-auto pt-4 border-t border-gray-700 dark:border-gray-700">
-            <button
-              onClick={handleLogout}
-              className={`
-                w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-sm font-semibold 
-                transition-all duration-200
-                text-gray-300 dark:text-gray-400 hover:bg-[#E63946] hover:text-white
-                ${isCollapsed ? 'justify-center' : ''}
-              `}
-            >
-              <span className="flex-shrink-0"><LogOut className="h-5 w-5" /></span>
-              {!isCollapsed && <span className="truncate">Logout</span>}
-            </button>
-          </div>
-        </nav>
-
+            {/* Logout Button */}
+            <div className="mt-auto pt-4 border-t border-slate-200 dark:border-slate-800">
+              <button
+                onClick={handleLogout}
+                className={`
+                  w-full flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition-all
+                  text-slate-500 hover:bg-slate-900 hover:text-white dark:text-slate-300 dark:hover:bg-slate-800
+                  ${isCollapsed ? 'justify-center' : ''}
+                `}
+              >
+                <span className="flex-shrink-0"><LogOut className="h-5 w-5" /></span>
+                {!isCollapsed && <span className="truncate">Logout</span>}
+              </button>
+            </div>
+          </nav>
+        </div>
       </div>
     </>
   );

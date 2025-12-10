@@ -261,15 +261,69 @@ const AdminMenu = () => {
   };
 
   if (loading) {
+    const skeletonCard = (
+      <div 
+        className="rounded-2xl shadow-lg border-2 p-6 animate-pulse"
+        style={{ backgroundColor: colors.cream, borderColor: colors.lightBlue, borderWidth: '2px' }}
+      >
+        <div className="flex items-center justify-between">
+          <div className="space-y-2 w-full">
+            <div className="h-4 rounded" style={{ backgroundColor: 'rgba(69, 123, 157, 0.15)', width: '40%' }}></div>
+            <div className="h-3 rounded" style={{ backgroundColor: 'rgba(69, 123, 157, 0.12)', width: '60%' }}></div>
+          </div>
+          <div className="h-10 w-10 rounded-full ml-4" style={{ backgroundColor: 'rgba(230, 57, 70, 0.15)' }}></div>
+        </div>
+      </div>
+    );
+
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div 
-              className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
-              style={{ borderColor: colors.red }}
-            ></div>
-            <p className="font-semibold" style={{ color: colors.darkNavy }}>Loading menu...</p>
+        <div className="space-y-6" style={{ backgroundColor: colors.cream, minHeight: '100vh', padding: '2rem' }}>
+          {/* Header skeleton */}
+          <div className="flex items-center justify-between animate-pulse">
+            <div className="space-y-3">
+              <div className="h-8 w-48 rounded" style={{ backgroundColor: 'rgba(29, 53, 87, 0.18)' }}></div>
+              <div className="h-2 w-32 rounded" style={{ backgroundColor: 'rgba(230, 57, 70, 0.2)' }}></div>
+            </div>
+            <div className="h-12 w-40 rounded-xl" style={{ backgroundColor: 'rgba(230, 57, 70, 0.18)' }}></div>
+          </div>
+
+          {/* Stats skeletons */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {skeletonCard}
+            {skeletonCard}
+          </div>
+
+          {/* Filters skeleton */}
+          <div 
+            className="rounded-2xl shadow-lg p-6 border-2 animate-pulse"
+            style={{ backgroundColor: colors.cream, borderColor: colors.mediumBlue, borderWidth: '2px' }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="h-11 rounded-xl" style={{ backgroundColor: 'rgba(69, 123, 157, 0.12)' }}></div>
+              <div className="h-11 rounded-xl" style={{ backgroundColor: 'rgba(168, 218, 220, 0.35)' }}></div>
+              <div className="h-11 rounded-xl" style={{ backgroundColor: 'rgba(230, 57, 70, 0.16)' }}></div>
+            </div>
+          </div>
+
+          {/* Menu items skeleton list */}
+          <div className="space-y-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div 
+                key={i}
+                className="rounded-2xl shadow-md border-2 p-4 animate-pulse"
+                style={{ backgroundColor: colors.cream, borderColor: colors.lightBlue, borderWidth: '2px' }}
+              >
+                <div className="flex items-center space-x-4">
+                  <div className="h-12 w-12 rounded-xl" style={{ backgroundColor: 'rgba(69, 123, 157, 0.15)' }}></div>
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-1/3 rounded" style={{ backgroundColor: 'rgba(29, 53, 87, 0.18)' }}></div>
+                    <div className="h-3 w-1/2 rounded" style={{ backgroundColor: 'rgba(69, 123, 157, 0.12)' }}></div>
+                  </div>
+                  <div className="h-8 w-16 rounded-full" style={{ backgroundColor: 'rgba(230, 57, 70, 0.16)' }}></div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </AdminLayout>

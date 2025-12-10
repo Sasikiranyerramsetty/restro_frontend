@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { User, Phone, Mail, MapPin, Shield, Calendar, Save } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Calendar, Mail, MapPin, Phone, Save, Shield, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import EmployeeLayout from '../../components/Employee/EmployeeLayout';
 import { useAuth } from '../../context/AuthContext';
 import employeeService from '../../services/employeeService';
+import { GlassCard, MetricTile, SectionHeading } from '../../components/Employee/EmployeeUI';
 
 const EmployeeProfile = () => {
   const { user, updateUser, getUserRole } = useAuth();
@@ -43,13 +44,10 @@ const EmployeeProfile = () => {
     fetchProfile();
   }, [user?.id]);
 
-  const colors = useMemo(() => ({
-    red: '#E63946',
-    cream: '#F1FAEE',
-    lightBlue: '#A8DADC',
-    mediumBlue: '#457B9D',
-    darkNavy: '#1D3557'
-  }), []);
+  const memberSince = useMemo(
+    () => (user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—'),
+    [user?.createdAt]
+  );
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -90,152 +88,173 @@ const EmployeeProfile = () => {
   };
 
   const disableInputs = isLoadingProfile || isSubmitting;
+  const roleLabel = useMemo(() => {
+    const base = getUserRole() || 'Employee';
+    return formData.tag ? `${base} • ${String(formData.tag).toUpperCase()}` : base;
+  }, [formData.tag, getUserRole]);
 
   return (
     <EmployeeLayout>
-      <div className="employee-profile space-y-8 animate-fade-in" style={{ backgroundColor: colors.cream, minHeight: '100vh', padding: '2rem' }}>
-        {/* Header */}
-        <div className="animate-slide-up">
-          <h1
-            className="text-4xl font-bold drop-shadow-lg mb-2"
-            style={{
-              fontFamily: 'Rockybilly, sans-serif',
-              letterSpacing: '0.05em',
-              color: colors.darkNavy,
-              fontSize: '1.6875rem'
-            }}
-          >
-            My Profile
-          </h1>
-          <div style={{ height: '4px', background: `linear-gradient(90deg, ${colors.red} 0%, ${colors.mediumBlue} 100%)`, borderRadius: '2px', width: '140px' }}></div>
-        </div>
+      <div className="space-y-8 pb-16 text-slate-900">
+        <section className="relative overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-slate-900 to-slate-950 opacity-95" />
+          <div className="relative grid gap-8 p-8 text-white lg:grid-cols-3">
+            <div className="space-y-3 lg:col-span-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/70">Profile & identity</p>
+              <h1 className="text-3xl font-semibold">Personal settings & credentials</h1>
+              <p className="text-sm text-white/70">
+                Keep your contact data current so the floor team can coordinate, route alerts, and manage payouts without
+                friction.
+              </p>
+              <div className="flex flex-wrap gap-3 text-sm text-white/80">
+                <span className="inline-flex items-center rounded-full bg-white/10 px-4 py-1.5">{roleLabel}</span>
+                <span className="inline-flex items-center rounded-full bg-white/10 px-4 py-1.5">
+                  Member since {memberSince}
+                </span>
+              </div>
+            </div>
+            <div className="rounded-2xl bg-white/10 p-6 backdrop-blur">
+              <p className="text-xs uppercase tracking-[0.25em] text-white/70">Status</p>
+              <p className="mt-2 text-2xl font-semibold">{user?.name || 'Employee'}</p>
+              <p className="text-sm text-white/70">{formData.email || 'No email linked'}</p>
+              <div className="mt-6 space-y-3 text-sm">
+                <div className="flex items-center justify-between text-white/70">
+                  <span>Profile sync</span>
+                  <span className="font-semibold text-white">{hasChanges ? 'Unsaved' : 'Up to date'}</span>
+                </div>
+                <div className="flex items-center justify-between text-white/70">
+                  <span>Phone</span>
+                  <span className="font-semibold text-white">{formData.phone || 'Pending'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Profile Summary */}
-          <div className="bg-white rounded-2xl shadow-xl border-2 border-transparent" style={{ borderColor: colors.mediumBlue }}>
-            <div className="p-6 space-y-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-bold" style={{ backgroundColor: colors.mediumBlue }}>
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <MetricTile label="Member since" value={memberSince} icon={Calendar} tone="sky" delta="Account age" />
+          <MetricTile label="Role" value={roleLabel} icon={Shield} tone="indigo" delta="Access level" />
+          <MetricTile label="Email" value={formData.email || 'Unavailable'} icon={Mail} tone="amber" delta="Primary" />
+          <MetricTile label="Phone" value={formData.phone || 'Unavailable'} icon={Phone} tone="rose" delta="Reachability" />
+        </section>
+
+        <div className="grid gap-6 lg:grid-cols-3">
+          <GlassCard>
+            <SectionHeading title="Profile summary" description="Core identifiers pulled from auth" />
+            <div className="mt-6 space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-900 text-2xl font-semibold text-white">
                   {(user?.name || 'E')[0]?.toUpperCase?.() || 'E'}
                 </div>
                 <div>
-                  <p className="text-xl font-bold" style={{ color: colors.darkNavy }}>{user?.name || 'Employee'}</p>
-                  <p className="text-sm uppercase tracking-widest font-semibold" style={{ color: colors.red }}>
-                    {getUserRole() || 'Employee'}{user?.tag ? ` • ${String(user.tag).toUpperCase()}` : ''}
-                  </p>
+                  <p className="text-xl font-semibold text-slate-900">{user?.name || 'Employee'}</p>
+                  <p className="text-sm text-slate-500">{roleLabel}</p>
                 </div>
               </div>
-
-              <div className="space-y-4 text-sm">
-                <div className="flex items-center space-x-3 text-gray-600">
-                  <Mail className="h-4 w-4 text-gray-400" />
+              <div className="space-y-4 text-sm text-slate-600">
+                <div className="flex items-center gap-3">
+                  <Mail className="h-4 w-4 text-slate-400" />
                   <span>{formData.email || 'No email linked'}</span>
                 </div>
-                <div className="flex items-center space-x-3 text-gray-600">
-                  <Phone className="h-4 w-4 text-gray-400" />
+                <div className="flex items-center gap-3">
+                  <Phone className="h-4 w-4 text-slate-400" />
                   <span>{formData.phone || 'No phone linked'}</span>
                 </div>
-                <div className="flex items-center space-x-3 text-gray-600">
-                  <Shield className="h-4 w-4 text-gray-400" />
-                  <span>{formData.tag ? `${String(formData.tag).toUpperCase()} Station` : 'No station assigned'}</span>
+                <div className="flex items-center gap-3">
+                  <Shield className="h-4 w-4 text-slate-400" />
+                  <span>{formData.tag ? `${String(formData.tag).toUpperCase()} station` : 'No station assigned'}</span>
                 </div>
-                <div className="flex items-center space-x-3 text-gray-600">
-                  <Calendar className="h-4 w-4 text-gray-400" />
-                  <span>Member since {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—'}</span>
+                <div className="flex items-center gap-3">
+                  <MapPin className="h-4 w-4 text-slate-400" />
+                  <span>{formData.address || 'No address added'}</span>
                 </div>
               </div>
-
-              {formData.address && (
-                <div className="flex items-start space-x-3 text-gray-600">
-                  <MapPin className="h-4 w-4 text-gray-400 mt-1" />
-                  <span>{formData.address}</span>
-                </div>
-              )}
             </div>
-          </div>
+          </GlassCard>
 
-          {/* Edit Form */}
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-xl border-2" style={{ borderColor: colors.mediumBlue }}>
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="text-sm font-semibold text-gray-600 mb-2 block">Full Name</label>
-                  <div className="flex items-center space-x-3 bg-white border border-gray-200 rounded-xl px-4 shadow-sm">
-                    <User className="h-5 w-5 text-gray-400" />
+          <GlassCard className="lg:col-span-2">
+            <SectionHeading title="Edit profile" description="Updates sync to the employee directory" />
+            <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+              <div className="grid gap-6 md:grid-cols-2">
+                <label className="space-y-2 text-sm font-medium text-slate-600">
+                  Full name
+                  <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4">
+                    <User className="h-4 w-4 text-slate-400" />
                     <input
                       type="text"
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      className="flex-1 bg-transparent py-3 focus:outline-none text-gray-900"
+                      disabled={disableInputs}
+                      className="flex-1 border-0 bg-transparent py-3 text-slate-900 outline-none"
                       placeholder="Enter your full name"
                       required
-                      disabled={disableInputs}
                     />
                   </div>
-                </div>
-                <div>
-                  <label className="text-sm font-semibold text-gray-600 mb-2 block">Phone Number</label>
-                  <div className="flex items-center space-x-3 bg-white border border-gray-200 rounded-xl px-4 shadow-sm">
-                    <Phone className="h-5 w-5 text-gray-400" />
+                </label>
+                <label className="space-y-2 text-sm font-medium text-slate-600">
+                  Phone number
+                  <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4">
+                    <Phone className="h-4 w-4 text-slate-400" />
                     <input
                       type="tel"
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      className="flex-1 bg-transparent py-3 focus:outline-none text-gray-900"
+                      disabled={disableInputs}
+                      className="flex-1 border-0 bg-transparent py-3 text-slate-900 outline-none"
                       placeholder="Enter phone number"
                       required
-                      disabled={disableInputs}
                     />
                   </div>
-                </div>
-                <div>
-                  <label className="text-sm font-semibold text-gray-600 mb-2 block">Email Address</label>
-                  <div className="flex items-center space-x-3 bg-white border border-gray-200 rounded-xl px-4 shadow-sm">
-                    <Mail className="h-5 w-5 text-gray-400" />
+                </label>
+                <label className="space-y-2 text-sm font-medium text-slate-600">
+                  Email address
+                  <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4">
+                    <Mail className="h-4 w-4 text-slate-400" />
                     <input
                       type="email"
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      className="flex-1 bg-transparent py-3 focus:outline-none text-gray-900"
-                      placeholder="Enter email address"
                       disabled={disableInputs}
+                      className="flex-1 border-0 bg-transparent py-3 text-slate-900 outline-none"
+                      placeholder="Enter email address"
                     />
                   </div>
-                </div>
-                <div>
-                  <label className="text-sm font-semibold text-gray-600 mb-2 block">Station Tag</label>
-                  <div className="flex items-center space-x-3 bg-gray-100 border border-gray-200 rounded-xl px-4 cursor-not-allowed">
-                    <Shield className="h-5 w-5 text-gray-400" />
+                </label>
+                <label className="space-y-2 text-sm font-medium text-slate-600">
+                  Station tag
+                  <div className="flex items-center gap-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 text-slate-500">
+                    <Shield className="h-4 w-4" />
                     <input
                       type="text"
                       value={formData.tag ? String(formData.tag).toUpperCase() : 'Not assigned'}
                       disabled
-                      className="flex-1 bg-transparent py-3 focus:outline-none text-gray-500 uppercase tracking-wide"
+                      className="flex-1 border-0 bg-transparent py-3 uppercase tracking-wide outline-none"
                     />
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">Contact an administrator to change your station/tag.</p>
-                </div>
+                  <p className="text-xs text-slate-400">Contact an administrator to change your station/tag.</p>
+                </label>
               </div>
 
-              <div>
-                <label className="text-sm font-semibold text-gray-600 mb-2 block">Address</label>
-                <div className="flex items-start space-x-3 bg-white border border-gray-200 rounded-xl px-4 shadow-sm">
-                  <MapPin className="h-5 w-5 text-gray-400 mt-3" />
+              <label className="space-y-2 text-sm font-medium text-slate-600">
+                Address
+                <div className="flex items-start gap-3 rounded-2xl border border-slate-200 bg-white px-4">
+                  <MapPin className="mt-3 h-4 w-4 text-slate-400" />
                   <textarea
                     name="address"
                     value={formData.address}
                     onChange={handleChange}
-                    className="flex-1 bg-transparent py-3 focus:outline-none resize-none min-h-[100px] text-gray-900"
-                    placeholder="Add your address"
                     disabled={disableInputs}
+                    className="flex-1 border-0 bg-transparent py-3 text-slate-900 outline-none"
+                    placeholder="Add your address"
+                    rows={3}
                   />
                 </div>
-              </div>
+              </label>
 
-              <div className="flex items-center justify-end space-x-4">
+              <div className="flex flex-wrap items-center justify-end gap-3">
                 <button
                   type="button"
                   disabled={disableInputs || !hasChanges || !initialData}
@@ -245,28 +264,21 @@ const EmployeeProfile = () => {
                       setHasChanges(false);
                     }
                   }}
-                  className={`px-5 py-3 rounded-xl font-semibold border border-gray-300 transition-all duration-300 ${
-                    disableInputs || !hasChanges || !initialData
-                      ? 'text-gray-400 border-gray-200 cursor-not-allowed'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
+                  className="rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Reset
                 </button>
                 <button
                   type="submit"
                   disabled={disableInputs || !hasChanges}
-                  className={`px-6 py-3 rounded-xl font-semibold flex items-center space-x-2 transition-all duration-300 ${
-                    disableInputs || !hasChanges ? 'bg-gray-300 cursor-not-allowed text-gray-500' : 'text-white shadow-lg hover:opacity-90'
-                  }`}
-                  style={{ backgroundColor: colors.red }}
+                  className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <Save className="h-4 w-4" />
-                  <span>{isSubmitting ? 'Saving...' : 'Save Changes'}</span>
+                  {isSubmitting ? 'Saving…' : 'Save changes'}
                 </button>
               </div>
             </form>
-          </div>
+          </GlassCard>
         </div>
       </div>
     </EmployeeLayout>
