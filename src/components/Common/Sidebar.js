@@ -68,8 +68,16 @@ const Sidebar = memo(({ isOpen, onToggle, onCollapseChange }) => {
     }
   }, [logout, navigate]);
 
+  const role = getUserRole();
+  const homePath = user
+    ? (role === USER_ROLES.ADMIN
+      ? ROUTES.ADMIN_DASHBOARD
+      : role === USER_ROLES.EMPLOYEE
+        ? ROUTES.EMPLOYEE_DASHBOARD
+        : ROUTES.CUSTOMER_DASHBOARD)
+    : ROUTES.CUSTOMER_HOME;
+
   const navigationItems = useMemo(() => {
-    const role = getUserRole();
     const tagLower = (user?.tag || '').toLowerCase();
 
     switch (role) {
@@ -138,7 +146,7 @@ const Sidebar = memo(({ isOpen, onToggle, onCollapseChange }) => {
       default:
         return [];
     }
-  }, [getUserRole, user]);
+  }, [getUserRole, role, user]);
 
   const isActive = useCallback((path) => {
     return location.pathname === path;
@@ -173,14 +181,12 @@ const Sidebar = memo(({ isOpen, onToggle, onCollapseChange }) => {
               <div className={`flex items-center ${isCollapsed ? 'w-full justify-center' : 'gap-3'}`}>
                 {!isCollapsed && (
                   <Link
-                    to={user ? (getUserRole() === USER_ROLES.ADMIN ? ROUTES.ADMIN_DASHBOARD :
-                      getUserRole() === USER_ROLES.EMPLOYEE ? ROUTES.EMPLOYEE_DASHBOARD : ROUTES.CUSTOMER_DASHBOARD) : ROUTES.CUSTOMER_HOME}
+                    to={homePath}
                     className="flex items-center gap-3"
                   >
                     <RestroLogo className="h-11 w-11" />
                     <div>
                       <p className="text-lg font-semibold tracking-[0.2em] text-slate-900 dark:text-white">RESTRO</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Employee console</p>
                     </div>
                   </Link>
                 )}

@@ -18,3 +18,5 @@ const UniversalLoader = ({ text = 'Loading...', visible = true }) => {
 
 export default UniversalLoader;
 
+
+

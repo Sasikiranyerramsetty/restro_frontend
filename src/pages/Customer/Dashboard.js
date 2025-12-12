@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  ShoppingBag, 
-  Clock, 
-  Star, 
+import {
+  ShoppingBag,
+  Clock,
+  Star,
   TrendingUp,
   Calendar,
   ChefHat,
@@ -14,16 +14,22 @@ import {
 import { ROUTES } from '../../constants';
 import CustomerLayout from '../../components/Customer/CustomerLayout';
 import orderService from '../../services/orderService';
-import { formatCurrency } from '../../utils';
+import { formatCurrency, formatDate } from '../../utils';
 
 const CustomerDashboard = () => {
   // Custom color palette (matching admin)
   const colors = {
-    red: '#E63946',
-    cream: '#F1FAEE',
-    lightBlue: '#A8DADC',
-    mediumBlue: '#457B9D',
-    darkNavy: '#1D3557'
+    navy: '#0B1021',
+    panel: '#0F172A',
+    card: '#111A2E',
+    border: '#1F2A44',
+    accent: '#6366F1',
+    accentAlt: '#0EA5E9',
+    mint: '#22D3EE',
+    danger: '#F43F5E',
+    warning: '#F59E0B',
+    text: '#E2E8F0',
+    muted: '#94A3B8'
   };
 
   const [recentOrders, setRecentOrders] = useState([]);
@@ -34,6 +40,7 @@ const CustomerDashboard = () => {
     averageRating: 0
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -67,67 +74,111 @@ const CustomerDashboard = () => {
     fetchDashboardData();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentDateTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const statCards = [
+    {
+      title: 'Total Orders',
+      value: stats.totalOrders,
+      icon: <ShoppingBag className="h-8 w-8" />,
+      valueColor: colors.accent,
+      iconBg: colors.accent,
+      bgGradient: `linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(14, 165, 233, 0.12) 100%)`,
+      borderColor: colors.border
+    },
+    {
+      title: 'Total Spent',
+      value: formatCurrency(stats.totalSpent),
+      icon: <TrendingUp className="h-8 w-8" />,
+      valueColor: colors.danger,
+      iconBg: colors.danger,
+      bgGradient: `linear-gradient(135deg, rgba(244, 63, 94, 0.18) 0%, rgba(99, 102, 241, 0.12) 100%)`,
+      borderColor: colors.border
+    },
+    {
+      title: 'Average Rating',
+      value: stats.averageRating || 'N/A',
+      icon: <Star className="h-8 w-8" />,
+      valueColor: colors.text,
+      iconBg: colors.mint,
+      bgGradient: `linear-gradient(135deg, rgba(34, 211, 238, 0.16) 0%, rgba(15, 23, 42, 0.5) 100%)`,
+      borderColor: colors.border
+    },
+    {
+      title: 'Favorite Items',
+      value: stats.favoriteItems,
+      icon: <Clock className="h-8 w-8" />,
+      valueColor: colors.warning,
+      iconBg: colors.warning,
+      bgGradient: `linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(17, 26, 46, 0.7) 100%)`,
+      borderColor: colors.border
+    }
+  ];
+
   const quickActions = [
     {
       title: 'Browse Menu',
       description: 'Explore our delicious offerings',
-      icon: <ChefHat className="h-6 w-6" style={{ color: colors.red }} />,
+      icon: <ChefHat className="h-6 w-6" style={{ color: colors.accent }} />,
       link: ROUTES.CUSTOMER_MENU,
-      bgGradient: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
-      borderColor: colors.red
+      bgGradient: `linear-gradient(135deg, rgba(99, 102, 241, 0.16) 0%, rgba(14, 165, 233, 0.14) 100%)`,
+      borderColor: colors.border
     },
     {
       title: 'Make Reservation',
       description: 'Book a table for your visit',
-      icon: <Calendar className="h-6 w-6" style={{ color: colors.mediumBlue }} />,
+      icon: <Calendar className="h-6 w-6" style={{ color: colors.accentAlt }} />,
       link: ROUTES.CUSTOMER_RESERVATIONS,
-      bgGradient: `linear-gradient(135deg, ${colors.lightBlue} 0%, ${colors.mediumBlue} 100%)`,
-      borderColor: colors.mediumBlue
+      bgGradient: `linear-gradient(135deg, rgba(14, 165, 233, 0.18) 0%, rgba(15, 23, 42, 0.6) 100%)`,
+      borderColor: colors.border
     },
     {
       title: 'View Orders',
       description: 'Track your order history',
-      icon: <Package className="h-6 w-6" style={{ color: colors.darkNavy }} />,
+      icon: <Package className="h-6 w-6" style={{ color: colors.text }} />,
       link: ROUTES.CUSTOMER_ORDERS,
-      bgGradient: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
-      borderColor: colors.darkNavy
+      bgGradient: `linear-gradient(135deg, rgba(34, 211, 238, 0.14) 0%, rgba(17, 26, 46, 0.7) 100%)`,
+      borderColor: colors.border
     },
     {
       title: 'Events',
       description: 'Discover upcoming events',
-      icon: <Users className="h-6 w-6" style={{ color: colors.red }} />,
+      icon: <Users className="h-6 w-6" style={{ color: colors.danger }} />,
       link: ROUTES.CUSTOMER_EVENTS,
-      bgGradient: `linear-gradient(135deg, ${colors.lightBlue} 0%, ${colors.cream} 100%)`,
-      borderColor: colors.red
+      bgGradient: `linear-gradient(135deg, rgba(244, 63, 94, 0.16) 0%, rgba(15, 23, 42, 0.65) 100%)`,
+      borderColor: colors.border
     }
   ];
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'completed':
-        return { bg: 'rgba(34, 197, 94, 0.1)', text: '#16a34a' };
-      case 'preparing':
-        return { bg: 'rgba(59, 130, 246, 0.1)', text: colors.mediumBlue };
-      case 'ready':
-        return { bg: 'rgba(234, 179, 8, 0.1)', text: '#ca8a04' };
-      case 'pending':
-        return { bg: 'rgba(107, 114, 128, 0.1)', text: '#6b7280' };
-      default:
-        return { bg: 'rgba(107, 114, 128, 0.1)', text: '#6b7280' };
-    }
+    const statusColors = {
+      pending: { bg: 'rgba(99, 102, 241, 0.16)', text: colors.text, border: colors.accent },
+      preparing: { bg: 'rgba(14, 165, 233, 0.18)', text: colors.text, border: colors.accentAlt },
+      ready: { bg: 'rgba(34, 211, 238, 0.16)', text: colors.text, border: colors.mint },
+      completed: { bg: 'rgba(34, 197, 94, 0.16)', text: colors.text, border: colors.mint },
+      cancelled: { bg: 'rgba(244, 63, 94, 0.18)', text: colors.text, border: colors.danger }
+    };
+    const color = statusColors[status] || statusColors.completed;
+    return {
+      backgroundColor: color.bg,
+      color: color.text,
+      borderColor: color.border
+    };
   };
 
   if (isLoading) {
     return (
       <CustomerLayout>
-        <div className="space-y-6 animate-fade-in" style={{ backgroundColor: colors.cream, minHeight: '100vh', width: '100%', padding: '1.5rem 2rem' }}>
-          <div className="w-full max-w-full">
-            <div className="h-8 rounded animate-pulse" style={{ backgroundColor: colors.lightBlue }}></div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-32 rounded-lg animate-pulse" style={{ backgroundColor: colors.lightBlue }}></div>
-              ))}
-            </div>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div
+              className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
+              style={{ borderColor: colors.accent }}
+            ></div>
+            <p className="font-semibold" style={{ color: colors.text }}>Loading dashboard...</p>
           </div>
         </div>
       </CustomerLayout>
@@ -136,133 +187,140 @@ const CustomerDashboard = () => {
 
   return (
     <CustomerLayout>
-      <div className="space-y-6 animate-fade-in" style={{ backgroundColor: colors.cream, minHeight: '100vh', width: '100%', padding: '1.5rem 2rem' }}>
-        <div className="w-full max-w-full">
-          {/* Header */}
-          <div className="mb-6 animate-slide-up">
-            <h1 
-              className="text-3xl font-bold drop-shadow-lg mb-2" 
-              style={{ 
-                fontFamily: "'BBH Sans Bartle', sans-serif", 
+      <div
+        className="space-y-8 animate-fade-in"
+        style={{
+          background: `radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.08), transparent 25%), radial-gradient(circle at 80% 10%, rgba(14, 165, 233, 0.08), transparent 25%), ${colors.navy}`,
+          minHeight: '100vh',
+          padding: '2rem'
+        }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between animate-slide-up">
+          <div>
+            <h1
+              className="text-4xl font-bold drop-shadow-lg mb-2"
+              style={{
+                fontFamily: 'Rockybilly, sans-serif',
                 letterSpacing: '0.05em',
-                color: colors.darkNavy,
-                fontFeatureSettings: '"liga" off',
-                fontVariantLigatures: 'none',
-                textRendering: 'geometricPrecision',
-                fontKerning: 'none'
+                color: colors.text
               }}
             >
               Dashboard
             </h1>
-            <div style={{ height: '4px', background: `linear-gradient(90deg, ${colors.red} 0%, ${colors.mediumBlue} 100%)`, borderRadius: '2px', width: '150px' }}></div>
+            <div
+              style={{
+                height: '4px',
+                background: `linear-gradient(90deg, ${colors.accent} 0%, ${colors.accentAlt} 100%)`,
+                borderRadius: '2px',
+                width: '130px'
+              }}
+            ></div>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div 
-              className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
-              style={{ 
-                animationDelay: '0.1s',
-                background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
-                borderColor: colors.mediumBlue
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <p className="text-sm font-semibold mb-2" style={{ color: colors.darkNavy, opacity: 0.8 }}>Total Orders</p>
-                  <p className="text-3xl font-bold" style={{ color: colors.mediumBlue }}>{stats.totalOrders}</p>
-                </div>
-                <div className="p-4 rounded-full shadow-lg" style={{ backgroundColor: colors.cream }}>
-                  <ShoppingBag className="h-8 w-8" style={{ color: colors.mediumBlue }} />
-                </div>
+          <div
+            className="rounded-2xl shadow-xl p-4 border-2"
+            style={{
+              background: `linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(14, 165, 233, 0.16) 100%)`,
+              borderColor: colors.border,
+              borderWidth: '2px',
+              minWidth: '210px'
+            }}
+          >
+            <div className="flex items-center space-x-3">
+              <div className="p-3 rounded-full shadow-lg" style={{ backgroundColor: colors.card }}>
+                <Clock className="h-5 w-5" style={{ color: colors.text }} />
               </div>
-            </div>
-
-            <div 
-              className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
-              style={{ 
-                animationDelay: '0.2s',
-                background: `linear-gradient(135deg, ${colors.lightBlue} 0%, ${colors.mediumBlue} 100%)`,
-                borderColor: colors.red
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <p className="text-sm font-semibold mb-2" style={{ color: colors.darkNavy, opacity: 0.8 }}>Total Spent</p>
-                  <p className="text-3xl font-bold" style={{ color: colors.red }}>{formatCurrency(stats.totalSpent)}</p>
-                </div>
-                <div className="p-4 rounded-full shadow-lg" style={{ backgroundColor: colors.cream }}>
-                  <TrendingUp className="h-8 w-8" style={{ color: colors.red }} />
-                </div>
-              </div>
-            </div>
-
-            <div 
-              className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
-              style={{ 
-                animationDelay: '0.3s',
-                background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
-                borderColor: colors.mediumBlue
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <p className="text-sm font-semibold mb-2" style={{ color: colors.darkNavy, opacity: 0.8 }}>Average Rating</p>
-                  <p className="text-3xl font-bold" style={{ color: colors.darkNavy }}>{stats.averageRating || 'N/A'}</p>
-                </div>
-                <div className="p-4 rounded-full shadow-lg" style={{ backgroundColor: colors.cream }}>
-                  <Star className="h-8 w-8" style={{ color: colors.darkNavy }} />
-                </div>
-              </div>
-            </div>
-
-            <div 
-              className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
-              style={{ 
-                animationDelay: '0.4s',
-                background: `linear-gradient(135deg, ${colors.lightBlue} 0%, ${colors.cream} 100%)`,
-                borderColor: colors.red
-              }}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <p className="text-sm font-semibold mb-2" style={{ color: colors.darkNavy, opacity: 0.8 }}>Favorite Items</p>
-                  <p className="text-3xl font-bold" style={{ color: colors.red }}>{stats.favoriteItems}</p>
-                </div>
-                <div className="p-4 rounded-full shadow-lg" style={{ backgroundColor: colors.cream }}>
-                  <Clock className="h-8 w-8" style={{ color: colors.red }} />
-                </div>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: colors.text }}>
+                  {formatDate(currentDateTime, 'EEEE, MMM dd, yyyy')}
+                </p>
+                <p className="text-lg font-bold" style={{ color: colors.text }}>
+                  {formatDate(currentDateTime, 'hh:mm:ss a')}
+                </p>
               </div>
             </div>
           </div>
+        </div>
 
+        {/* Stats Cards (mirroring admin) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {statCards.map((stat, index) => (
+            <div
+              key={stat.title}
+              className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
+              style={{
+                animationDelay: `${0.1 + index * 0.1}s`,
+                background: stat.bgGradient,
+                borderColor: stat.borderColor,
+                borderWidth: '2px'
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-semibold mb-2" style={{ color: colors.muted }}>
+                    {stat.title}
+                  </p>
+                  <p className="text-3xl font-bold" style={{ color: stat.valueColor }}>
+                    {stat.value}
+                  </p>
+                </div>
+                <div className="p-4 rounded-full shadow-lg flex items-center justify-center" style={{ backgroundColor: colors.card }}>
+                  <div style={{ color: stat.iconBg }}>{stat.icon}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 gap-8">
           {/* Quick Actions */}
-          <div className="animate-slide-up" style={{ animationDelay: '0.5s' }}>
-            <h2 className="text-xl font-semibold mb-4" style={{ color: colors.darkNavy }}>Quick Actions</h2>
+          <div
+            className="rounded-2xl shadow-xl p-8 animate-slide-up border-2"
+            style={{
+              background: `linear-gradient(145deg, ${colors.panel} 0%, ${colors.card} 100%)`,
+              borderColor: colors.border,
+              borderWidth: '2px'
+            }}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold" style={{ color: colors.text }}>
+                  Quick Actions
+                </h2>
+                <p className="text-sm" style={{ color: colors.muted }}>
+                  Jump back into the things you do most
+                </p>
+              </div>
+              <ArrowRight className="h-6 w-6" style={{ color: colors.muted }} />
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {quickActions.map((action, index) => (
                 <Link
-                  key={index}
+                  key={action.title}
                   to={action.link}
-                  className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 group hover:scale-105 animate-slide-up border-2"
-                  style={{ 
+                  className="rounded-2xl shadow-xl hover:shadow-2xl p-5 transition-all duration-300 group hover:scale-105 animate-slide-up border-2"
+                  style={{
                     animationDelay: `${0.6 + index * 0.1}s`,
                     background: action.bgGradient,
-                    borderColor: action.borderColor
+                    borderColor: colors.border
                   }}
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-bold transition-colors duration-300" style={{ color: colors.darkNavy }}>
+                      <h3 className="font-bold" style={{ color: colors.text }}>
                         {action.title}
                       </h3>
-                      <p className="text-sm mt-1 transition-colors duration-300" style={{ color: colors.mediumBlue }}>{action.description}</p>
+                      <p className="text-sm mt-1" style={{ color: colors.muted }}>
+                        {action.description}
+                      </p>
                     </div>
                     <div className="flex items-center">
                       <div className="group-hover:rotate-12 transition-transform duration-300">
                         {action.icon}
                       </div>
-                      <ArrowRight className="h-4 w-4 ml-2 transition-all duration-300" style={{ color: colors.darkNavy }} />
+                      <ArrowRight className="h-4 w-4 ml-2 transition-all duration-300" style={{ color: colors.muted }} />
                     </div>
                   </div>
                 </Link>
@@ -271,101 +329,112 @@ const CustomerDashboard = () => {
           </div>
 
           {/* Recent Orders */}
-          <div className="mt-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold" style={{ color: colors.darkNavy }}>Recent Orders</h2>
+          <div
+            className="rounded-2xl shadow-xl p-8 animate-slide-up border-2"
+            style={{
+              background: `linear-gradient(145deg, ${colors.panel} 0%, ${colors.card} 100%)`,
+              borderColor: colors.border,
+              borderWidth: '2px'
+            }}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold" style={{ color: colors.text }}>
+                Recent Orders
+              </h2>
               <Link
                 to={ROUTES.CUSTOMER_ORDERS}
-                className="font-medium flex items-center transition-colors duration-200"
-                style={{ color: colors.mediumBlue }}
-                onMouseEnter={(e) => e.target.style.color = colors.red}
-                onMouseLeave={(e) => e.target.style.color = colors.mediumBlue}
+                className="px-6 py-2 text-white rounded-xl font-bold transition-all duration-300 hover:scale-105 shadow-lg"
+                style={{ backgroundColor: colors.accent }}
+                onMouseEnter={(e) => (e.target.style.backgroundColor = '#4f46e5')}
+                onMouseLeave={(e) => (e.target.style.backgroundColor = colors.accent)}
               >
                 View All
-                <ArrowRight className="h-4 w-4 ml-1" />
               </Link>
             </div>
 
             {recentOrders.length > 0 ? (
-              <div 
-                className="rounded-2xl shadow-xl border-2 overflow-hidden"
-                style={{ 
-                  background: `linear-gradient(135deg, #FFFFFF 0%, ${colors.cream} 100%)`,
-                  borderColor: colors.lightBlue
-                }}
-              >
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y-2" style={{ borderColor: colors.lightBlue }}>
-                    <thead style={{ backgroundColor: colors.lightBlue }}>
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: colors.darkNavy }}>
-                          Order ID
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: colors.darkNavy }}>
-                          Date
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: colors.darkNavy }}>
-                          Items
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: colors.darkNavy }}>
-                          Total
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider" style={{ color: colors.darkNavy }}>
-                          Status
-                        </th>
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead>
+                    <tr style={{ backgroundColor: colors.card }}>
+                      <th className="text-left py-4 px-6 text-xs font-bold uppercase tracking-wider rounded-l-lg" style={{ color: colors.text }}>
+                        Order ID
+                      </th>
+                      <th className="text-left py-4 px-6 text-xs font-bold uppercase tracking-wider" style={{ color: colors.text }}>
+                        Date
+                      </th>
+                      <th className="text-left py-4 px-6 text-xs font-bold uppercase tracking-wider" style={{ color: colors.text }}>
+                        Items
+                      </th>
+                      <th className="text-left py-4 px-6 text-xs font-bold uppercase tracking-wider" style={{ color: colors.text }}>
+                        Total
+                      </th>
+                      <th className="text-left py-4 px-6 text-xs font-bold uppercase tracking-wider rounded-r-lg" style={{ color: colors.text }}>
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recentOrders.map((order, index) => (
+                      <tr
+                        key={order.id}
+                        className="transition-colors border-b"
+                        style={{
+                          borderColor: colors.border,
+                          backgroundColor: index % 2 === 0 ? colors.panel : colors.card
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#1a243b')}
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.backgroundColor = index % 2 === 0 ? colors.panel : colors.card)}
+                      >
+                        <td className="py-4 px-6 font-bold" style={{ color: colors.accent }}>
+                          #{order.id}
+                        </td>
+                        <td className="py-4 px-6 font-medium" style={{ color: colors.muted }}>
+                          {formatDate(order.createdAt, 'MMM dd, yyyy')}
+                        </td>
+                        <td className="py-4 px-6 font-medium" style={{ color: colors.text }}>
+                          {order.items?.length || 0} items
+                        </td>
+                        <td className="py-4 px-6 font-bold text-lg" style={{ color: colors.text }}>
+                          {formatCurrency(order.total)}
+                        </td>
+                        <td className="py-4 px-6">
+                          <span
+                            className="px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wide border-2"
+                            style={getStatusColor(order.status)}
+                          >
+                            {order.status}
+                          </span>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y-2" style={{ borderColor: colors.lightBlue }}>
-                      {recentOrders.map((order) => {
-                        const statusColors = getStatusColor(order.status);
-                        return (
-                          <tr key={order.id} className="hover:opacity-80 transition-opacity duration-200" style={{ backgroundColor: colors.cream }}>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium" style={{ color: colors.darkNavy }}>
-                              #{order.id}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ color: colors.mediumBlue }}>
-                              {new Date(order.createdAt).toLocaleDateString()}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm" style={{ color: colors.mediumBlue }}>
-                              {order.items?.length || 0} items
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold" style={{ color: colors.red }}>
-                              {formatCurrency(order.total)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span 
-                                className="inline-flex px-3 py-1 text-xs font-semibold rounded-full"
-                                style={{ backgroundColor: statusColors.bg, color: statusColors.text }}
-                              >
-                                {order.status}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             ) : (
-              <div 
-                className="rounded-2xl shadow-xl border-2 p-8 text-center"
-                style={{ 
-                  background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
-                  borderColor: colors.lightBlue
+              <div
+                className="rounded-2xl shadow-inner border-2 p-8 text-center"
+                style={{
+                  background: `linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(14, 165, 233, 0.12) 100%)`,
+                  borderColor: colors.border
                 }}
               >
-                <div className="p-4 rounded-full inline-block mb-4" style={{ backgroundColor: colors.lightBlue }}>
-                  <ShoppingBag className="h-12 w-12" style={{ color: colors.mediumBlue }} />
+                <div className="p-4 rounded-full inline-block mb-4" style={{ backgroundColor: colors.card }}>
+                  <ShoppingBag className="h-12 w-12" style={{ color: colors.accent }} />
                 </div>
-                <h3 className="text-lg font-medium mb-2" style={{ color: colors.darkNavy }}>No orders yet</h3>
-                <p className="mb-4" style={{ color: colors.mediumBlue }}>Start exploring our menu and place your first order!</p>
+                <h3 className="text-lg font-medium mb-2" style={{ color: colors.text }}>
+                  No orders yet
+                </h3>
+                <p className="mb-4" style={{ color: colors.muted }}>
+                  Start exploring our menu and place your first order!
+                </p>
                 <Link
                   to={ROUTES.CUSTOMER_MENU}
                   className="px-8 py-3 text-white rounded-xl font-bold transition-all duration-300 hover:scale-105 shadow-lg inline-flex items-center"
-                  style={{ backgroundColor: colors.red }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#d32f3e'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = colors.red}
+                  style={{ backgroundColor: colors.accent }}
+                  onMouseEnter={(e) => (e.target.style.backgroundColor = '#4f46e5')}
+                  onMouseLeave={(e) => (e.target.style.backgroundColor = colors.accent)}
                 >
                   Browse Menu
                   <ArrowRight className="h-4 w-4 ml-2" />
