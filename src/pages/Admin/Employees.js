@@ -339,12 +339,10 @@ const AdminEmployees = () => {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div 
-            className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
+            className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up"
             style={{ 
               animationDelay: '0.1s',
-              background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
-              borderColor: colors.mediumBlue,
-              borderWidth: '2px'
+              background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`
             }}
           >
             <div className="flex items-center justify-between">
@@ -359,12 +357,10 @@ const AdminEmployees = () => {
           </div>
           
           <div 
-            className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
+            className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up"
             style={{ 
               animationDelay: '0.2s',
-              background: `linear-gradient(135deg, ${colors.lightBlue} 0%, ${colors.mediumBlue} 100%)`,
-              borderColor: colors.mediumBlue,
-              borderWidth: '2px'
+              background: `linear-gradient(135deg, ${colors.lightBlue} 0%, ${colors.mediumBlue} 100%)`
             }}
           >
             <div className="flex items-center justify-between">
@@ -381,12 +377,10 @@ const AdminEmployees = () => {
           </div>
           
           <div 
-            className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
+            className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up"
             style={{ 
               animationDelay: '0.3s',
-              background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
-              borderColor: colors.red,
-              borderWidth: '2px'
+              background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`
             }}
           >
             <div className="flex items-center justify-between">
@@ -403,12 +397,10 @@ const AdminEmployees = () => {
           </div>
           
           <div 
-            className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up border-2"
+            className="rounded-2xl shadow-xl hover:shadow-2xl p-6 transition-all duration-300 hover:scale-105 animate-slide-up"
             style={{ 
               animationDelay: '0.4s',
-              background: `linear-gradient(135deg, ${colors.lightBlue} 0%, ${colors.mediumBlue} 100%)`,
-              borderColor: colors.darkNavy,
-              borderWidth: '2px'
+              background: `linear-gradient(135deg, ${colors.lightBlue} 0%, ${colors.mediumBlue} 100%)`
             }}
           >
             <div className="flex items-center justify-between">

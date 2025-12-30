@@ -229,12 +229,85 @@ const mockOrderStats = {
 class OrderManagementService {
   async getOrders() {
     try {
-      const response = await api.get('/api/user-orders/admin/orders');
-      if (response.data.success) {
-        return response.data.data || [];
+      // Fetch orders from both sources:
+      // 1. Customer orders (from user_orders collection)
+      // 2. Waiter/Employee orders (from orders collection)
+      const [customerOrdersResponse, waiterOrdersResponse] = await Promise.allSettled([
+        api.get('/api/user-orders/admin/orders'),
+        api.get('/orders')
+      ]);
+
+      const allOrders = [];
+
+      // Process customer orders
+      if (customerOrdersResponse.status === 'fulfilled' && customerOrdersResponse.value?.data?.success) {
+        const customerOrders = customerOrdersResponse.value.data.data || [];
+        // Transform customer orders to match expected format
+        const transformedCustomerOrders = customerOrders.map(order => ({
+          id: order.id || order.order_id,
+          orderNumber: order.order_number || order.order_id || `ORD-${order.id}`,
+          customerName: order.customer_name || order.customerName || 'Guest User',
+          customerPhone: order.customer_phone || order.customerPhone || '',
+          customerEmail: order.customer_email || order.customerEmail || '',
+          tableNumber: order.table_number || order.tableNumber || null,
+          status: order.status || 'pending',
+          orderType: order.order_type || order.orderType || 'dine-in',
+          items: order.items || [],
+          subtotal: order.subtotal || 0,
+          tax: order.tax || 0,
+          discount: order.discount || 0,
+          total: order.total || 0,
+          paymentMethod: order.payment_method || order.paymentMethod || 'cash',
+          paymentStatus: order.payment_status || order.paymentStatus || 'pending',
+          orderDate: order.date || order.order_date || new Date().toISOString().split('T')[0],
+          orderTime: order.time || order.order_time || new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+          notes: order.notes || order.special_instructions || '',
+          created_at: order.timestamp || order.created_at,
+          updated_at: order.updated_at || order.created_at
+        }));
+        allOrders.push(...transformedCustomerOrders);
       }
-      // Fallback to mock data if API fails
-      return mockOrders;
+
+      // Process waiter/employee orders
+      if (waiterOrdersResponse.status === 'fulfilled') {
+        const waiterOrders = Array.isArray(waiterOrdersResponse.value?.data) 
+          ? waiterOrdersResponse.value.data 
+          : (waiterOrdersResponse.value?.data?.data || []);
+        
+        // Transform waiter orders to match expected format
+        const transformedWaiterOrders = waiterOrders.map(order => ({
+          id: order.id,
+          orderNumber: order.orderNumber || order.order_number || `ORD-${order.id}`,
+          customerName: order.customerName || order.customer_name || 'Walk-in Customer',
+          customerPhone: order.customerPhone || order.customer_phone || 'N/A',
+          customerEmail: order.customerEmail || order.customer_email || '',
+          tableNumber: order.tableNumber || order.table_number || null,
+          status: order.status || 'pending',
+          orderType: order.orderType || order.order_type || 'dine-in',
+          items: order.items || [],
+          subtotal: order.subtotal || 0,
+          tax: order.tax || 0,
+          discount: order.discount || 0,
+          total: order.total || 0,
+          paymentMethod: order.paymentMethod || order.payment_method || 'cash',
+          paymentStatus: order.paymentStatus || order.payment_status || 'pending',
+          orderDate: order.created_at ? new Date(order.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          orderTime: order.created_at ? new Date(order.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+          notes: order.specialNotes || order.special_notes || order.notes || '',
+          created_at: order.created_at,
+          updated_at: order.updated_at || order.created_at
+        }));
+        allOrders.push(...transformedWaiterOrders);
+      }
+
+      // Sort by creation date (most recent first)
+      allOrders.sort((a, b) => {
+        const dateA = new Date(a.created_at || a.orderDate || 0);
+        const dateB = new Date(b.created_at || b.orderDate || 0);
+        return dateB - dateA;
+      });
+
+      return allOrders.length > 0 ? allOrders : mockOrders;
     } catch (error) {
       console.error('Failed to fetch orders from API, using mock data:', error);
       return mockOrders;
@@ -314,14 +387,23 @@ class OrderManagementService {
 
   async updateOrderStatus(id, status) {
     try {
-      // Find order by orderNumber (which is the order_id from backend)
+      // Try to update via the orders endpoint (for waiter/employee orders)
+      try {
+        const response = await api.patch(`/orders/${id}/status`, { status });
+        if (response.data && response.data.success) {
+          return { success: true, data: response.data.data || response.data };
+        }
+      } catch (ordersError) {
+        // If that fails, the order might be from user_orders collection
+        // For now, we'll update locally
+        console.log('Order not found in orders collection, may be from user_orders');
+      }
+
+      // Fallback: update locally (for customer orders from user_orders collection)
       const orders = await this.getOrders();
       const order = orders.find(o => o.orderNumber === id || o.id === id);
       
       if (order) {
-        // Update status in backend
-        // For now, we'll update locally and sync later
-        // TODO: Create backend endpoint to update order status
         order.status = status;
         if (status === 'completed') {
           order.completedTime = new Date().toLocaleTimeString('en-IN', { 

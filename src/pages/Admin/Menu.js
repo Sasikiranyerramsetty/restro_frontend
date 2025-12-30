@@ -25,6 +25,8 @@ const AdminMenu = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSubcategory, setSelectedSubcategory] = useState('all');
+  const [vegFilter, setVegFilter] = useState(false);
+  const [nonVegFilter, setNonVegFilter] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -179,7 +181,27 @@ const AdminMenu = () => {
       matchesSubcategory = itemSubcategory === selected;
     }
     
-    return matchesSearch && matchesSubcategory;
+    // Filter by veg/non-veg
+    // Logic: Veg items: category is 'meals' or 'veg' AND subcategory is NOT 'non-veg'
+    // Non-veg items: category is 'non-veg' OR subcategory is 'non-veg'
+    let matchesCategory = true;
+    if (vegFilter || nonVegFilter) {
+      const itemCategory = (item.category || '').toLowerCase();
+      const itemSubcategory = (item.subcategory || '').toLowerCase();
+      
+      const isVeg = (itemCategory === 'meals' || itemCategory === 'veg') && (itemSubcategory !== 'non-veg');
+      const isNonVeg = (itemCategory === 'non-veg') || (itemSubcategory === 'non-veg');
+      
+      if (vegFilter && nonVegFilter) {
+        matchesCategory = isVeg || isNonVeg; // Show both
+      } else if (vegFilter) {
+        matchesCategory = isVeg;
+      } else if (nonVegFilter) {
+        matchesCategory = isNonVeg;
+      }
+    }
+    
+    return matchesSearch && matchesSubcategory && matchesCategory;
   });
 
   const getStatusBadge = (available) => {
@@ -412,46 +434,107 @@ const AdminMenu = () => {
             borderWidth: '2px'
           }}
         >
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5" style={{ color: colors.mediumBlue }} />
-                <input
-                  type="text"
-                  placeholder="Search menu items..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border-2 rounded-xl transition-all"
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5" style={{ color: colors.mediumBlue }} />
+                  <input
+                    type="text"
+                    placeholder="Search menu items..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border-2 rounded-xl transition-all"
+                    style={{ 
+                      borderColor: colors.lightBlue,
+                      backgroundColor: 'white'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
+                    onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
+                  />
+                </div>
+              </div>
+              <div className="sm:w-56">
+                <select
+                  aria-label="Subcategory"
+                  value={selectedSubcategory}
+                  onChange={(e) => setSelectedSubcategory(e.target.value)}
+                  className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all"
                   style={{ 
                     borderColor: colors.lightBlue,
-                    backgroundColor: 'white'
+                    backgroundColor: 'white',
+                    color: colors.darkNavy
                   }}
                   onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
                   onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
-                />
+                >
+                  <option value="all">All Subcategories</option>
+                  {subcategories.map((subcat) => (
+                    <option key={subcat.id} value={subcat.id}>
+                      {subcat.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
-            <div className="sm:w-56">
-              <select
-                aria-label="Subcategory"
-                value={selectedSubcategory}
-                onChange={(e) => setSelectedSubcategory(e.target.value)}
-                className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all"
-                style={{ 
-                  borderColor: colors.lightBlue,
-                  backgroundColor: 'white',
-                  color: colors.darkNavy
+            
+            {/* Veg/Non-Veg Filter Buttons */}
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => {
+                  setVegFilter(!vegFilter);
+                  if (!vegFilter) {
+                    setNonVegFilter(false);
+                  }
                 }}
-                onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
-                onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
+                className={`px-6 py-2 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg border-2 ${
+                  vegFilter
+                    ? 'bg-green-500 border-green-600 text-white dark:bg-green-600 dark:border-green-700'
+                    : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700'
+                }`}
               >
-                <option value="all">All Subcategories</option>
-                {subcategories.map((subcat) => (
-                  <option key={subcat.id} value={subcat.id}>
-                    {subcat.name}
-                  </option>
-                ))}
-              </select>
+                <div
+                  className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                    vegFilter
+                      ? 'border-white dark:border-white'
+                      : 'border-green-500 dark:border-green-400'
+                  } ${vegFilter ? 'bg-white dark:bg-white' : 'bg-transparent'}`}
+                >
+                  {vegFilter && (
+                    <div className="w-2 h-2 rounded-full bg-green-500 dark:bg-green-400" />
+                  )}
+                </div>
+                Veg
+              </button>
+
+              <button
+                onClick={() => {
+                  setNonVegFilter(!nonVegFilter);
+                  if (!nonVegFilter) {
+                    setVegFilter(false);
+                  }
+                }}
+                className={`px-6 py-2 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg border-2 ${
+                  nonVegFilter
+                    ? 'bg-red-500 border-red-600 text-white dark:bg-red-600 dark:border-red-700'
+                    : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 10 10"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={nonVegFilter ? 'text-white dark:text-white' : 'text-red-500 dark:text-red-400'}
+                >
+                  <path
+                    d="M5 1L9 8H1L5 1Z"
+                    fill="currentColor"
+                  />
+                </svg>
+                Non Veg
+              </button>
             </div>
           </div>
         </div>
@@ -666,6 +749,30 @@ const AdminMenu = () => {
                       onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
                       onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold mb-2" style={{ color: colors.darkNavy }}>
+                      Category *
+                    </label>
+                    <select
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-3 border-2 rounded-xl font-medium transition-all"
+                      style={{ 
+                        borderColor: colors.lightBlue,
+                        backgroundColor: 'white',
+                        color: colors.darkNavy
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
+                      onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
+                    >
+                      <option value="">Select Category</option>
+                      <option value="veg">Veg</option>
+                      <option value="non-veg">Non Veg</option>
+                    </select>
                   </div>
 
                   <div>

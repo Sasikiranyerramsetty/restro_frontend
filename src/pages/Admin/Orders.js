@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   ShoppingBag, Filter, Search, Clock, CheckCircle, 
   AlertCircle, X, Eye, User, Phone, Mail, MapPin,
   CreditCard, DollarSign, Calendar, Package, Users,
-  Monitor, Utensils
+  Monitor, Utensils, RefreshCw
 } from 'lucide-react';
 import AdminLayout from '../../components/Admin/AdminLayout';
 import orderManagementService from '../../services/orderManagementService';
@@ -22,38 +22,78 @@ const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [activeTab, setActiveTab] = useState('all'); // 'all', 'online', 'table'
+  const refreshIntervalRef = useRef(null);
 
   useEffect(() => {
     fetchData();
+    
+    // Set up auto-refresh every 30 seconds
+    refreshIntervalRef.current = setInterval(() => {
+      fetchData(true); // Silent refresh
+    }, 30000);
+
+    // Cleanup interval on unmount
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+    };
   }, []);
 
-  const fetchData = async () => {
+  const fetchData = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
+      }
+      
       const [ordersData, statsData] = await Promise.all([
         orderManagementService.getOrders(),
         orderManagementService.getOrderStats()
       ]);
-      setOrders(ordersData);
-      setStats(statsData);
+      
+      // Ensure ordersData is an array
+      const ordersArray = Array.isArray(ordersData) ? ordersData : [];
+      setOrders(ordersArray);
+      setStats(statsData || {});
+      
+      if (!silent) {
+        toast.success('Orders refreshed successfully');
+      }
     } catch (error) {
-      toast.error('Failed to fetch orders data');
+      console.error('Error fetching orders:', error);
+      if (!silent) {
+        toast.error('Failed to fetch orders data');
+      }
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  const handleManualRefresh = () => {
+    fetchData(false);
   };
 
   const handleStatusUpdate = async (orderId, newStatus) => {
     try {
-      await orderManagementService.updateOrderStatus(orderId, newStatus);
-      toast.success('Order status updated successfully');
-      fetchData();
+      const result = await orderManagementService.updateOrderStatus(orderId, newStatus);
+      if (result && result.success) {
+        toast.success('Order status updated successfully');
+        // Refresh data silently
+        await fetchData(true);
+      } else {
+        toast.error('Failed to update order status');
+      }
     } catch (error) {
+      console.error('Error updating order status:', error);
       toast.error('Failed to update order status');
     }
   };
@@ -87,39 +127,27 @@ const AdminOrders = () => {
   const getStatusBadge = (status) => {
     const statusConfig = {
       pending: { 
-        bg: colors.lightBlue, 
-        text: colors.darkNavy, 
-        border: colors.mediumBlue,
+        classes: 'border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
         icon: <Clock className="h-3 w-3" /> 
       },
       confirmed: { 
-        bg: colors.mediumBlue, 
-        text: colors.cream, 
-        border: colors.mediumBlue,
+        classes: 'border-sky-200 bg-sky-100 text-sky-800 dark:border-sky-700 dark:bg-sky-900/30 dark:text-sky-300',
         icon: <CheckCircle className="h-3 w-3" /> 
       },
       preparing: { 
-        bg: colors.mediumBlue, 
-        text: colors.cream, 
-        border: colors.mediumBlue,
+        classes: 'border-indigo-200 bg-indigo-100 text-indigo-800 dark:border-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
         icon: <Package className="h-3 w-3" /> 
       },
       ready: { 
-        bg: colors.lightBlue, 
-        text: colors.darkNavy, 
-        border: colors.darkNavy,
+        classes: 'border-emerald-200 bg-emerald-100 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
         icon: <CheckCircle className="h-3 w-3" /> 
       },
       completed: { 
-        bg: colors.cream, 
-        text: colors.darkNavy, 
-        border: colors.lightBlue,
+        classes: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
         icon: <CheckCircle className="h-3 w-3" /> 
       },
       cancelled: { 
-        bg: colors.red, 
-        text: colors.cream, 
-        border: colors.red,
+        classes: 'border-rose-200 bg-rose-100 text-rose-800 dark:border-rose-700 dark:bg-rose-900/30 dark:text-rose-300',
         icon: <X className="h-3 w-3" /> 
       }
     };
@@ -128,26 +156,11 @@ const AdminOrders = () => {
 
   const getPaymentStatusBadge = (status) => {
     if (status === 'paid') {
-      return {
-        backgroundColor: colors.lightBlue,
-        color: colors.darkNavy,
-        borderColor: colors.mediumBlue,
-        borderWidth: '2px'
-      };
+      return 'border-emerald-200 bg-emerald-100 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300';
     } else if (status === 'pending') {
-      return {
-        backgroundColor: colors.mediumBlue,
-        color: colors.cream,
-        borderColor: colors.mediumBlue,
-        borderWidth: '2px'
-      };
+      return 'border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-300';
     } else {
-      return {
-        backgroundColor: colors.red,
-        color: colors.cream,
-        borderColor: colors.red,
-        borderWidth: '2px'
-      };
+      return 'border-rose-200 bg-rose-100 text-rose-800 dark:border-rose-700 dark:bg-rose-900/30 dark:text-rose-300';
     }
   };
 
@@ -185,6 +198,29 @@ const AdminOrders = () => {
             </h1>
             <div style={{ height: '4px', background: `linear-gradient(90deg, ${colors.red} 0%, ${colors.mediumBlue} 100%)`, borderRadius: '2px', width: '180px' }}></div>
           </div>
+          <button
+            onClick={handleManualRefresh}
+            disabled={loading || refreshing}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              backgroundColor: colors.mediumBlue,
+              color: colors.cream
+            }}
+            onMouseEnter={(e) => {
+              if (!loading && !refreshing) {
+                e.target.style.backgroundColor = colors.darkNavy;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!loading && !refreshing) {
+                e.target.style.backgroundColor = colors.mediumBlue;
+              }
+            }}
+            title="Refresh orders"
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
         </div>
 
         {/* Stats Cards */}
@@ -419,174 +455,157 @@ const AdminOrders = () => {
         </div>
 
         {/* Orders Table */}
-        <div 
-          className="rounded-2xl shadow-xl overflow-hidden animate-slide-up animate-delay-300 border-2"
-          style={{ 
-            backgroundColor: colors.cream,
-            borderColor: colors.mediumBlue,
-            borderWidth: '2px'
-          }}
-        >
+        <div className="rounded-2xl shadow-xl overflow-hidden animate-slide-up animate-delay-300 border-2 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
           <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead>
-                <tr style={{ backgroundColor: colors.lightBlue }}>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style={{ color: colors.darkNavy }}>
+                <tr className="bg-slate-100 dark:bg-slate-700">
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                     Order Details
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style={{ color: colors.darkNavy }}>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                     Customer
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style={{ color: colors.darkNavy }}>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                     {activeTab === 'table' ? 'Table' : activeTab === 'online' ? 'Order Type' : 'Table/Type'}
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style={{ color: colors.darkNavy }}>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                     Status
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style={{ color: colors.darkNavy }}>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                     Payment
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style={{ color: colors.darkNavy }}>
+                  <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                     Total
                   </th>
                   {activeTab !== 'table' && (
-                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider" style={{ color: colors.darkNavy }}>
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">
                       Actions
                     </th>
                   )}
                 </tr>
               </thead>
-              <tbody>
-                {filteredOrders.map((order, index) => {
-                  const statusConfig = getStatusBadge(order.status);
-                  return (
-                    <tr 
-                      key={order.id} 
-                      className="transition-colors duration-200 border-b"
-                      style={{ 
-                        borderColor: colors.lightBlue,
-                        backgroundColor: index % 2 === 0 ? colors.cream : 'rgba(168, 218, 220, 0.2)'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = colors.lightBlue}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = index % 2 === 0 ? colors.cream : 'rgba(168, 218, 220, 0.2)'}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium" style={{ color: colors.darkNavy }}>{order.orderNumber}</div>
-                          <div className="text-sm" style={{ color: colors.mediumBlue }}>{order.orderDate} at {order.orderTime}</div>
-                          <div className="text-xs" style={{ color: colors.mediumBlue, opacity: 0.7 }}>{order.items.length} items</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium" style={{ color: colors.darkNavy }}>{order.customerName}</div>
-                          <div className="text-sm" style={{ color: colors.mediumBlue }}>{order.customerPhone}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          {activeTab === 'table' ? (
-                            <>
-                              <div className="text-sm font-medium" style={{ color: colors.darkNavy }}>
-                                Table {order.tableNumber}
-                              </div>
-                              {order.assignedWaiter && (
-                                <div className="text-xs" style={{ color: colors.mediumBlue }}>Waiter: {order.assignedWaiter}</div>
-                              )}
-                            </>
-                          ) : activeTab === 'online' ? (
-                            <>
-                              <div className="text-sm font-medium capitalize" style={{ color: colors.darkNavy }}>
-                                {order.orderType}
-                              </div>
-                              {order.orderType === 'delivery' && (
-                                <div className="text-xs" style={{ color: colors.mediumBlue }}>Delivery Address</div>
-                              )}
-                              {order.orderType === 'takeaway' && (
-                                <div className="text-xs" style={{ color: colors.mediumBlue }}>Pickup Order</div>
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              <div className="text-sm font-medium" style={{ color: colors.darkNavy }}>
-                                {order.tableNumber ? `Table ${order.tableNumber}` : order.orderType}
-                              </div>
-                              {order.assignedWaiter && (
-                                <div className="text-xs" style={{ color: colors.mediumBlue }}>Waiter: {order.assignedWaiter}</div>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center space-x-2">
-                          <span 
-                            className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full border-2"
-                            style={{
-                              backgroundColor: statusConfig.bg,
-                              color: statusConfig.text,
-                              borderColor: statusConfig.border
-                            }}
-                          >
-                            {statusConfig.icon}
-                            <span className="ml-1 capitalize">{order.status}</span>
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <span 
-                            className="inline-flex px-2 py-1 text-xs font-semibold rounded-full border-2"
-                            style={getPaymentStatusBadge(order.paymentStatus)}
-                          >
-                            {order.paymentStatus}
-                          </span>
-                          <div className="text-xs mt-1 capitalize" style={{ color: colors.mediumBlue }}>{order.paymentMethod}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold" style={{ color: colors.darkNavy }}>
-                        ₹{order.total}
-                      </td>
-                      {activeTab !== 'table' && (
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex items-center space-x-2">
-                            <button
-                              onClick={() => handleViewOrder(order)}
-                              className="transition-colors duration-200"
-                              title="View Details"
-                              style={{ color: colors.mediumBlue }}
-                              onMouseEnter={(e) => e.target.style.color = colors.darkNavy}
-                              onMouseLeave={(e) => e.target.style.color = colors.mediumBlue}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </button>
-                            {order.status !== 'completed' && order.status !== 'cancelled' && (
-                              <select
-                                value={order.status}
-                                onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
-                                className="text-xs border-2 rounded px-2 py-1"
-                                style={{ 
-                                  borderColor: colors.lightBlue,
-                                  backgroundColor: 'white',
-                                  color: colors.darkNavy
-                                }}
-                                onFocus={(e) => e.target.style.borderColor = colors.mediumBlue}
-                                onBlur={(e) => e.target.style.borderColor = colors.lightBlue}
-                              >
-                                <option value="pending">Pending</option>
-                                <option value="confirmed">Confirmed</option>
-                                <option value="preparing">Preparing</option>
-                                <option value="ready">Ready</option>
-                                <option value="completed">Completed</option>
-                                <option value="cancelled">Cancelled</option>
-                              </select>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                {filteredOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan={activeTab === 'table' ? 6 : 7} className="px-6 py-8 text-center text-slate-500 dark:text-slate-400">
+                      No orders found matching your filters.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredOrders.map((order, index) => {
+                    const statusConfig = getStatusBadge(order.status);
+                    return (
+                      <tr 
+                        key={order.id} 
+                        className={`transition-colors duration-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 ${
+                          index % 2 === 0 
+                            ? 'bg-white dark:bg-slate-800' 
+                            : 'bg-slate-50 dark:bg-slate-800/50'
+                        }`}
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">{order.orderNumber}</div>
+                            <div className="text-sm text-slate-500 dark:text-slate-400">{order.orderDate} at {order.orderTime}</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">{order.items.length} items</div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-white">{order.customerName}</div>
+                            <div className="text-sm text-slate-500 dark:text-slate-400">{order.customerPhone}</div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            {activeTab === 'table' ? (
+                              <>
+                                <div className="text-sm font-medium text-slate-900 dark:text-white">
+                                  Table {order.tableNumber}
+                                </div>
+                                {order.assignedWaiter && (
+                                  <div className="text-xs text-slate-500 dark:text-slate-400">Waiter: {order.assignedWaiter}</div>
+                                )}
+                              </>
+                            ) : activeTab === 'online' ? (
+                              <>
+                                <div className="text-sm font-medium capitalize text-slate-900 dark:text-white">
+                                  {order.orderType}
+                                </div>
+                                {order.orderType === 'delivery' && (
+                                  <div className="text-xs text-slate-500 dark:text-slate-400">Delivery Address</div>
+                                )}
+                                {order.orderType === 'takeaway' && (
+                                  <div className="text-xs text-slate-500 dark:text-slate-400">Pickup Order</div>
+                                )}
+                              </>
+                            ) : (
+                              <>
+                                <div className="text-sm font-medium text-slate-900 dark:text-white">
+                                  {order.tableNumber ? `Table ${order.tableNumber}` : order.orderType}
+                                </div>
+                                {order.assignedWaiter && (
+                                  <div className="text-xs text-slate-500 dark:text-slate-400">Waiter: {order.assignedWaiter}</div>
+                                )}
+                              </>
                             )}
                           </div>
                         </td>
-                      )}
-                    </tr>
-                  );
-                })}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center space-x-2">
+                            <span 
+                              className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full border ${statusConfig.classes}`}
+                            >
+                              {statusConfig.icon}
+                              <span className="ml-1 capitalize">{order.status}</span>
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <span 
+                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${getPaymentStatusBadge(order.paymentStatus)}`}
+                            >
+                              {order.paymentStatus}
+                            </span>
+                            <div className="text-xs mt-1 capitalize text-slate-500 dark:text-slate-400">{order.paymentMethod}</div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900 dark:text-white">
+                          ₹{order.total}
+                        </td>
+                        {activeTab !== 'table' && (
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex items-center space-x-2">
+                              <button
+                                onClick={() => handleViewOrder(order)}
+                                className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white p-2 text-slate-700 transition hover:border-indigo-300 hover:bg-indigo-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-300 dark:hover:border-indigo-500 dark:hover:bg-indigo-900/30"
+                                title="View Details"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </button>
+                              {order.status !== 'completed' && order.status !== 'cancelled' && (
+                                <select
+                                  value={order.status}
+                                  onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
+                                  className="text-xs border-2 rounded px-2 py-1 border-slate-200 bg-white text-slate-900 outline-none transition focus:border-indigo-400 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:focus:border-indigo-500"
+                                >
+                                  <option value="pending">Pending</option>
+                                  <option value="confirmed">Confirmed</option>
+                                  <option value="preparing">Preparing</option>
+                                  <option value="ready">Ready</option>
+                                  <option value="completed">Completed</option>
+                                  <option value="cancelled">Cancelled</option>
+                                </select>
+                              )}
+                            </div>
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>

@@ -643,12 +643,12 @@ const AdminTables = () => {
                     const reservationCount = dayReservations.length;
                     
                     return (
-                      <div key={index} className="relative">
+                      <div key={index} className="relative flex">
                         <button
                           onClick={() => setSelectedDate(new Date(date))}
                           onMouseEnter={() => setHoveredDay(index)}
                           onMouseLeave={() => setHoveredDay(null)}
-                          className="w-full p-3 rounded-lg transition-all duration-300 hover:scale-105 border-2 font-semibold relative"
+                          className="w-full rounded-lg transition-all duration-200 border-2 font-semibold relative flex flex-col items-center justify-center min-h-[80px] px-2 py-2.5"
                           style={{
                             backgroundColor: isSelected 
                               ? colors.mediumBlue 
@@ -664,15 +664,18 @@ const AdminTables = () => {
                             borderWidth: '2px'
                           }}
                         >
-                          <div className="text-xs font-bold mb-1">{dayName}</div>
-                          <div className="text-lg font-bold">{dayNumber}</div>
-                          <div className="text-xs mt-1 opacity-75">
+                          <div className="text-[10px] font-bold uppercase tracking-wide mb-0.5">{dayName}</div>
+                          <div className="text-xl font-bold leading-none my-1">{dayNumber}</div>
+                          <div className="text-[10px] font-medium mt-0.5 opacity-75">
                             {date.toLocaleDateString('en-US', { month: 'short' })}
                           </div>
                           {reservationCount > 0 && (
                             <div 
-                              className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
-                              style={{ backgroundColor: colors.red, color: colors.cream }}
+                              className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
+                              style={{ 
+                                backgroundColor: isSelected ? colors.cream : colors.red, 
+                                color: isSelected ? colors.mediumBlue : colors.cream 
+                              }}
                             >
                               {reservationCount}
                             </div>

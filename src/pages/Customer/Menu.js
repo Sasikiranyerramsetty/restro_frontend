@@ -8,7 +8,11 @@ import {
   ShoppingCart,
   Star,
   ChefHat,
-  Clock
+  Clock,
+  Package,
+  CheckCircle,
+  TrendingUp,
+  Utensils
 } from 'lucide-react';
 import { ROUTES } from '../../constants';
 import userOrdersService from '../../services/userOrdersService';
@@ -16,6 +20,7 @@ import { formatCurrency } from '../../utils';
 import toast from 'react-hot-toast';
 import CustomerLayout from '../../components/Customer/CustomerLayout';
 import { useAuth } from '../../context/AuthContext';
+import { GlassCard, SectionHeading, MetricTile } from '../../components/Employee/EmployeeUI';
 
 // Helper to get or generate user ID
 const getUserId = (user) => {
@@ -34,15 +39,6 @@ const getUserId = (user) => {
 const CustomerMenu = () => {
   const { user } = useAuth();
   const userId = useMemo(() => getUserId(user), [user]);
-  
-  // Custom color palette (matching admin)
-  const colors = {
-    red: '#E63946',
-    cream: '#F1FAEE',
-    lightBlue: '#A8DADC',
-    mediumBlue: '#457B9D',
-    darkNavy: '#1D3557'
-  };
   
   const [categories, setCategories] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
@@ -134,21 +130,11 @@ const CustomerMenu = () => {
       );
     }
 
-    // Filter by veg/non-veg toggles
-    if (vegFilter || nonVegFilter) {
-      filtered = filtered.filter(item => {
-        const isVeg = item.diet_type === 'veg';
-        const isNonVeg = item.diet_type === 'non_veg';
-        
-        if (vegFilter && nonVegFilter) {
-          return isVeg || isNonVeg; // Show both
-        } else if (vegFilter) {
-          return isVeg;
-        } else if (nonVegFilter) {
-          return isNonVeg;
-        }
-        return true;
-      });
+    // Filter by veg/non-veg buttons
+    if (vegFilter) {
+      filtered = filtered.filter(item => item.diet_type === 'veg');
+    } else if (nonVegFilter) {
+      filtered = filtered.filter(item => item.diet_type === 'non_veg');
     }
 
     // Filter by search query
@@ -250,16 +236,69 @@ const CustomerMenu = () => {
     return cart.total || 0;
   };
 
+  // Calculate stats for menu
+  const menuStats = useMemo(() => {
+    const totalItems = menuItems.length;
+    const availableItems = menuItems.filter(item => item.is_available).length;
+    const avgPrice = menuItems.length > 0 
+      ? Math.round(menuItems.reduce((sum, item) => sum + (parseFloat(item.price) || 0), 0) / menuItems.length)
+      : 0;
+    const topCategory = categories.length > 0 ? categories[0]?.category_name || '—' : '—';
+    
+    return {
+      totalItems,
+      availableItems,
+      avgPrice,
+      topCategory
+    };
+  }, [menuItems, categories]);
+
+  const statCards = useMemo(
+    () => [
+      {
+        label: 'Total items',
+        value: menuStats.totalItems,
+        delta: `${menuStats.availableItems} available`,
+        icon: Package,
+        tone: 'sky'
+      },
+      {
+        label: 'Available today',
+        value: menuStats.availableItems,
+        delta: 'Can be ordered now',
+        icon: CheckCircle,
+        tone: 'emerald'
+      },
+      {
+        label: 'Avg price',
+        value: menuStats.avgPrice > 0 ? `₹${menuStats.avgPrice}` : '—',
+        delta: 'Per item',
+        icon: TrendingUp,
+        tone: 'amber'
+      },
+      {
+        label: 'Top category',
+        value: menuStats.topCategory,
+        delta: 'Most popular',
+        icon: ChefHat,
+        tone: 'indigo'
+      }
+    ],
+    [menuStats]
+  );
+
+  // Background style - solid dark navy blue
+  const backgroundStyle = useMemo(() => ({
+    backgroundColor: '#0a1628'
+  }), []);
+
   if (isLoading) {
     return (
-      <CustomerLayout>
-        <div className="flex items-center justify-center h-64" style={{ backgroundColor: colors.cream }}>
-          <div className="text-center">
-            <div 
-              className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
-              style={{ borderColor: colors.red }}
-            ></div>
-            <p className="font-semibold" style={{ color: colors.darkNavy }}>Loading menu...</p>
+      <CustomerLayout backgroundStyle={backgroundStyle} backgroundClassName="bg-slate-950 text-slate-100">
+        <div className="flex h-[60vh] items-center justify-center">
+          <div className="flex flex-col items-center gap-3 text-slate-200">
+            <div className="h-12 w-12 animate-spin rounded-full border-2 border-white/10 border-t-indigo-400" />
+            <p className="text-sm text-slate-400">Loading menu...</p>
           </div>
         </div>
       </CustomerLayout>
@@ -267,439 +306,321 @@ const CustomerMenu = () => {
   }
 
   return (
-    <CustomerLayout>
-      <div className="space-y-8 animate-fade-in" style={{ backgroundColor: colors.cream, minHeight: '100vh', width: '100%', padding: '1.5rem 2rem', overflowX: 'hidden' }}>
-        <div className="w-full max-w-full">
-          {/* Header */}
-          <div className="mb-8 animate-slide-up">
-            <h1 
-              className="text-3xl font-bold drop-shadow-lg mb-2" 
-              style={{ 
-                fontFamily: "'BBH Sans Bartle', sans-serif", 
-                letterSpacing: '0.05em',
-                color: colors.darkNavy,
-                fontFeatureSettings: '"liga" off',
-                fontVariantLigatures: 'none',
-                textRendering: 'geometricPrecision',
-                fontKerning: 'none'
-              }}
-            >
-              Our Menu
-            </h1>
-            <div style={{ height: '4px', background: `linear-gradient(90deg, ${colors.red} 0%, ${colors.mediumBlue} 100%)`, borderRadius: '2px', width: '150px' }}></div>
-            <p className="text-lg mt-2" style={{ color: colors.mediumBlue }}>Discover our delicious offerings</p>
-          </div>
-
-          {/* Search Bar - Swiggy Style */}
-          <div className="mb-6">
-            <div className="relative max-w-2xl">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5" style={{ color: colors.mediumBlue }} />
-              <input
-                type="text"
-                placeholder="Search for dishes..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 rounded-lg border-2 focus:outline-none focus:ring-2 transition-all"
-                style={{ 
-                  backgroundColor: '#FFFFFF',
-                  borderColor: colors.lightBlue,
-                  color: colors.darkNavy,
-                  fontSize: '16px'
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = colors.red;
-                  e.target.style.boxShadow = '0 0 0 3px rgba(230, 57, 70, 0.1)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = colors.lightBlue;
-                  e.target.style.boxShadow = 'none';
-                }}
-              />
+    <CustomerLayout backgroundStyle={backgroundStyle} backgroundClassName="bg-slate-950 text-slate-100">
+      <div className="space-y-6 px-4 py-6">
+        {/* Hero Section - Matching Admin Dashboard */}
+        <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-950/40 shadow-xl text-white">
+          <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-slate-900 to-slate-950 opacity-95" />
+          <div
+            className="absolute inset-0 blur-3xl opacity-40"
+            style={{ background: 'radial-gradient(circle at 15% 15%, rgba(16,185,129,0.35), transparent 55%)' }}
+          />
+          <div className="relative flex flex-col gap-4 p-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-indigo-100 ring-1 ring-white/10">
+                <ChefHat className="h-4 w-4 text-indigo-200" />
+                <span>Customer · Menu</span>
+              </div>
+              <div className="space-y-1">
+                <h1 className="text-3xl font-semibold text-white">Our Delicious Menu</h1>
+                <p className="text-sm text-white/80">
+                  Explore our carefully crafted selection of authentic Indian dishes
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white ring-1 ring-white/10">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                  Live menu sync
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white ring-1 ring-white/10">
+                  <span className="h-2 w-2 rounded-full bg-sky-400" />
+                  Real-time availability
+                </span>
+              </div>
             </div>
-          </div>
-
-          {/* Toggle Switches - Veg/Non-Veg Filters */}
-          <div className="mb-6 flex items-center gap-6">
-            <label className="flex items-center gap-3 cursor-pointer">
-              <div className="relative" style={{ width: '56px', height: '32px' }}>
-                <input
-                  type="checkbox"
-                  checked={vegFilter}
-                  onChange={(e) => setVegFilter(e.target.checked)}
-                  className="sr-only"
-                />
-                <div
-                  className="w-full h-full rounded-lg border-2 relative overflow-hidden transition-all duration-300"
-                  style={{ 
-                    borderColor: '#d1d5db',
-                    backgroundColor: '#f3f4f6'
-                  }}
-                >
-                  {/* Track */}
-                  <div
-                    className="absolute inset-0 rounded-lg transition-all duration-300"
-                    style={{ 
-                      backgroundColor: vegFilter ? '#22c55e' : '#e5e7eb',
-                      margin: '2px'
-                    }}
-                  />
-                  {/* Thumb */}
-                  <div
-                    className={`absolute top-1 left-1 w-6 h-6 rounded-lg transition-all duration-300 flex items-center justify-center ${
-                      vegFilter ? 'translate-x-6' : 'translate-x-0'
-                    }`}
-                    style={{ 
-                      backgroundColor: '#ffffff',
-                      border: '2px solid',
-                      borderColor: vegFilter ? '#16a34a' : '#9ca3af',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                    }}
-                  >
-                    {/* Green Circle */}
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: '#16a34a' }}
-                    />
-                  </div>
-                </div>
-              </div>
-              <span className="font-medium text-sm" style={{ color: colors.darkNavy }}>Veg</span>
-            </label>
-
-            <label className="flex items-center gap-3 cursor-pointer">
-              <div className="relative" style={{ width: '56px', height: '32px' }}>
-                <input
-                  type="checkbox"
-                  checked={nonVegFilter}
-                  onChange={(e) => setNonVegFilter(e.target.checked)}
-                  className="sr-only"
-                />
-                <div
-                  className="w-full h-full rounded-lg border-2 relative overflow-hidden transition-all duration-300"
-                  style={{ 
-                    borderColor: '#d1d5db',
-                    backgroundColor: '#f3f4f6'
-                  }}
-                >
-                  {/* Track */}
-                  <div
-                    className="absolute inset-0 rounded-lg transition-all duration-300"
-                    style={{ 
-                      backgroundColor: nonVegFilter ? colors.red : '#e5e7eb',
-                      margin: '2px'
-                    }}
-                  />
-                  {/* Thumb */}
-                  <div
-                    className={`absolute top-1 left-1 w-6 h-6 rounded-lg transition-all duration-300 flex items-center justify-center ${
-                      nonVegFilter ? 'translate-x-6' : 'translate-x-0'
-                    }`}
-                    style={{ 
-                      backgroundColor: '#ffffff',
-                      border: '2px solid',
-                      borderColor: nonVegFilter ? colors.red : '#9ca3af',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-                    }}
-                  >
-                    {/* Red Triangle */}
-                    <svg
-                      width="10"
-                      height="10"
-                      viewBox="0 0 10 10"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M5 1L9 8H1L5 1Z"
-                        fill={colors.red}
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-              <span className="font-medium text-sm" style={{ color: colors.darkNavy }}>Non-Veg</span>
-            </label>
-          </div>
-
-          <div className="flex flex-col lg:flex-row gap-8 min-w-0">
-            {/* Sidebar - Categories */}
-            <div className="lg:w-1/4 min-w-0 flex-shrink-0">
-              <div 
-                className="rounded-2xl shadow-xl hover:shadow-2xl p-6 sticky top-8 transition-all duration-300 border-2"
-                style={{ 
-                  background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
-                  borderColor: colors.lightBlue
-                }}
+            {getCartItemCount() > 0 && (
+              <Link
+                to={ROUTES.CUSTOMER_CART}
+                className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-500 to-rose-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/20 transition hover:shadow-xl"
               >
-                <h3 className="text-lg font-semibold mb-4" style={{ color: colors.darkNavy }}>Categories</h3>
-                <div className="space-y-2">
-                  <button
-                    onClick={() => setSelectedCategory('')}
-                    className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 font-medium ${
-                      selectedCategory === '' 
-                        ? 'text-white' 
-                        : 'hover:bg-opacity-10'
-                    }`}
-                    style={selectedCategory === '' 
-                      ? { backgroundColor: colors.red, color: '#FFFFFF' }
-                      : { color: colors.darkNavy, backgroundColor: 'transparent' }
-                    }
-                    onMouseEnter={(e) => {
-                      if (selectedCategory !== '') {
-                        e.target.style.backgroundColor = 'rgba(168, 218, 220, 0.2)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (selectedCategory !== '') {
-                        e.target.style.backgroundColor = 'transparent';
-                      }
-                    }}
-                  >
-                    All Items
-                  </button>
+                <ShoppingCart className="h-4 w-4" />
+                View Cart ({getCartItemCount()})
+              </Link>
+            )}
+          </div>
+        </section>
+
+        {/* Stats Cards */}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {statCards.map((card) => (
+            <MetricTile key={card.label} {...card} />
+          ))}
+        </div>
+
+        {/* Search and Filters - Matching Admin Dashboard */}
+        <GlassCard className="bg-white/90 border-slate-100 text-slate-900 dark:bg-slate-900/70 dark:border-slate-800">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="relative flex-1">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search menu items..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-10 py-3 text-sm text-slate-900 placeholder-slate-500 outline-none transition focus:border-indigo-400 focus:bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder-slate-400 dark:focus:border-indigo-400"
+                />
+              </div>
+              <div className="sm:w-64">
+                <select
+                  aria-label="Category"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-indigo-400 focus:bg-white dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:focus:border-indigo-400"
+                >
+                  <option value="">All categories</option>
                   {categories.map((category) => (
-                    <button
-                      key={category.category_name}
-                      onClick={() => setSelectedCategory(category.category_name)}
-                      className={`w-full text-left px-4 py-3 rounded-lg transition-all duration-200 font-medium ${
-                        selectedCategory === category.category_name 
-                          ? 'text-white' 
-                          : ''
-                      }`}
-                      style={selectedCategory === category.category_name 
-                        ? { backgroundColor: colors.red, color: '#FFFFFF' }
-                        : { color: colors.darkNavy, backgroundColor: 'transparent' }
-                      }
-                      onMouseEnter={(e) => {
-                        if (selectedCategory !== category.category_name) {
-                          e.target.style.backgroundColor = 'rgba(168, 218, 220, 0.2)';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (selectedCategory !== category.category_name) {
-                          e.target.style.backgroundColor = 'transparent';
-                        }
-                      }}
-                    >
+                    <option key={category.category_name} value={category.category_name}>
                       {category.category_name.charAt(0).toUpperCase() + category.category_name.slice(1)}
-                    </button>
+                    </option>
                   ))}
-                </div>
+                </select>
               </div>
             </div>
-
-            {/* Menu Items - Swiggy Style Grid */}
-            <div className="lg:w-3/4 min-w-0">
-              {filteredItems.length === 0 ? (
-                <div 
-                  className="text-center py-16 rounded-2xl shadow-xl border-2"
-                  style={{ 
-                    background: `linear-gradient(135deg, ${colors.cream} 0%, ${colors.lightBlue} 100%)`,
-                    borderColor: colors.lightBlue
-                  }}
+            
+            {/* Veg/Non-Veg Filter Buttons */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  setVegFilter(!vegFilter);
+                  if (!vegFilter) {
+                    setNonVegFilter(false);
+                  }
+                }}
+                className={`px-5 py-2 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg border-2 ${
+                  vegFilter
+                    ? 'bg-green-500 border-green-600 text-white dark:bg-green-600 dark:border-green-700'
+                    : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                <div
+                  className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                    vegFilter
+                      ? 'border-white dark:border-white'
+                      : 'border-green-500 dark:border-green-400'
+                  } ${vegFilter ? 'bg-white dark:bg-white' : 'bg-transparent'}`}
                 >
-                  <ChefHat className="h-20 w-20 mx-auto mb-4" style={{ color: colors.lightBlue }} />
-                  <h3 className="text-2xl font-semibold mb-2" style={{ color: colors.darkNavy }}>No items found</h3>
-                  <p style={{ color: colors.mediumBlue }}>Try adjusting your search or filter criteria</p>
+                  {vegFilter && (
+                    <div className="w-2 h-2 rounded-full bg-green-500 dark:bg-green-400" />
+                  )}
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 min-w-0">
-                  {filteredItems.map((item) => {
-                    const isUnavailable = !item.is_available;
-                    return (
-                    <div 
-                      key={item.id} 
-                      className="rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 hover:scale-105 border-2"
-                      style={{ 
-                        background: isUnavailable 
-                          ? 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)'
-                          : `linear-gradient(135deg, #FFFFFF 0%, ${colors.cream} 100%)`,
-                        borderColor: isUnavailable ? '#9ca3af' : colors.lightBlue,
-                        filter: isUnavailable ? 'grayscale(100%)' : 'none',
-                        opacity: isUnavailable ? 0.7 : 1
-                      }}
-                    >
-                      {/* Image Section */}
-                      <div className="relative h-48 bg-gray-100 overflow-hidden">
-                        {item.image ? (
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-                            style={{ filter: isUnavailable ? 'grayscale(100%)' : 'none' }}
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: isUnavailable ? '#d1d5db' : colors.lightBlue }}>
-                            <ChefHat className="h-16 w-16" style={{ color: isUnavailable ? '#6b7280' : colors.mediumBlue }} />
-                          </div>
-                        )}
-                        {/* Rating Badge */}
-                        <div 
-                          className="absolute top-3 right-3 rounded-full px-3 py-1 flex items-center gap-1 shadow-lg"
-                          style={{ backgroundColor: colors.cream }}
-                        >
-                          <Star className="h-4 w-4 fill-current" style={{ color: '#FFB800' }} />
-                          <span className="text-sm font-semibold" style={{ color: colors.darkNavy }}>
-                            {item.rating || '4.5'}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {/* Not Available Overlay */}
-                      {isUnavailable && (
-                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10 rounded-t-2xl">
-                          <span 
-                            className="text-white font-bold text-lg px-4 py-2 rounded-full"
-                            style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
-                          >
-                            Not Available
-                          </span>
+                Veg
+              </button>
+
+              <button
+                onClick={() => {
+                  setNonVegFilter(!nonVegFilter);
+                  if (!nonVegFilter) {
+                    setVegFilter(false);
+                  }
+                }}
+                className={`px-5 py-2 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center gap-2 shadow-md hover:shadow-lg border-2 ${
+                  nonVegFilter
+                    ? 'bg-red-500 border-red-600 text-white dark:bg-red-600 dark:border-red-700'
+                    : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 10 10"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={nonVegFilter ? 'text-white dark:text-white' : 'text-red-500 dark:text-red-400'}
+                >
+                  <path
+                    d="M5 1L9 8H1L5 1Z"
+                    fill="currentColor"
+                  />
+                </svg>
+                Non Veg
+              </button>
+            </div>
+          </div>
+        </GlassCard>
+
+        {/* Menu Items Grid - Matching Admin Dashboard Style */}
+        <GlassCard className="overflow-hidden bg-white/95 border-slate-100 text-slate-900 shadow-md dark:bg-slate-900/80 dark:border-slate-800">
+          <SectionHeading
+            title="Menu items"
+            description="Browse and order from our delicious selection."
+          />
+
+          {filteredItems.length === 0 ? (
+            <div className="px-4 py-12 text-center text-slate-500 dark:text-slate-400">
+              <ChefHat className="h-16 w-16 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
+              <p className="text-lg font-semibold text-slate-900 dark:text-white">No menu items match your filters.</p>
+              <p className="text-sm mt-2">Try adjusting your search or filter criteria</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 p-6">
+              {filteredItems.map((item) => {
+                const isUnavailable = !item.is_available;
+                return (
+                  <div 
+                    key={item.id} 
+                    className={`group relative rounded-2xl border border-slate-200 bg-white overflow-hidden transition-all duration-300 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800/50 ${
+                      isUnavailable ? 'opacity-60 grayscale' : ''
+                    }`}
+                  >
+                    {/* Image Section */}
+                    <div className="relative h-48 bg-slate-100 dark:bg-slate-700 overflow-hidden">
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 ${
+                            isUnavailable ? 'grayscale' : ''
+                          }`}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-indigo-50 dark:bg-slate-700">
+                          <Utensils className="h-12 w-12 text-indigo-600 dark:text-indigo-400" />
                         </div>
                       )}
-                      
-                      {/* Content Section */}
-                      <div className="p-5" style={{ position: 'relative', zIndex: 1 }}>
-                        <h3 className="text-xl font-bold mb-2 line-clamp-1" style={{ color: isUnavailable ? '#6b7280' : colors.darkNavy }}>
+                      {/* Price Badge */}
+                      <div className="absolute top-3 left-3 bg-gradient-to-r from-indigo-500 to-rose-500 text-white px-3 py-1.5 rounded-full font-bold text-sm shadow-lg">
+                        {formatCurrency(item.price)}
+                      </div>
+                      {/* Rating Badge */}
+                      <div className="absolute top-3 right-3 rounded-full px-2.5 py-1.5 flex items-center gap-1 shadow-lg bg-white/90 dark:bg-slate-800/90 backdrop-blur">
+                        <Star className="h-3.5 w-3.5 fill-current text-amber-400" />
+                        <span className="text-xs font-semibold text-slate-900 dark:text-white">
+                          {item.rating || '4.5'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Content Section */}
+                    <div className="p-5">
+                      <div className="mb-3">
+                        <h3 className={`text-lg font-semibold mb-2 line-clamp-1 ${
+                          isUnavailable 
+                            ? 'text-slate-400 dark:text-slate-500' 
+                            : 'text-slate-900 dark:text-white'
+                        }`}>
                           {item.name}
                         </h3>
                         
-                        <p className="text-sm mb-4 line-clamp-2" style={{ color: isUnavailable ? '#9ca3af' : colors.mediumBlue }}>
+                        <p className={`text-sm line-clamp-2 ${
+                          isUnavailable 
+                            ? 'text-slate-400 dark:text-slate-500' 
+                            : 'text-slate-600 dark:text-slate-300'
+                        }`}>
                           {item.description}
                         </p>
-                        
-                        <div className="flex items-center justify-between mb-4">
-                          <div>
-                            <span className="text-2xl font-bold" style={{ color: isUnavailable ? '#9ca3af' : colors.red }}>
-                              {formatCurrency(item.price)}
-                            </span>
-                          </div>
-                          {item.preparationTime && (
-                            <div 
-                              className="flex items-center text-sm px-2 py-1 rounded-full" 
-                              style={{ 
-                                backgroundColor: isUnavailable ? 'rgba(156, 163, 175, 0.2)' : 'rgba(168, 218, 220, 0.2)', 
-                                color: isUnavailable ? '#6b7280' : colors.mediumBlue 
-                              }}
-                            >
-                              <Clock className="h-4 w-4 mr-1" />
-                              {item.preparationTime} min
-                            </div>
-                          )}
+                      </div>
+                      
+                      {item.preparationTime && (
+                        <div className={`flex items-center text-xs px-2.5 py-1 rounded-full mb-3 inline-flex ${
+                          isUnavailable 
+                            ? 'bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-500' 
+                            : 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+                        }`}>
+                          <Clock className="h-3.5 w-3.5 mr-1.5" />
+                          {item.preparationTime} min
                         </div>
-                        
-                        {/* Add to Cart Section */}
-                        <div className="flex items-center justify-between">
-                          {!isUnavailable && getCartItemQuantity(item.id) > 0 ? (
-                            <div 
-                              className="flex items-center space-x-3 rounded-full px-4 py-2" 
-                              style={{ backgroundColor: colors.cream }}
+                      )}
+                      
+                      {/* Add to Cart Section */}
+                      <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                        {!isUnavailable && getCartItemQuantity(item.id) > 0 ? (
+                          <div className="flex items-center space-x-2 rounded-full px-3 py-1.5 bg-slate-50 dark:bg-slate-700/50">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                updateQuantity(item, getCartItemQuantity(item.id) - 1);
+                              }}
+                              className="p-1 rounded-full bg-indigo-500 text-white hover:bg-indigo-600 transition-all"
                             >
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  updateQuantity(item, getCartItemQuantity(item.id) - 1);
-                                }}
-                                className="p-1 rounded-full hover:bg-opacity-80 transition-all"
-                                style={{ backgroundColor: colors.red, color: '#FFFFFF' }}
-                              >
-                                <Minus className="h-4 w-4" />
-                              </button>
-                              <span className="font-bold min-w-[24px] text-center" style={{ color: colors.darkNavy }}>
-                                {getCartItemQuantity(item.id)}
-                              </span>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  addToCart(item);
-                                }}
-                                className="p-1 rounded-full hover:bg-opacity-80 transition-all"
-                                style={{ backgroundColor: colors.red, color: '#FFFFFF' }}
-                              >
-                                <Plus className="h-4 w-4" />
-                              </button>
-                            </div>
-                          ) : !isUnavailable ? (
+                              <Minus className="h-3.5 w-3.5" />
+                            </button>
+                            <span className="font-semibold min-w-[20px] text-center text-sm text-slate-900 dark:text-white">
+                              {getCartItemQuantity(item.id)}
+                            </span>
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 addToCart(item);
                               }}
-                              className="px-6 py-2 rounded-full font-semibold text-white hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
-                              style={{ backgroundColor: colors.red }}
-                              onMouseEnter={(e) => e.target.style.backgroundColor = '#d32f3e'}
-                              onMouseLeave={(e) => e.target.style.backgroundColor = colors.red}
+                              className="p-1 rounded-full bg-indigo-500 text-white hover:bg-indigo-600 transition-all"
                             >
-                              ADD
+                              <Plus className="h-3.5 w-3.5" />
                             </button>
-                          ) : (
-                            <button
-                              disabled
-                              className="px-6 py-2 rounded-full font-semibold text-gray-400 cursor-not-allowed transition-all shadow-lg"
-                              style={{ backgroundColor: '#e5e7eb' }}
-                            >
-                              Not Available
-                            </button>
-                          )}
-                          
-                          {isUnavailable && (
-                            <span 
-                              className="text-sm font-medium px-3 py-1 rounded-full" 
-                              style={{ backgroundColor: 'rgba(107, 114, 128, 0.2)', color: '#6b7280' }}
-                            >
-                              Out of Stock
-                            </span>
-                          )}
-                        </div>
+                          </div>
+                        ) : !isUnavailable ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addToCart(item);
+                            }}
+                            className="px-4 py-2 rounded-full text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-rose-500 hover:shadow-lg transition-all"
+                          >
+                            Add to Cart
+                          </button>
+                        ) : (
+                          <button
+                            disabled
+                            className="px-4 py-2 rounded-full text-sm font-semibold text-slate-400 dark:text-slate-500 cursor-not-allowed bg-slate-100 dark:bg-slate-700"
+                          >
+                            Unavailable
+                          </button>
+                        )}
+                        
+                        {isUnavailable && (
+                          <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300">
+                            Out of Stock
+                          </span>
+                        )}
                       </div>
                     </div>
-                  )})}
-                </div>
-              )}
+                  </div>
+                );
+              })}
             </div>
-          </div>
-        </div>
-      </div>
+          )}
+        </GlassCard>
 
-      {/* Floating Cart Summary - Swiggy Style */}
-      {getCartItemCount() > 0 && (
-        <div 
-          className="fixed bottom-6 right-6 rounded-2xl shadow-2xl p-5 z-50 animate-bounce-zoom max-w-[calc(100vw-3rem)]"
-          style={{ 
-            backgroundColor: colors.darkNavy,
-            border: `2px solid ${colors.red}`,
-            minWidth: '280px',
-            maxWidth: '400px'
-          }}
-        >
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-white">
-                  {getCartItemCount()}
+        {/* Floating Cart Summary - Matching Admin Dashboard Style */}
+        {getCartItemCount() > 0 && (
+          <div className="fixed bottom-6 right-6 rounded-2xl border border-white/10 bg-slate-900/90 backdrop-blur shadow-2xl p-5 z-50 max-w-[calc(100vw-3rem)] min-w-[280px] max-w-[400px]">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-white">
+                    {getCartItemCount()}
+                  </div>
+                  <div className="text-xs text-slate-400">items</div>
                 </div>
-                <div className="text-xs" style={{ color: colors.lightBlue }}>items</div>
-              </div>
-              <div className="h-12 w-px" style={{ backgroundColor: colors.mediumBlue }}></div>
-              <div className="text-center">
-                <div className="text-xl font-bold text-white">
-                  {formatCurrency(getCartTotal())}
+                <div className="h-12 w-px bg-white/10"></div>
+                <div className="text-center">
+                  <div className="text-xl font-bold text-white">
+                    {formatCurrency(getCartTotal())}
+                  </div>
+                  <div className="text-xs text-slate-400">total</div>
                 </div>
-                <div className="text-xs" style={{ color: colors.lightBlue }}>total</div>
               </div>
+              <Link
+                to={ROUTES.CUSTOMER_CART}
+                className="px-5 py-2.5 rounded-full text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-rose-500 hover:shadow-lg transition-all flex items-center gap-2"
+              >
+                <ShoppingCart className="h-4 w-4" />
+                View Cart
+              </Link>
             </div>
-            <Link
-              to={ROUTES.CUSTOMER_CART}
-              className="px-6 py-3 rounded-full font-bold text-white hover:opacity-90 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
-              style={{ backgroundColor: colors.red }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#d32f3e'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = colors.red}
-            >
-              <ShoppingCart className="h-5 w-5" />
-              View Cart
-            </Link>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </CustomerLayout>
   );
 };
