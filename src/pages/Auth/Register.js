@@ -48,7 +48,8 @@ const Register = () => {
     try {
       // Call backend API to send OTP
       const response = await api.post('/users/send-otp', {
-        phone_number: phone
+        phone_number: phone,
+        purpose: 'signup'
       });
       
       if (response.data.success) {
@@ -60,10 +61,8 @@ const Register = () => {
       }
     } catch (error) {
       console.error('Send OTP error:', error);
-      // For demo purposes, simulate OTP sending
-      toast.success('OTP sent to your phone! Check your messages.');
-      setIsOtpSent(true);
-      setTimer(60);
+      const errorMessage = error.response?.data?.detail || error.response?.data?.message || 'Failed to send OTP. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -104,7 +103,8 @@ const Register = () => {
       // Call backend API to verify OTP
       const response = await api.post('/users/verify-otp', {
         phone_number: phoneNumber,
-        otp: otpValue
+        otp: otpValue,
+        purpose: 'signup'
       });
       
       if (response.data.success) {
@@ -117,14 +117,8 @@ const Register = () => {
       }
     } catch (error) {
       console.error('Verify OTP error:', error);
-      // For demo purposes, accept any 6-digit OTP
-      if (otpValue.length === 6) {
-        toast.success('OTP verified successfully!');
-        setIsOtpVerified(true);
-        await completeRegistration();
-      } else {
-        toast.error('Invalid OTP. Please try again.');
-      }
+      const errorMessage = error.response?.data?.detail || error.response?.data?.message || 'Invalid OTP. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }

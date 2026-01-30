@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Phone, ArrowLeft, Lock, Shield, CheckCircle, Home } from 'lucide-react';
 import { ROUTES } from '../../constants';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import api from '../../services/api';
 
 const ForgotPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -12,7 +13,21 @@ const ForgotPassword = () => {
   const [isOtpVerified, setIsOtpVerified] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [timer, setTimer] = useState(0);
   const navigate = useNavigate();
+
+  // Timer for resend OTP
+  useEffect(() => {
+    let interval = null;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((timer) => timer - 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [timer]);
 
   const {
     register,
@@ -24,14 +39,23 @@ const ForgotPassword = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const response = await api.post('/users/send-otp', {
+        phone_number: data.phone,
+        purpose: 'forgot_password'
+      });
       
-      setPhoneNumber(data.phone);
-      toast.success('OTP sent to your phone! Check your messages.');
-      setIsSmsSent(true);
+      if (response.data.success) {
+        setPhoneNumber(data.phone);
+        toast.success('OTP sent to your phone! Check your messages.');
+        setIsSmsSent(true);
+        setTimer(60);
+      } else {
+        toast.error(response.data.message || 'Failed to send OTP');
+      }
     } catch (error) {
-      toast.error('Failed to send OTP. Please try again.');
+      console.error('Send OTP error:', error);
+      const errorMessage = error.response?.data?.detail || error.response?.data?.message || 'Failed to send OTP. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -69,27 +93,51 @@ const ForgotPassword = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call to verify OTP
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const response = await api.post('/users/verify-otp', {
+        phone_number: phoneNumber,
+        otp: otpValue,
+        purpose: 'forgot_password'
+      });
       
-      // For demo purposes, accept any 6-digit OTP
-      toast.success('OTP verified successfully!');
-      setIsOtpVerified(true);
+      if (response.data.success) {
+        toast.success('OTP verified successfully!');
+        setIsOtpVerified(true);
+      } else {
+        toast.error(response.data.message || 'Invalid OTP. Please try again.');
+      }
     } catch (error) {
-      toast.error('Invalid OTP. Please try again.');
+      console.error('Verify OTP error:', error);
+      const errorMessage = error.response?.data?.detail || error.response?.data?.message || 'Invalid OTP. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleResendOtp = async () => {
+    if (timer > 0) {
+      toast.error(`Please wait ${timer} seconds before resending`);
+      return;
+    }
+    
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setOtp(['', '', '', '', '', '']);
-      toast.success('OTP resent successfully!');
+      const response = await api.post('/users/send-otp', {
+        phone_number: phoneNumber,
+        purpose: 'forgot_password'
+      });
+      
+      if (response.data.success) {
+        setOtp(['', '', '', '', '', '']);
+        toast.success('OTP resent successfully!');
+        setTimer(60);
+      } else {
+        toast.error(response.data.message || 'Failed to resend OTP');
+      }
     } catch (error) {
-      toast.error('Failed to resend OTP.');
+      console.error('Resend OTP error:', error);
+      const errorMessage = error.response?.data?.detail || error.response?.data?.message || 'Failed to resend OTP';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -109,15 +157,24 @@ const ForgotPassword = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call to reset password
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const response = await api.post('/users/reset-password', {
+        phone_number: phoneNumber,
+        new_password: data.newPassword,
+        confirm_password: data.confirmPassword
+      });
       
-      toast.success('Password reset successfully! Redirecting to login...');
-      setTimeout(() => {
-        navigate(ROUTES.LOGIN);
-      }, 2000);
+      if (response.data.success) {
+        toast.success('Password reset successfully! Redirecting to login...');
+        setTimeout(() => {
+          navigate(ROUTES.LOGIN);
+        }, 2000);
+      } else {
+        toast.error(response.data.message || 'Failed to reset password');
+      }
     } catch (error) {
-      toast.error('Failed to reset password. Please try again.');
+      console.error('Reset password error:', error);
+      const errorMessage = error.response?.data?.detail || error.response?.data?.message || 'Failed to reset password. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
